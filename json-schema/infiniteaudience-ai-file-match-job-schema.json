@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/infiniteaudience-ai/main/json-schema/infiniteaudience-ai-file-match-job-schema.json",
+  "title": "FileMatchJob",
+  "description": "A file-based match job (matched-subtype segment)",
+  "x-generated": "2026-10-09",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/infiniteaudience-ai-openapi.yml#/components/schemas/FileMatchJob",
+  "type": "object",
+  "required": [
+    "match_id",
+    "name",
+    "status",
+    "matching_status",
+    "input_record_count",
+    "match_count",
+    "match_rate",
+    "amount_charged",
+    "file_format",
+    "compression",
+    "segment_id",
+    "audience_id",
+    "audience_status",
+    "source_job_id",
+    "created_at",
+    "expires_at",
+    "data_release"
+  ],
+  "properties": {
+    "data_release": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/EnrichmentRelease"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "failed",
+        "archived",
+        "expired"
+      ]
+    },
+    "matching_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        null
+      ]
+    },
+    "input_record_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "match_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "match_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "format": "float"
+    },
+    "amount_charged": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "One-time file-match USD estimate accepted when this run first participates in a successful delivery. Null before first delivery; excludes the delivery's separate audience/destination/field usage and is not a finalized invoice amount.\n"
+    },
+    "file_format": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "csv",
+        "avro",
+        "json",
+        "jsonl",
+        null
+      ]
+    },
+    "compression": {
+      "type": "string",
+      "enum": [
+        "none",
+        "gzip"
+      ],
+      "description": "Input artifact compression, normalized to none for legacy jobs."
+    },
+    "column_mappings": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "mapping_warnings": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "description": "Warnings about how the uploaded file's columns are used. `analysis` entries are the automatic column analysis's warnings on low-confidence mappings (below 0.6) that feed matching, and appear only when that analysis produced `column_mappings`. A `nested_addresses` entry is recomputed on every matching run, whoever supplied the mappings, when the `addresses` column has unrecognized keys or is not an array of address objects (it is then ignored). `null` before the first run's analysis step. Returned by the single-job lookup only.\n",
+      "items": {
+        "$ref": "#/$defs/MappingWarning"
+      }
+    },
+    "error_message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "segment_id": {
+      "type": "string"
+    },
+    "audience_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "audience_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "active",
+        "archived",
+        null
+      ],
+      "description": "Whether the linked audience (if any) is still active in Library. `archived` covers both an explicitly archived audience and a deleted one. `null` when there's no `audience_id`, or its audience document no longer exists. This job's own history is unaffected either way — it persists even after the underlying segment or audience is deleted from Library.\n"
+    },
+    "source_job_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "integration_run_id": {
+      "type": "string",
+      "pattern": "^ir_[A-Za-z0-9_-]{40}$",
+      "description": "Present only for an authorized private partnership workflow."
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "$defs": {
+    "EnrichmentRelease": {
+      "type": "object",
+      "required": [
+        "major",
+        "minor"
+      ],
+      "description": "Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.",
+      "properties": {
+        "major": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "MappingWarning": {
+      "type": "object",
+      "required": [
+        "source_column",
+        "code",
+        "warning"
+      ],
+      "properties": {
+        "source_column": {
+          "type": "string",
+          "description": "The uploaded file's column the warning is about."
+        },
+        "code": {
+          "type": "string",
+          "enum": [
+            "analysis",
+            "nested_addresses"
+          ],
+          "description": "`analysis` is the automatic column analysis's warning on a low-confidence mapping; `nested_addresses` is the platform's check of the `addresses` column.\n"
+        },
+        "warning": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

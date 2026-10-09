@@ -1,0 +1,449 @@
+generated: '2026-10-09'
+method: derived
+generator: derive-vocabulary.py
+source: openapi/infiniteaudience-ai-openapi.yml
+vocabulary:
+  name: Infinite Audience Domain Vocabulary
+  description: 'Terms declared by Infinite Audience''s own API contract: its resource groups, objects and enumerations, with the contract''s definitions.
+    Derived, not authored.'
+  version: '2026-10-09'
+  terms:
+  - term: Auth
+    definition: Token exchange
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: OAuth
+    definition: OAuth 2.0 authorization server for confidential integrations and delegated REST, MCP, and A2A clients. Authenticate on behalf
+      of one of your customers via the standard authorization-code flow with PKCE or the A2A device authorization flow, then use the resulting
+      resource-bound access token.
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Triggers
+    definition: Durable, per-event-filtered webhook-trigger subscriptions (e.g. one per Zap) — distinct from the single implicit URL configured
+      under the Webhooks tag / `/v1/settings/webhook`. Delivery is retried with exponential backoff and dead-lettered after repeated failures.
+      An OAuth-authenticated caller manages only the subscriptions created by its own connection; an API-key/session caller with 'account' sc
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Discovery
+    definition: Audience count and lookup (exploration)
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Campaigns
+    definition: Named workspaces that group related audiences and deliveries under a single context
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Segments
+    definition: Save and manage reusable filter definitions
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Audiences
+    definition: Build, store, and manage named audience definitions
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Deliveries
+    definition: Org-wide delivery history and status
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Enrichment
+    definition: Attribute catalog, propensity models, synchronous micro-batch matching, and async file-based identity resolution
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Workflows
+    definition: Monitor async audience pipeline progress (similarity and propensity subtypes). Poll GET /v1/workflows/{workflow_run_id} or respond
+      to HITL gates via POST /v1/workflows/{workflow_run_id}/resume.
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Account
+    definition: Balance, top-up, and subscription management
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Settings
+    definition: Self-service API keys and org configuration
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Webhooks
+    definition: '**Outbound webhook notifications** — the platform POSTs to your endpoint when async operations finish. **Events fired:** | Event
+      | Trigger | |---|---| | `segment.ready` | Async segment build succeeded (matched, similarity, propensity) | | `segment.failed` | Async segment
+      build failed | | `delivery.completed` | File export/download ready | | `delivery.failed` | File export/download failed | `integr'
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: MCP
+    definition: Model Context Protocol session management
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: A2A
+    definition: Agent-to-Agent task protocol
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: Partnerships
+    definition: Retained activity and reusable results produced through connected partners
+    tags:
+    - Resource Group
+    source: openapi/infiniteaudience-ai-openapi.yml
+  - term: PublicCatalogField
+    definition: 'Object declared by the contract with fields: field_name, aliases, label, data_type, description, product_usage, groupable, filterable,
+      operators, text_comparison_modes, default_text_comparison, trim_whitespace_supported. (7 more)'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/PublicCatalogField
+  - term: MatchAddress
+    definition: One additional address, tried as an extra match permutation alongside the record's primary address. Only the keys listed here
+      are read. Any other key (for example `street`, `line1`, or `postal`) is ignored and contributes nothing to matching, so rename such fields
+      before sending. Include `address_1` in every entry. Send the ZIP code as `zip`. `zip5`, `postal_code`, and `zip_code` are accepted as a
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/MatchAddress
+  - term: McpJsonRpcError
+    definition: 'Object declared by the contract with fields: jsonrpc, error, id.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/McpJsonRpcError
+  - term: ContinuousPurchaseScope
+    definition: 'Object declared by the contract with fields: provider, connection_id, selected_fields.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/ContinuousPurchaseScope
+  - term: ContinuousPurchaseAuthorization
+    definition: 'Object declared by the contract with fields: version, org_id, enabled, revision, billing_terms_fingerprint, scopes, max_records_per_period,
+      max_charge_cents_per_period, expires_at, approved_by, approved_at, revoked_by. (1 more)'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/ContinuousPurchaseAuthorization
+  - term: ContinuousPurchaseControlRead
+    definition: 'Object declared by the contract with fields: available, authorization, connections.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/ContinuousPurchaseControlRead
+  - term: ContinuousPurchaseAuthorizationResult
+    definition: 'Object declared by the contract with fields: authorization.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/ContinuousPurchaseAuthorizationResult
+  - term: ContinuousPurchasePreview
+    definition: 'Object declared by the contract with fields: billing_channel, currency, billing_terms_fingerprint, current_revision, period,
+      consumed, scopes, max_records_per_period, max_charge_cents_per_period, expires_at.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/ContinuousPurchasePreview
+  - term: MonthlyRenewalAuthorization
+    definition: 'Object declared by the contract with fields: version, org_id, provider, connection_id, revision, enabled, scope, selected_fields,
+      max_records_per_month, max_charge_cents_per_month, expires_at, currency. (5 more)'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/MonthlyRenewalAuthorization
+  - term: MonthlyRenewalControlRead
+    definition: 'Object declared by the contract with fields: available, authorization, enabled_fields.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/MonthlyRenewalControlRead
+  - term: CostEstimate
+    definition: 'Object declared by the contract with fields: base_cost, match_cost, field_cost, destination_cost, total_cost, unit_price, billing_count.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/CostEstimate
+  - term: LicensePricing
+    definition: 'Object declared by the contract with fields: status, evaluated_at, already_licensed_count.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/LicensePricing
+  - term: IntegrationRunCounts
+    definition: 'Object declared by the contract with fields: input, matched, delivered, applied, unchanged, skipped, failed.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationRunCounts
+  - term: IntegrationRun
+    definition: 'Object declared by the contract with fields: data_release, run_id, provider, connection_id, connection_display_name, kind, data_flow,
+      purpose, status, billing_source, customer_boundary, counts. (7 more)'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationRun
+  - term: IntegrationRunListResponse
+    definition: 'Object declared by the contract with fields: runs, has_more, next_cursor.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationRunListResponse
+  - term: IntegrationMatchCollection
+    definition: 'Object declared by the contract with fields: collection_id, name, kind, status, retention_days, unique_identity_count, count_refreshed_at,
+      last_captured_at, created_at, updated_at.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationMatchCollection
+  - term: IntegrationCollectionFilter
+    definition: 'Object declared by the contract with fields: providers, connection_ids, integration_run_ids, source_kinds, boundary_at_from,
+      boundary_at_to.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationCollectionFilter
+  - term: IntegrationMaterializationPreview
+    definition: 'Object declared by the contract with fields: source_observations, unique_identities, duplicate_observations, expired_identities,
+      suppressed_identities, already_present, net_additions.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationMaterializationPreview
+  - term: IntegrationMaterializationPreviewRequest
+    definition: 'Object declared by the contract with fields: filters, target_segment_id.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationMaterializationPreviewRequest
+  - term: IntegrationMaterializationPreviewResponse
+    definition: 'Object declared by the contract with fields: cutoff_at, preview.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationMaterializationPreviewResponse
+  - term: IntegrationMaterializationRequest
+    definition: 'Object declared by the contract with fields: mode, segment_name, target_segment_id, filters.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationMaterializationRequest
+  - term: IntegrationMaterialization
+    definition: 'Object declared by the contract with fields: materialization_id, collection_id, mode, status, filters, source_cutoff_at, target_segment_id,
+      target_segment_name, target_segment_version, preview, identity_count, match_levels. (5 more)'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/IntegrationMaterialization
+  - term: BillingReadinessProjection
+    definition: 'Object declared by the contract with fields: requires_card, has_default_card, collection_method_ok, payment_collection_ready,
+      status.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingReadinessProjection
+  - term: BillingUsageRateProjection
+    definition: 'Object declared by the contract with fields: match, audience_delivery, destination, enrichment_field.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingUsageRateProjection
+  - term: BillingContractProjection
+    definition: 'Object declared by the contract with fields: tier, cadence, commitment_term_months, commitment_amount_cents, usage_discount_bps,
+      contract_start_at, contract_end_at, current_period_start_at, current_period_end_at, pending_change_at, scheduled_change, usage_rates.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingContractProjection
+  - term: BillingScheduledContractChange
+    definition: 'Object declared by the contract with fields: kind, request_id, status, effective_at, previous_contract_end_at, successor_contract_id,
+      terms, error_code, created_at, updated_at.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingScheduledContractChange
+  - term: BillingMoneyProjection
+    definition: 'Object declared by the contract with fields: available_balance_cents, committed_balance_cents, promotional_balance_cents, current_period_spend_cents,
+      current_invoice_total_cents, next_credit_expiry_at, active_reserved_cents, accepted_pending_cents, effective_available_cents.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingMoneyProjection
+  - term: BillingSnapshot
+    definition: 'Object declared by the contract with fields: billing_account_id, owner_type, owner_id, source, consumer_org_id, billing_authority,
+      agency_id, consumer_postpay_ceiling_cents, consumer_money, billing_model, collection_method, currency. (8 more)'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingSnapshot
+  - term: BillingCollectionProjection
+    definition: 'Object declared by the contract with fields: status, stripe_invoice_id, failure_started_at, grace_period_ends_at, updated_at.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingCollectionProjection
+  - term: BillingAutoRechargeProjection
+    definition: 'Object declared by the contract with fields: configured, enabled, threshold_cents, recharge_to_cents, configuration_request_id,
+      payment_status, last_payment_attempt_id, stripe_invoice_id, stripe_payment_intent_id, last_error_code, updated_at, pending_change.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingAutoRechargeProjection
+  - term: AutoRechargeUpdateRequest
+    definition: 'Object declared by the contract with fields: request_id, enabled, threshold_cents, recharge_to_cents.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/AutoRechargeUpdateRequest
+  - term: AccountAutoRechargeResponse
+    definition: 'Object declared by the contract with fields: billing_account_id, auto_recharge, action_url.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/AccountAutoRechargeResponse
+  - term: OrgLicenseSummary
+    definition: 'Object declared by the contract with fields: scope, status, as_of, projection_lag_possible, active_identities, lapsed_identities,
+      purchased_terms_last_12_months, expiring_active_identities_next_30_days, purchases_by_month, expiries_by_month.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OrgLicenseSummary
+  - term: LicenseAlertSettings
+    definition: 'Object declared by the contract with fields: threshold_percent.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/LicenseAlertSettings
+  - term: NativeBillingSetupResponse
+    definition: Native billing has not been configured. Viewing this response creates no account or contract. Shopify stores retain independent
+      billing.
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/NativeBillingSetupResponse
+  - term: NativeAccountBillingResponse
+    definition: 'Object declared by the contract with fields: billing, billing_mode, parent_org, billing_readiness, operational, projection, latest_payment.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/NativeAccountBillingResponse
+  - term: BillingCreditDeliveryStatus
+    definition: 'Enumeration declared by the contract with values: awaiting_payment, updating, available, needs_attention, not_applicable.'
+    tags:
+    - Enumeration
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingCreditDeliveryStatus
+  - term: AccountPaymentReceipt
+    definition: 'Object declared by the contract with fields: payment_attempt_id, kind, request_id, status, amount_cents, bonus_cents, principal_credit_status,
+      bonus_credit_status, paid_at, updated_at, last_error_code, credit_error_code.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/AccountPaymentReceipt
+  - term: BillingCreditBalance
+    definition: 'Object declared by the contract with fields: id, kind, name, product_id, product_name, remaining_cents, applicable_product_ids,
+      applicable_product_tags, source, access_schedule, next_expiry_at.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingCreditBalance
+  - term: AccountCreditsResponse
+    definition: 'Object declared by the contract with fields: billing_account_id, balances.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/AccountCreditsResponse
+  - term: BillingInvoice
+    definition: 'Object declared by the contract with fields: id, status, type, total_cents, currency, period_start_at, period_end_at, issued_at,
+      line_items, collection.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/BillingInvoice
+  - term: AccountInvoicesResponse
+    definition: 'Object declared by the contract with fields: billing_account_id, authority, invoices.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/AccountInvoicesResponse
+  - term: EnrichmentRelease
+    definition: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt
+      a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/EnrichmentRelease
+  - term: MatchRun
+    definition: A single micro-batch match run record. `amount_charged` is a conservative pending-usage estimate, not a finalized invoice amount.
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/MatchRun
+  - term: MatchRunList
+    definition: 'Object declared by the contract with fields: runs, has_more, next_cursor.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/MatchRunList
+  - term: FileMatchJob
+    definition: A file-based match job (matched-subtype segment)
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/FileMatchJob
+  - term: MappingWarning
+    definition: 'Object declared by the contract with fields: source_column, code, warning.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/MappingWarning
+  - term: FileMatchJobList
+    definition: 'Object declared by the contract with fields: jobs, has_more, next_cursor.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/FileMatchJobList
+  - term: ErrorResponse
+    definition: 'Object declared by the contract with fields: error, message, code, request_id, next_step, issues.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/ErrorResponse
+  - term: FilterValidationIssue
+    definition: 'Object declared by the contract with fields: path, code, message, suggestions.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/FilterValidationIssue
+  - term: OAuthErrorResponse
+    definition: RFC 6749 §5.2 / §4.1.2.1 error body — see the OAuthError response component.
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthErrorResponse
+  - term: OAuthTokenRequest
+    definition: Encoded as `application/x-www-form-urlencoded` or `application/json`. `client_id`/`client_secret` may instead ride on HTTP Basic
+      auth, in which case both fields are omitted from the body.
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthTokenRequest
+  - term: OAuthDeviceAuthorizationRequest
+    definition: 'Object declared by the contract with fields: client_id, client_secret, resource, scope.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthDeviceAuthorizationRequest
+  - term: OAuthDeviceAuthorizationResponse
+    definition: 'Object declared by the contract with fields: device_code, user_code, verification_uri, verification_uri_complete, expires_in,
+      interval.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthDeviceAuthorizationResponse
+  - term: OAuthTokenResponse
+    definition: 'Object declared by the contract with fields: access_token, id_token, token_type, expires_in, refresh_token, scope.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthTokenResponse
+  - term: OAuthRevokeRequest
+    definition: 'Object declared by the contract with fields: token, token_type_hint, client_id, client_secret.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthRevokeRequest
+  - term: OidcDiscoveryMetadata
+    definition: 'Object declared by the contract with fields: issuer, authorization_endpoint, token_endpoint, registration_endpoint, revocation_endpoint,
+      userinfo_endpoint, jwks_uri, response_types_supported, subject_types_supported, id_token_signing_alg_values_supported, scopes_supported,
+      claims_supported. (4 more)'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OidcDiscoveryMetadata
+  - term: OidcJwks
+    definition: 'Object declared by the contract with fields: keys.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OidcJwks
+  - term: OidcUserInfo
+    definition: 'Object declared by the contract with fields: sub, email, email_verified.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OidcUserInfo
+  - term: OAuthServerMetadata
+    definition: 'Object declared by the contract with fields: issuer, authorization_response_iss_parameter_supported, authorization_endpoint,
+      device_authorization_endpoint, token_endpoint, revocation_endpoint, registration_endpoint, response_types_supported, grant_types_supported,
+      code_challenge_methods_supported, token_endpoint_auth_methods_supported, client_id_metadata_document_supported. (2 more)'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthServerMetadata
+  - term: OAuthClientRegistrationRequest
+    definition: 'Object declared by the contract with fields: client_name, redirect_uris, scope, token_endpoint_auth_method, grant_types, response_types.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthClientRegistrationRequest
+  - term: OAuthClientRegistrationResponse
+    definition: 'Object declared by the contract with fields: client_id, client_id_issued_at, client_name, redirect_uris, scope, token_endpoint_auth_method,
+      grant_types, response_types.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthClientRegistrationResponse
+  - term: OAuthProtectedResourceMetadata
+    definition: 'Object declared by the contract with fields: resource, authorization_servers, bearer_methods_supported, scopes_supported, resource_documentation,
+      resource_policy_uri, resource_tos_uri.'
+    tags:
+    - Object
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/OAuthProtectedResourceMetadata
+  - term: NotifiableEventType
+    definition: Events that can trigger a webhook delivery. Segment and delivery events support ordinary durable subscriptions and the org's legacy
+      webhook. Partnership events are restricted to the owning OAuth grant and are never sent to an org-wide webhook.
+    tags:
+    - Enumeration
+    source: openapi/infiniteaudience-ai-openapi.yml#/components/schemas/NotifiableEventType

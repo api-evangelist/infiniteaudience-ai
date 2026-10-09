@@ -1,0 +1,367 @@
+name: Infinite Audience Tool Crosswalk
+generated: '2026-10-09'
+method: derived
+source: mcp/infiniteaudience-ai-mcp.yml + openapi/infiniteaudience-ai-openapi.yml
+surfaces:
+  openapi: openapi/infiniteaudience-ai-openapi.yml
+  mcp: https://mcp.infiniteaudience.ai/mcp (OAuth-gated, 401)
+crosswalk:
+- tool: count_segment
+  rest:
+  - countSegment
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: create_audience
+  rest:
+  - createAudience
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: create_campaign
+  rest:
+  - createCampaign
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: create_segment
+  rest:
+  - createSegment
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: delete_audience
+  rest:
+  - deleteAudience
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: deliver_file_match
+  rest:
+  - deliverFileMatch
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: discovery_count
+  rest:
+  - discoveryCount
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: discovery_crosstab
+  rest:
+  - discoveryCrosstab
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: discovery_lookup
+  rest:
+  - discoveryLookup
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: discovery_overlap
+  rest:
+  - discoveryOverlap
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: duplicate_audience
+  rest:
+  - duplicateAudience
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: duplicate_segment
+  rest:
+  - duplicateSegment
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_account_usage
+  rest:
+  - getAccountUsage
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_audience
+  rest:
+  - getAudience
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_audience_demographics
+  rest:
+  - getAudienceDemographics
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_campaign
+  rest:
+  - getCampaign
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_data_release
+  rest:
+  - getDataRelease
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_file_match_job
+  rest:
+  - getFileMatchJob
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_integration_run
+  rest:
+  - getIntegrationRun
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_match_run
+  rest:
+  - getMatchRun
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_segment
+  rest:
+  - getSegment
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_segment_audiences
+  rest:
+  - getSegmentAudiences
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_segment_demographics
+  rest:
+  - getSegmentDemographics
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: get_workflow_status
+  rest:
+  - getWorkflowStatus
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: link_audience_to_campaign
+  rest:
+  - linkAudienceToCampaign
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: list_audiences
+  rest:
+  - listAudiences
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: list_campaigns
+  rest:
+  - listCampaigns
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: list_file_match_deliveries
+  rest:
+  - listFileMatchDeliveries
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: list_file_match_jobs
+  rest:
+  - listFileMatchJobs
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: list_integration_runs
+  rest:
+  - listIntegrationRuns
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: list_match_runs
+  rest:
+  - listMatchRuns
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: list_segments
+  rest:
+  - listSegments
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: quote_delivery
+  rest:
+  - quoteDelivery
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: recount_audience
+  rest:
+  - recountAudience
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: refresh_audience
+  rest:
+  - refreshAudience
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: refresh_segment
+  rest:
+  - refreshSegment
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: unlink_audience_from_campaign
+  rest:
+  - unlinkAudienceFromCampaign
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+- tool: update_campaign
+  rest:
+  - updateCampaign
+  binding: name-match
+  confidence: medium
+  note: live tools/list is OAuth-gated; bound by documented name
+mcp_only:
+- tool: analyze_audience_upload
+  reason: no operationId with the same name; schema gated
+- tool: archive_audience
+  reason: no operationId with the same name; schema gated
+- tool: archive_segment
+  reason: no operationId with the same name; schema gated
+- tool: build_saved_integration_segment
+  reason: no operationId with the same name; schema gated
+- tool: cancel_matched_upload
+  reason: no operationId with the same name; schema gated
+- tool: check_balance
+  reason: no operationId with the same name; schema gated
+- tool: check_topup_status
+  reason: no operationId with the same name; schema gated
+- tool: confirm_column_mappings
+  reason: no operationId with the same name; schema gated
+- tool: deliver_audience
+  reason: no operationId with the same name; schema gated
+- tool: get_delivery
+  reason: no operationId with the same name; schema gated
+- tool: get_field_catalog
+  reason: no operationId with the same name; schema gated
+- tool: get_saved_integration_segment_build
+  reason: no operationId with the same name; schema gated
+- tool: list_all_deliveries
+  reason: no operationId with the same name; schema gated
+- tool: list_deliveries
+  reason: no operationId with the same name; schema gated
+- tool: list_saved_integration_matches
+  reason: no operationId with the same name; schema gated
+- tool: respond_to_workflow_gate
+  reason: no operationId with the same name; schema gated
+rest_only:
+- a2aAgentCard
+- a2aAgentCardLegacyAlias
+- a2aJsonRpc
+- analyzeMatchSegment
+- approveAutomaticPurchasePermission
+- approveMonthlyRenewalPermission
+- archiveCampaign
+- bulkArchiveAudiences
+- bulkArchiveSegments
+- bulkCreateAudiences
+- bulkCreateSegments
+- bulkDeleteSegments
+- bulkDeliverAudiences
+- bulkPatchAudiences
+- bulkPatchSegments
+- cancelAccountContract
+- cancelAudienceMappings
+- cancelSegmentMappings
+- changeAccountContract
+- confirmAudienceMappings
+- confirmSegmentMappings
+- createAccountPaymentMethodPortal
+- createAccountPaymentMethodSetup
+- createAccountTopUp
+- createAudienceDelivery
+- createFileMatch
+- createIntegrationMatchMaterialization
+- createSettingsApiKey
+- createWebhookSubscription
+- deleteConnection
+- deleteSegment
+- exchangeToken
+- getAccountAutoRecharge
+- getAccountBilling
+- getAccountCredits
+- getAccountInvoices
+- getAccountTopUp
+- getAudienceDelivery
+- getAutomaticPurchasePermission
+- getBillingPreferences
+- getCatalogFields
+- getDeliveryDestinations
+- getIntegrationMatchMaterialization
+- getLicenseAlertSettings
+- getMonthlyRenewalPermission
+- getNotificationPreferences
+- getOrgLicenseSummary
+- getSchemaFields
+- getTimezoneSetting
+- getWebhook
+- listAudienceDeliveries
+- listIntegrationMatchCollections
+- listOrgDeliveries
+- listSettingsApiKeys
+- listWebhookSubscriptions
+- matchMicroBatch
+- mcpDelete
+- mcpGet
+- mcpPost
+- oauthA2aProtectedResourceMetadata
+- oauthAuthorize
+- oauthDeviceAuthorization
+- oauthMcpProtectedResourceMetadata
+- oauthMetadata
+- oauthRegisterClient
+- oauthRestProtectedResourceMetadata
+- oauthRevoke
+- oauthToken
+- oidcDiscovery
+- oidcJwks
+- oidcUserInfo
+- oidcUserInfoPost
+- openaiAppsChallenge
+- patchAudience
+- patchSegment
+- previewIntegrationMatchMaterialization
+- putLicenseAlertSettings
+- recheckAccountTopUp
+- reportSegmentUploadFailed
+- resumeWorkflow
+- revertAccountContractCancellation
+- revokeAutomaticPurchasePermission
+- revokeMonthlyRenewalPermission
+- revokeSettingsApiKey
+- revokeWebhookSubscription
+- rotateWebhookSecret
+- updateAccountAutoRecharge
+- updateAudience
+- updateBillingPreferences
+- updateDeliveryDestinations
+- updateNotificationPreferences
+- updateTimezoneSetting
+- updateWebhook
+coverage:
+  tools: 54
+  bound: 38
+  operations: 131

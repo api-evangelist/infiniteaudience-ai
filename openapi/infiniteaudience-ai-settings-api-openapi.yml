@@ -1,0 +1,836 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Settings API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Settings across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Settings
+  description: Self-service API keys and org configuration
+paths:
+  /v1/settings/api-keys:
+    get:
+      summary: List API keys for the caller's org
+      operationId: listSettingsApiKeys
+      description: 'Returns all API keys for the caller''s org, ordered by creation date descending. Key values are never included in list responses.
+
+        Requires ''account'' scope.'
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'List of API keys.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        scopes:
+                          type: array
+                          items:
+                            type: string
+                        active:
+                          type: boolean
+                        created_at:
+                          type: string
+                          format: date-time
+                        last_used:
+                          type:
+                          - string
+                          - 'null'
+                          format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    post:
+      summary: Create a self-service API key
+      operationId: createSettingsApiKey
+      description: 'Any authenticated user can create an API key for their own org. Allowed scopes: discovery, creator, account. The plaintext key is returned once — it is never stored. Requires ''account'' scope.'
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                  description: 'Human-readable label for the key.
+
+                    '
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - discovery
+                    - creator
+                    - account
+                  default:
+                  - discovery
+      responses:
+        '201':
+          description: 'API key created — raw_key shown once only.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  raw_key:
+                    type: string
+                    description: 'Plaintext key — copy immediately, not stored.
+
+                      '
+                  name:
+                    type: string
+                  scopes:
+                    type: array
+                    items:
+                      type: string
+                  created_at:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/settings/api-keys/{id}:
+    delete:
+      summary: Revoke a self-service API key
+      operationId: revokeSettingsApiKey
+      description: Immediately deactivates the key. Key must belong to the caller's org. Org owner/admin can revoke any key in the org; other members can only revoke their own keys (403 SCOPE_REQUIRED otherwise). Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: 'Key revoked.
+
+            '
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/settings/webhook:
+    get:
+      summary: Get the org's webhook configuration
+      operationId: getWebhook
+      description: Returns the org's single, implicit webhook recipient — a URL with no per-event filtering, always subscribed to all four notifiable event types. For per-event-filtered, independently revocable subscriptions (e.g. one per Zap), see the Triggers tag instead. The signing secret is masked to its last 4 characters. Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'Current webhook config (or null if not configured).
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - webhook_config
+                properties:
+                  webhook_config:
+                    type:
+                    - object
+                    - 'null'
+                    required:
+                    - url
+                    - secret
+                    properties:
+                      url:
+                        type:
+                        - string
+                        - 'null'
+                        format: uri
+                      secret:
+                        type:
+                        - string
+                        - 'null'
+                        description: Masked — last 4 chars only, or null if unset
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    put:
+      summary: Configure the org's outbound webhook
+      operationId: updateWebhook
+      description: 'Sets the org-level webhook URL. When configured, the platform fires POST requests to this URL when async operations complete — audience builds (enrichment, propensity, similarity) and file delivery exports. Events fired: segment.ready, segment.failed, delivery.completed, delivery.failed. The signing secret is platform-generated, not a request field — see the Webhooks tag for the envelope shape and signing scheme, and `POST /v1/settings/webhook/secret` to rotate it. Requires ''account'' scope.'
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - url
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: 'HTTPS endpoint URL to receive webhook POST requests.
+
+                    '
+      responses:
+        '200':
+          description: 'Webhook configured.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ok
+                properties:
+                  ok:
+                    type: boolean
+                    enum:
+                    - true
+                  secret:
+                    type: string
+                    description: 'Plaintext signing secret — present ONLY the first time a webhook is configured for this org (the platform just generated it). A later call that only changes the URL omits this field, since the existing secret is preserved unchanged. Store it now; it is never retrievable again — use `POST /v1/settings/webhook/secret` to rotate if lost.
+
+                      '
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/settings/webhook/secret:
+    post:
+      summary: Rotate the org's webhook signing secret
+      operationId: rotateWebhookSecret
+      description: 'Rotates the org-level webhook signing secret and returns the new plaintext once. Requires a webhook URL to already be configured. No dual-secret rollover window is needed: dispatch re-reads the signing secret live on every attempt, so a delivery that fails verification under the old secret simply re-signs with the new one on its next retry and self-heals once your receiver is updated. Requires ''account'' scope.'
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Secret rotated.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - secret
+                properties:
+                  secret:
+                    type: string
+                    description: Plaintext signing secret. Store it now; it is never retrievable again.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/settings/notifications:
+    get:
+      summary: Get the caller's own notification preferences
+      operationId: getNotificationPreferences
+      description: Returns the caller's per-event-type email notification preferences — covering segment/delivery events plus the monthly licence expiry warning. These are user-scoped settings. Unset keys default to `false` (opt-out) — no email is sent for any event type until the user explicitly opts in. Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'Current notification preferences.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferencesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    put:
+      summary: Update the caller's own notification preferences
+      operationId: updateNotificationPreferences
+      description: Updates the caller's own email notification preferences. Only these five event types are settable. Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - notification_preferences
+              properties:
+                notification_preferences:
+                  $ref: '#/components/schemas/NotificationPreferences'
+      responses:
+        '200':
+          description: 'Preferences updated.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ok
+                properties:
+                  ok:
+                    type: boolean
+                    enum:
+                    - true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/settings/delivery-destinations:
+    get:
+      summary: Get delivery destinations
+      operationId: getDeliveryDestinations
+      description: Returns the org's current list of configured delivery destinations. Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'List of configured destinations.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  destinations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeliveryConfig'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    put:
+      summary: Update delivery destinations
+      operationId: updateDeliveryDestinations
+      description: Replaces the org's configured delivery destinations (GCS, LiveRamp, Narrative). Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - destinations
+              properties:
+                destinations:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeliveryConfig'
+      responses:
+        '200':
+          description: 'Destinations updated.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ok
+                properties:
+                  ok:
+                    type: boolean
+                    enum:
+                    - true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/settings/billing-preferences:
+    get:
+      summary: Get billing preferences
+      operationId: getBillingPreferences
+      description: Returns platform-owned billing safeguards. The low-balance threshold applies to native prepay accounts; budget_ceiling applies to native postpay accounts and the designated Shopify payer for all organization usage. Explicit payment-gated top-ups replace the retired local automatic-overage-charge preference. Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'Current billing preferences.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - billing_model
+                - low_balance_threshold
+                - budget_ceiling
+                properties:
+                  billing_model:
+                    type: string
+                    enum:
+                    - prepay
+                    - postpay
+                  low_balance_threshold:
+                    type:
+                    - number
+                    - 'null'
+                    description: Prepay only — always null for postpay.
+                  budget_ceiling:
+                    type:
+                    - number
+                    - 'null'
+                    description: Postpay only — always null for prepay. Null also means unset (unlimited) for postpay.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    put:
+      summary: Update billing preferences
+      operationId: updateBillingPreferences
+      description: Updates whichever platform-owned safeguard applies to your org's own billing_model. Low-balance thresholds are prepay-only; budget ceilings are postpay-only. Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                low_balance_threshold:
+                  type:
+                  - number
+                  - 'null'
+                  minimum: 0
+                  description: Prepay only.
+                budget_ceiling:
+                  type:
+                  - number
+                  - 'null'
+                  minimum: 0
+                  description: 'Postpay only. Optional hard spend ceiling per billing cycle; null removes the ceiling (unlimited).
+
+                    '
+      responses:
+        '200':
+          description: 'Billing preferences updated.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ok
+                properties:
+                  ok:
+                    type: boolean
+                    enum:
+                    - true
+        '400':
+          description: 'Invalid request, or the requested field doesn''t apply to this org''s billing model — code PREFERENCE_NOT_APPLICABLE_POSTPAY (low_balance_threshold on a postpay org) or BUDGET_CEILING_NOT_APPLICABLE_PREPAY (budget_ceiling on a prepay org).
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                preference_not_applicable_postpay:
+                  value:
+                    error: Not applicable
+                    code: PREFERENCE_NOT_APPLICABLE_POSTPAY
+                    message: Low-balance alerts are prepay-only. Use budget_ceiling for postpay billing.
+                budget_ceiling_not_applicable_prepay:
+                  value:
+                    error: Not applicable
+                    code: BUDGET_CEILING_NOT_APPLICABLE_PREPAY
+                    message: Budget ceiling is a postpay-only setting.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/settings/timezone:
+    get:
+      summary: Get display timezone
+      operationId: getTimezoneSetting
+      description: Returns the org's display timezone override — an IANA timezone name (e.g. "America/New_York") applied to every timestamp displayed across the platform for all org members, or null if unset (each viewer falls back to their own browser-detected timezone). Requires 'account' scope.
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'Display timezone setting.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - timezone
+                properties:
+                  timezone:
+                    type:
+                    - string
+                    - 'null'
+                    example: America/New_York
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    put:
+      summary: Set display timezone
+      operationId: updateTimezoneSetting
+      description: 'Sets (or clears, with `timezone: null`) the org''s display timezone override. Must be a valid IANA timezone name or null. Requires ''account'' scope.'
+      tags:
+      - Settings
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - timezone
+              properties:
+                timezone:
+                  type:
+                  - string
+                  - 'null'
+                  example: America/New_York
+      responses:
+        '200':
+          description: 'Display timezone updated.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ok
+                properties:
+                  ok:
+                    type: boolean
+                    enum:
+                    - true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    NotificationPreferences:
+      type: object
+      required: []
+      description: 'Per-event-type email opt-in flags for segment, delivery, and monthly licence expiry events. Connection-bound partnership callbacks are automation-only and are not personal email preferences. Absent/false = opt-out (default) — no email until the user explicitly opts in.
+
+        '
+      properties:
+        segment.ready:
+          type: boolean
+        segment.failed:
+          type: boolean
+        delivery.completed:
+          type: boolean
+        delivery.failed:
+          type: boolean
+        license.expiry.upcoming:
+          type: boolean
+        enrichment.release.available:
+          type: boolean
+      additionalProperties: false
+    DeliveryConfig:
+      type: object
+      description: 'Configured delivery destination. The `type` attribute selects the channel; partner destinations require additional identifying attributes.
+
+        '
+      oneOf:
+      - description: 'Direct file download — exports are returned through signed, time-limited download URLs.
+
+          '
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            const: download
+      - description: 'Push to a LiveRamp seat for identity resolution and onboarding. `liveramp_seat_id` is required for the routing to work.
+
+          '
+        required:
+        - type
+        - liveramp_seat_id
+        properties:
+          type:
+            type: string
+            const: liveramp
+          liveramp_seat_id:
+            type: string
+            description: LiveRamp seat ID that identifies the target onboarding seat.
+      - description: 'Push to a Narrative.io dataset for data marketplace distribution. `narrative_dataset_id` is required for the routing to work.
+
+          '
+        required:
+        - type
+        - narrative_dataset_id
+        properties:
+          type:
+            type: string
+            const: narrative
+          narrative_dataset_id:
+            type: string
+            description: Narrative.io dataset ID that identifies the target dataset.
+    NotificationPreferencesResponse:
+      type: object
+      required:
+      - notification_preferences
+      properties:
+        notification_preferences:
+          type: object
+          required:
+          - segment.ready
+          - segment.failed
+          - delivery.completed
+          - delivery.failed
+          - license.expiry.upcoming
+          - enrichment.release.available
+          properties:
+            segment.ready:
+              type: boolean
+            segment.failed:
+              type: boolean
+            delivery.completed:
+              type: boolean
+            delivery.failed:
+              type: boolean
+            license.expiry.upcoming:
+              type: boolean
+            enrichment.release.available:
+              type: boolean
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  responses:
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

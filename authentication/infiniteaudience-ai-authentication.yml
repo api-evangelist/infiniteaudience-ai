@@ -1,0 +1,14 @@
+generated: '2026-10-09'
+method: derived
+source: openapi/infiniteaudience-ai-openapi.yml
+summary:
+  types:
+  - http
+schemes:
+- name: oidcBearer
+  type: http
+  scheme: bearer
+  bearerFormat: OAuth access token
+  description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+  sources:
+  - openapi/infiniteaudience-ai-openapi.yml

@@ -1,0 +1,487 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/infiniteaudience-ai/main/json-schema/infiniteaudience-ai-segment-object-schema.json",
+  "title": "SegmentObject",
+  "x-generated": "2026-10-09",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/infiniteaudience-ai-openapi.yml#/components/schemas/SegmentObject",
+  "type": "object",
+  "required": [
+    "segment_id",
+    "name",
+    "subtype",
+    "status",
+    "record_count",
+    "expires_at",
+    "integration_collection_provenance",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "data_release": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/EnrichmentRelease"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "integration_collection_provenance": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IntegrationCollectionProvenance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Bounded source summary for a segment built from saved integration matches; null otherwise."
+    },
+    "segment_id": {
+      "type": "string",
+      "description": "Unique segment identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the segment"
+    },
+    "subtype": {
+      "type": "string",
+      "enum": [
+        "filter",
+        "matched",
+        "similarity",
+        "propensity"
+      ],
+      "description": "Segment subtype. Determines which additional attributes are present. filter = saved filter criteria; matched = customer list upload with identity resolution; similarity = lookalike model; propensity = ML scoring model.\n"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "failed",
+        "archived",
+        "expired"
+      ],
+      "description": "pending = computation in progress (matched/similarity/propensity during creation); active = fully ready; failed = workflow or enrichment error (see error_message); archived = hidden from the default segment catalog and new audience compositions, but otherwise fully functional — audiences that already reference an archived segment are unaffected, and it can be restored with PATCH status:active at any time. Distinct from DELETE, which is not reversible and does change referencing audiences' composition; expired = past 90-day TTL.\n"
+    },
+    "record_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Total matched/qualified records. Null while pending or if count has not been run."
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Date-only ISO string (90-day hard expiry from creation) for a persistent segment; a full ISO datetime (short, hour-granular TTL) while `ephemeral` is true.\n"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "org",
+        "private"
+      ],
+      "description": "org (default) — visible to all members of the org. private — visible only to the creating user.\n"
+    },
+    "current_version": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "filter subtype only. Current version counter."
+    },
+    "record_limit": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "filter subtype only — membership cap; null when uncapped (see POST /v1/segments)"
+    },
+    "filter_groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FilterGroup"
+      },
+      "description": "filter subtype only. Complete saved definition; a single AND group represents a flat input."
+    },
+    "file_format": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "csv",
+        "avro",
+        "json",
+        "jsonl"
+      ],
+      "description": "matched subtype only. Input file format."
+    },
+    "compression": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "none",
+        "gzip",
+        null
+      ],
+      "description": "matched subtype only. Input artifact compression, normalized to none by current handlers.\n"
+    },
+    "shard_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1,
+      "maximum": 50,
+      "description": "matched subtype only. Number of same-format input objects, normalized to 1 for unsharded uploads.\n"
+    },
+    "column_mappings": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "matched subtype only. Source column name → standard identity attribute mappings. Populated after the analyze-and-store workflow gate runs.\n"
+    },
+    "mapping_confirmed": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "matched subtype only. True once column mappings have been confirmed."
+    },
+    "input_record_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "matched subtype only. Number of rows in the original upload."
+    },
+    "match_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "matched subtype only. Rows that resolved to a known identity after enrichment."
+    },
+    "match_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "matched subtype only. match_count / input_record_count."
+    },
+    "upload_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "matched subtype only. 30-minute signed upload URL. Present on create and refresh responses only, when shard_count was 1 (the default) — absent when sharded, use upload_urls instead.\n"
+    },
+    "upload_urls": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "matched subtype only. N signed upload URLs (index-ordered). Present on create and refresh responses only when shard_count > 1 was requested — upload_url is absent. Every CSV shard must include the same header row.\n"
+    },
+    "upload_expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "matched subtype only. Expiry of upload_url/upload_urls."
+    },
+    "error_message": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Present when status is failed. Describes the reason for failure.\n"
+    },
+    "source_data_segment_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "matched subtype only. Opaque, read-only reference to stored match results when they are shared or versioned independently from the segment metadata. Null when no separate result reference is needed.\n"
+    },
+    "seed_description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "similarity subtype only. Natural language ICP persona description used as seed."
+    },
+    "seed_segment_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "similarity subtype only. ID of an existing segment used as the lookalike seed."
+    },
+    "workflow_run_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "similarity and propensity subtypes. The workflow run ID. Poll GET /v1/workflows/{workflow_run_id} to monitor progress.\n"
+    },
+    "positive_class_segment_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "propensity subtype only. ID of the segment whose members are the positive training class."
+    },
+    "parent_segment_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the segment this was duplicated or derived from, if applicable."
+    },
+    "derived_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Root ancestor segment ID. Stable across duplicate-of-duplicate chains — always points at the original segment, never an intermediate duplicate.\n"
+    },
+    "parent_segment_version": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Version of the parent segment pinned at duplicate time (current_version for filter parents; snapshot_version otherwise). Null on segments that are not duplicates.\n"
+    },
+    "origin_campaign_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the campaign whose chat session first produced this segment. Metadata only — does not restrict the segment to that campaign. Present only when the segment was created via POST /v1/segments with a campaign_id.\n"
+    },
+    "usage": {
+      "type": "object",
+      "description": "Cross-campaign usage stats. Only present on GET /v1/segments/{id} — not included on list responses. Useful for understanding impact before archiving.\n",
+      "properties": {
+        "audience_count": {
+          "type": "integer",
+          "description": "Number of active audiences that reference this segment."
+        },
+        "campaign_count": {
+          "type": "integer",
+          "description": "Number of distinct campaigns those audiences belong to."
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "EnrichmentRelease": {
+      "type": "object",
+      "required": [
+        "major",
+        "minor"
+      ],
+      "description": "Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.",
+      "properties": {
+        "major": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "Filter": {
+      "type": "object",
+      "description": "A single filter condition for audience discovery or job execution",
+      "required": [
+        "field",
+        "op"
+      ],
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Canonical catalog field_name (e.g. age or state). ZIP5 also accepts zip, zip_code, or postal_code as input aliases; saved responses use zip5."
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "=",
+            "!=",
+            "<",
+            "<=",
+            ">",
+            ">=",
+            "IN",
+            "NOT IN",
+            "BETWEEN",
+            "LIKE",
+            "ARRAY_CONTAINS",
+            "ARRAY_CONTAINS_ANY",
+            "IS NULL",
+            "IS NOT NULL"
+          ],
+          "description": "Comparison operator"
+        },
+        "text_comparison": {
+          "type": "string",
+          "enum": [
+            "exact",
+            "case_insensitive"
+          ],
+          "description": "Optional STRING comparison mode for =, !=, IN, NOT IN, and LIKE, or ARRAY<STRING> membership mode for ARRAY_CONTAINS and ARRAY_CONTAINS_ANY. Defaults to exact. Case-insensitive mode applies Unicode case folding to both the stored value and the supplied value.\n"
+        },
+        "trim_whitespace": {
+          "type": "boolean",
+          "description": "Optionally trim leading and trailing whitespace on both sides of a STRING or ARRAY<STRING> comparison. Defaults to false; independent of text_comparison.\n"
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "description": "The value to match against. For state, a published two-letter code or full State name is accepted and normalized to the code. Scalar types (`string`, `number`, `boolean`) are used for single-value operators (`=`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `ARRAY_CONTAINS`). Pass an **array** for `IN`, `NOT IN`, and `ARRAY_CONTAINS_ANY` — pass the array directly with no comma-encoding. `BETWEEN` takes a two-element array `[low, high]`. Omit entirely for `IS NULL` / `IS NOT NULL` checks.\n"
+        }
+      }
+    },
+    "FilterGroup": {
+      "type": "object",
+      "description": "A group of Filter conditions. All `filters` within a single group are **always ANDed together** — there is no per-group intra-operator. The `combinator` attribute is an **inter-group** operator: it controls how this group is joined to the immediately preceding group in the array. The `combinator` on the first group (index 0) is always ignored.\n\nExample — `(city = \"NYC\" AND state = \"NY\") OR (state = \"CA\")`:\n```json [\n  { \"id\": \"g1\", \"filters\": [{\"field\":\"city\",\"op\":\"=\",\"value\":\"NYC\"},\n                            {\"field\":\"state\",\"op\":\"=\",\"value\":\"NY\"}],\n    \"combinator\": \"AND\" },\n  { \"id\": \"g2\", \"filters\": [{\"field\":\"state\",\"op\":\"=\",\"value\":\"CA\"}],\n    \"combinator\": \"OR\" }\n] ```\nGroup g1's `combinator` is irrelevant (it is the first group). Group g2's `combinator: \"OR\"` means the result is `(g1) OR (g2)`.\n",
+      "required": [
+        "id",
+        "filters",
+        "combinator"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable identifier (UUID or NanoID). Used to track groups across edits.\n"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Filter"
+          },
+          "description": "One or more filter conditions. All conditions in this array are combined with AND. Provide at least one filter per group.\n"
+        },
+        "combinator": {
+          "type": "string",
+          "enum": [
+            "AND",
+            "OR"
+          ],
+          "description": "**Inter-group operator.** Joins this group to the previous group in the array. `AND` narrows the result; `OR` broadens it. Ignored on the first group (index 0) — that group has no predecessor to join.\n"
+        }
+      }
+    },
+    "IntegrationCollectionProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "materialization_id",
+        "collection_id",
+        "mode",
+        "providers",
+        "connection_count",
+        "source_cutoff_at",
+        "source_observations",
+        "unique_identities",
+        "materialized_at"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "const": 1
+        },
+        "materialization_id": {
+          "type": "string",
+          "pattern": "^imm_[a-f0-9]{40}$"
+        },
+        "collection_id": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "new_segment",
+            "add_to_segment"
+          ]
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "connection_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_cutoff_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_observations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unique_identities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "materialized_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

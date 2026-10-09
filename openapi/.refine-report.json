@@ -1,0 +1,57 @@
+{
+  "provider": "infiniteaudience-ai",
+  "sources": [
+    "_original/infiniteaudience-ai-openapi.json",
+    "infiniteaudience-ai-openapi.yml"
+  ],
+  "outputs": [
+    "infiniteaudience-ai-a2a-api-openapi.yml",
+    "infiniteaudience-ai-account-api-openapi.yml",
+    "infiniteaudience-ai-audiences-api-openapi.yml",
+    "infiniteaudience-ai-auth-api-openapi.yml",
+    "infiniteaudience-ai-campaigns-api-openapi.yml",
+    "infiniteaudience-ai-deliveries-api-openapi.yml",
+    "infiniteaudience-ai-discovery-api-openapi.yml",
+    "infiniteaudience-ai-enrichment-api-openapi.yml",
+    "infiniteaudience-ai-integrations-api-openapi.yml",
+    "infiniteaudience-ai-mcp-api-openapi.yml",
+    "infiniteaudience-ai-oauth-api-openapi.yml",
+    "infiniteaudience-ai-partnerships-api-openapi.yml",
+    "infiniteaudience-ai-segments-api-openapi.yml",
+    "infiniteaudience-ai-settings-api-openapi.yml",
+    "infiniteaudience-ai-triggers-api-openapi.yml",
+    "infiniteaudience-ai-webhooks-api-openapi.yml",
+    "infiniteaudience-ai-workflows-api-openapi.yml"
+  ],
+  "archived": [
+    "archived openapi/infiniteaudience-ai-openapi.yml"
+  ],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "infiniteaudience-ai-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "infiniteaudience-ai-openapi.json: declared missing tag: Integrations",
+    "infiniteaudience-ai-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "infiniteaudience-ai-openapi.yml: declared missing tag: Integrations",
+    "tag 'A2A' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Account' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Audiences' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Auth' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Campaigns' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Deliveries' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Discovery' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Enrichment' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Integrations' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'MCP' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'OAuth' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Partnerships' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Segments' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Settings' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Triggers' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Webhooks' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "tag 'Workflows' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
+    "apis.yml register: written (+17 apis, 18 total)"
+  ],
+  "skipped": []
+}

@@ -1,0 +1,2110 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Account API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Account across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Account
+  description: Balance, top-up, and subscription management
+paths:
+  /v1/account/licenses:
+    get:
+      summary: Get organization licence reporting
+      operationId: getOrgLicenseSummary
+      description: 'Returns an organization-wide canonical licence snapshot: active and lapsed identities, monthly purchased terms, and upcoming expiries. Historic purchases include later-suppressed identities; active/lapsed/expiry counts exclude them. The response reports its timestamp and possible projection lag. It is not audience/store overlap, financial authority, or permission to purchase. This account reporting endpoint is REST-only; it does not launch work. Requires ''account'' scope.'
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Snapshot, explicitly stale snapshot, or unavailable counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgLicenseSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/license-alerts:
+    get:
+      summary: Get organization licence expiry alert threshold
+      operationId: getLicenseAlertSettings
+      description: Returns the organization threshold for the monthly next-calendar-month expiry assessment. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Current threshold
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseAlertSettings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Set organization licence expiry alert threshold
+      operationId: putLicenseAlertSettings
+      description: Owner or admin only. Zero disables monthly alerts. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicenseAlertSettings'
+      responses:
+        '200':
+          description: Updated threshold
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseAlertSettings'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/billing:
+    get:
+      summary: Get native billing or setup readiness
+      operationId: getAccountBilling
+      description: Returns the native contract, attributed financial projection and collection readiness, independently of connected Shopify stores. Without a native route, returns native_setup_required without creating an account or contract. Shopify usage stays in the separate store reporting surface. Recovery projections remain readable while frozen. A parent-billed native child never receives the agency's pooled balance. Requires 'account-read' scope. First-party 'account' scope also suffices.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Provider-neutral billing projection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountBillingResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/auto-recharge:
+    get:
+      summary: Get prepaid automatic-recharge state
+      operationId: getAccountAutoRecharge
+      description: Returns the prepaid balance threshold configuration and a verified Stripe hosted-invoice URL only when customer action is required. Self-billed prepaid org owners only. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Automatic-recharge state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountAutoRechargeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    put:
+      summary: Configure prepaid automatic recharge
+      operationId: updateAccountAutoRecharge
+      description: Persists recoverable intent, updates the active billing contract, and returns only a freshly re-read threshold projection. Enabling requires a ready Stripe payment method and billing address. Self-billed prepaid org owners only. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoRechargeUpdateRequest'
+      responses:
+        '200':
+          description: Updated automatic-recharge state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountAutoRechargeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/credits:
+    get:
+      summary: List active paid commits and promotional credits
+      operationId: getAccountCredits
+      description: Reads active balance detail, including applicability and expiration. Parent-billed children cannot inspect their agency's pooled balances. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Active balance detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCreditsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/invoices:
+    get:
+      summary: List invoices with hosted collection links
+      operationId: getAccountInvoices
+      description: Returns provider-rated commercial invoices and explicitly labelled administrator-created exceptional invoices, with collection status and hosted links. Parent-billed children cannot inspect agency invoices. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Invoice history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountInvoicesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/payment-method/setup:
+    post:
+      summary: Start Stripe payment-method onboarding for the billing account
+      operationId: createAccountPaymentMethodSetup
+      description: Creates a Stripe Checkout setup session for the Stripe customer linked to the source-routed billing account. It does not create or mutate a Stripe Subscription. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - success_url
+              - cancel_url
+              properties:
+                success_url:
+                  type: string
+                  format: uri
+                  maxLength: 2048
+                cancel_url:
+                  type: string
+                  format: uri
+                  maxLength: 2048
+                tier:
+                  type: string
+                  enum:
+                  - paygo
+                  - pilot
+                  - growth
+                  - scale
+                  - enterprise
+                cadence:
+                  type: string
+                  enum:
+                  - monthly
+                  - annual
+                commitment_term_months:
+                  type: integer
+                  enum:
+                  - 0
+                  - 12
+                  - 24
+                  - 36
+                custom_commitment_amount_cents:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Hosted setup session
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - setup_url
+                - session_id
+                - billing_status
+                properties:
+                  setup_url:
+                    type: string
+                    format: uri
+                  session_id:
+                    type: string
+                  billing_status:
+                    type: string
+                    const: awaiting_payment_method
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/topups:
+    post:
+      summary: Begin an idempotent credit top-up
+      operationId: createAccountTopUp
+      description: Creates a payment-gated prepaid balance purchase. The durable attempt is keyed by request_id; promotional credit is added only after Stripe payment is verified. Purchased and promotional value expire after 12 months. Prepay, self-billed org owners only. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - request_id
+              - amount_cents
+              properties:
+                request_id:
+                  type: string
+                  minLength: 8
+                  maxLength: 160
+                amount_cents:
+                  type: integer
+                  minimum: 10000
+                  maximum: 5000000
+      responses:
+        '202':
+          description: Durable top-up attempt accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - payment_attempt_id
+                - request_id
+                - status
+                - amount_cents
+                - bonus_cents
+                - principal_credit_status
+                - bonus_credit_status
+                - credit_expires_after_months
+                properties:
+                  payment_attempt_id:
+                    type: string
+                  request_id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                    - pending
+                    - action_required
+                    - paid
+                    - failed
+                  amount_cents:
+                    type: integer
+                    minimum: 10000
+                  bonus_cents:
+                    type: integer
+                    minimum: 0
+                  principal_credit_status:
+                    $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+                  bonus_credit_status:
+                    $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+                  credit_expires_after_months:
+                    type: integer
+                    const: 12
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/topups/{requestId}:
+    get:
+      summary: Get durable top-up status
+      operationId: getAccountTopUp
+      description: Returns verified durable state for one top-up request. action_url is a Stripe hosted invoice only when customer action is required. Requires 'account-read' scope. First-party 'account' scope also suffices.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: path
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Top-up status
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - payment_attempt_id
+                - kind
+                - request_id
+                - status
+                - amount_cents
+                - bonus_cents
+                - principal_credit_status
+                - bonus_credit_status
+                - action_url
+                - paid_at
+                - updated_at
+                - last_error_code
+                - credit_error_code
+                properties:
+                  payment_attempt_id:
+                    type: string
+                  kind:
+                    type: string
+                    const: topup
+                  request_id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                    - pending
+                    - action_required
+                    - paid
+                    - failed
+                  amount_cents:
+                    type: integer
+                  bonus_cents:
+                    type: integer
+                  principal_credit_status:
+                    $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+                  bonus_credit_status:
+                    $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+                  action_url:
+                    type:
+                    - string
+                    - 'null'
+                    format: uri
+                  paid_at:
+                    type:
+                    - string
+                    - 'null'
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+                  last_error_code:
+                    type:
+                    - string
+                    - 'null'
+                  credit_error_code:
+                    type:
+                    - string
+                    - 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/topups/{requestId}/recheck:
+    post:
+      summary: Recheck a durable top-up against providers
+      operationId: recheckAccountTopUp
+      description: Re-fetches the original Metronome and Stripe objects and retries only a missing credit or promotional-credit component. It never creates or replays a charge. Self-billed org owners only. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: path
+        name: requestId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Rechecked top-up status
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - payment_attempt_id
+                - kind
+                - request_id
+                - status
+                - amount_cents
+                - bonus_cents
+                - principal_credit_status
+                - bonus_credit_status
+                - action_url
+                - paid_at
+                - updated_at
+                - last_error_code
+                - credit_error_code
+                properties:
+                  payment_attempt_id:
+                    type: string
+                  kind:
+                    type: string
+                    const: topup
+                  request_id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                    - pending
+                    - action_required
+                    - paid
+                    - failed
+                  amount_cents:
+                    type: integer
+                  bonus_cents:
+                    type: integer
+                  principal_credit_status:
+                    $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+                  bonus_credit_status:
+                    $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+                  action_url:
+                    type:
+                    - string
+                    - 'null'
+                    format: uri
+                  paid_at:
+                    type:
+                    - string
+                    - 'null'
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+                  last_error_code:
+                    type:
+                    - string
+                    - 'null'
+                  credit_error_code:
+                    type:
+                    - string
+                    - 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/payment-method/portal:
+    post:
+      summary: Open Stripe payment-method and invoice-history settings
+      operationId: createAccountPaymentMethodPortal
+      description: Creates a Stripe Billing Portal session limited to payment-method management and Stripe collection history. Commercial terms remain authoritative in the Infinite Audience billing contract and cannot be changed in the portal. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - return_url
+              properties:
+                return_url:
+                  type: string
+                  maxLength: 2048
+      responses:
+        '200':
+          description: Stripe portal session
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - portal_url
+                properties:
+                  portal_url:
+                    type: string
+                    format: uri
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/contract/change:
+    post:
+      summary: Schedule a billing contract change
+      operationId: changeAccountContract
+      description: Schedules the selected tier and cadence at the next verified contract billing boundary. Enterprise custom terms remain platform-admin managed. Parent-billed children cannot change the agency contract. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - request_id
+              - tier
+              properties:
+                request_id:
+                  type: string
+                  minLength: 8
+                  maxLength: 160
+                tier:
+                  type: string
+                  enum:
+                  - pilot
+                  - growth
+                  - scale
+                cadence:
+                  type: string
+                  enum:
+                  - monthly
+                  - annual
+      responses:
+        '202':
+          description: Contract replacement scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - status
+                - effective_at
+                - scheduled_change
+                properties:
+                  status:
+                    type: string
+                    const: scheduled
+                  effective_at:
+                    type: string
+                    format: date-time
+                  scheduled_change:
+                    $ref: '#/components/schemas/BillingScheduledContractChange'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/contract/cancel:
+    post:
+      summary: Schedule contract cancellation
+      operationId: cancelAccountContract
+      description: Schedules cancellation at the later of the current billing-period end or contractual commitment end. An organisation owner is required. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - request_id
+              properties:
+                request_id:
+                  type: string
+                  minLength: 8
+                  maxLength: 160
+      responses:
+        '202':
+          description: Cancellation scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - status
+                - effective_at
+                - scheduled_change
+                properties:
+                  status:
+                    type: string
+                    const: scheduled
+                  effective_at:
+                    type: string
+                    format: date-time
+                  scheduled_change:
+                    $ref: '#/components/schemas/BillingScheduledContractChange'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/contract/cancellation/revert:
+    post:
+      summary: Revert a scheduled cancellation
+      operationId: revertAccountContractCancellation
+      description: Restores the billing contract end date before cancellation becomes effective. An organisation owner is required. Requires 'account' scope.
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - request_id
+              properties:
+                request_id:
+                  type: string
+                  minLength: 8
+                  maxLength: 160
+      responses:
+        '200':
+          description: Cancellation reverted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - status
+                - scheduled_change
+                properties:
+                  status:
+                    type: string
+                    const: reverted
+                  scheduled_change:
+                    type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/account/usage:
+    get:
+      summary: Get aggregated usage metrics
+      operationId: getAccountUsage
+      description: 'Returns aggregated usage metrics for your organisation: segment and audience counts, deliveries created in the last 30 days, rated current-period spend, provider projection metadata, and compute ceiling usage as a percentage. Billing-model-agnostic — same shape for prepay and postpay/agency orgs.
+
+        Requires ''account-read'' scope. First-party ''account'' scope also suffices.'
+      tags:
+      - Account
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'Usage metrics.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - segment_count
+                - audience_count
+                - deliveries_30d
+                - spend_30d_cents
+                - compute_usage_pct
+                properties:
+                  segment_count:
+                    type: integer
+                  audience_count:
+                    type: integer
+                  deliveries_30d:
+                    type: integer
+                    description: Deliveries created in the last 30 days.
+                  spend_30d_cents:
+                    type: integer
+                  compute_usage_pct:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    BillingReadinessProjection:
+      type: object
+      required:
+      - requires_card
+      - has_default_card
+      - collection_method_ok
+      - payment_collection_ready
+      - status
+      properties:
+        requires_card:
+          type: boolean
+        has_default_card:
+          type: boolean
+        collection_method_ok:
+          type: boolean
+        payment_collection_ready:
+          type: boolean
+        status:
+          type: string
+          enum:
+          - ok
+          - card_missing
+          - collection_method_mismatch
+          - not_applicable
+    AutoRechargeUpdateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - request_id
+      - enabled
+      - threshold_cents
+      - recharge_to_cents
+      properties:
+        request_id:
+          type: string
+          minLength: 8
+          maxLength: 160
+        enabled:
+          type: boolean
+        threshold_cents:
+          type: integer
+          minimum: 500
+          maximum: 4999000
+        recharge_to_cents:
+          type: integer
+          minimum: 1500
+          maximum: 5000000
+    BillingCollectionProjection:
+      type: object
+      required:
+      - status
+      - stripe_invoice_id
+      - failure_started_at
+      - grace_period_ends_at
+      - updated_at
+      properties:
+        status:
+          type: string
+          enum:
+          - current
+          - past_due
+          - uncollectible
+        stripe_invoice_id:
+          type:
+          - string
+          - 'null'
+        failure_started_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        grace_period_ends_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    AccountPaymentReceipt:
+      type: object
+      required:
+      - payment_attempt_id
+      - kind
+      - request_id
+      - status
+      - amount_cents
+      - bonus_cents
+      - principal_credit_status
+      - bonus_credit_status
+      - paid_at
+      - updated_at
+      - last_error_code
+      - credit_error_code
+      properties:
+        payment_attempt_id:
+          type: string
+        kind:
+          type: string
+          enum:
+          - topup
+          - auto_recharge
+        request_id:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending
+          - action_required
+          - paid
+          - failed
+        amount_cents:
+          type: integer
+          minimum: 0
+        bonus_cents:
+          type: integer
+          minimum: 0
+        principal_credit_status:
+          $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+        bonus_credit_status:
+          $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+        paid_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        last_error_code:
+          type:
+          - string
+          - 'null'
+        credit_error_code:
+          type:
+          - string
+          - 'null'
+    BillingUsageRateProjection:
+      type: object
+      required:
+      - match
+      - audience_delivery
+      - destination
+      - enrichment_field
+      properties:
+        match:
+          type: object
+          required:
+          - microbatch
+          - file
+          properties:
+            microbatch:
+              type: integer
+              minimum: 0
+            file:
+              type: integer
+              minimum: 0
+        audience_delivery:
+          type: object
+          required:
+          - filter
+          - matched
+          - similarity
+          - propensity
+          properties:
+            filter:
+              type: integer
+              minimum: 0
+            matched:
+              type: integer
+              minimum: 0
+            similarity:
+              type: integer
+              minimum: 0
+            propensity:
+              type: integer
+              minimum: 0
+        destination:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        enrichment_field:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+    NativeAccountBillingResponse:
+      type: object
+      required:
+      - billing
+      - billing_mode
+      - parent_org
+      - billing_readiness
+      - operational
+      - projection
+      - latest_payment
+      properties:
+        billing:
+          $ref: '#/components/schemas/BillingSnapshot'
+        billing_mode:
+          type: string
+          enum:
+          - org_billed
+          - parent_billed
+        parent_org:
+          oneOf:
+          - type: object
+            required:
+            - id
+            - name
+            properties:
+              id:
+                type:
+                - string
+                - 'null'
+              name:
+                type:
+                - string
+                - 'null'
+          - type: 'null'
+        billing_readiness:
+          $ref: '#/components/schemas/BillingReadinessProjection'
+        operational:
+          type: object
+          required:
+          - frozen
+          - compute_usage_pct
+          properties:
+            frozen:
+              type: boolean
+            compute_usage_pct:
+              type: number
+              minimum: 0
+        projection:
+          type: object
+          required:
+          - projected_at
+          - provider_version
+          - stale
+          - refresh_error_code
+          properties:
+            projected_at:
+              type:
+              - string
+              - 'null'
+              format: date-time
+            provider_version:
+              type:
+              - string
+              - 'null'
+            stale:
+              type: boolean
+            refresh_error_code:
+              type:
+              - string
+              - 'null'
+        latest_payment:
+          oneOf:
+          - $ref: '#/components/schemas/AccountPaymentReceipt'
+          - type: 'null'
+    NativeBillingSetupResponse:
+      type: object
+      required:
+      - billing_mode
+      - billing
+      - operational
+      description: Native billing has not been configured. Viewing this response creates no account or contract. Shopify stores retain independent billing.
+      properties:
+        billing_mode:
+          type: string
+          const: native_setup_required
+        billing:
+          type: 'null'
+        operational:
+          type: object
+          required:
+          - frozen
+          - compute_usage_pct
+          properties:
+            frozen:
+              type: boolean
+            compute_usage_pct:
+              type: number
+    BillingCreditBalance:
+      type: object
+      required:
+      - id
+      - kind
+      - name
+      - product_id
+      - product_name
+      - remaining_cents
+      - applicable_product_ids
+      - applicable_product_tags
+      - source
+      - access_schedule
+      - next_expiry_at
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+          - paid_commit
+          - promotional_credit
+        name:
+          type: string
+        product_id:
+          type: string
+        product_name:
+          type: string
+        remaining_cents:
+          type: integer
+          minimum: 0
+        applicable_product_ids:
+          type: array
+          items:
+            type: string
+        applicable_product_tags:
+          type: array
+          items:
+            type: string
+        source:
+          type:
+          - string
+          - 'null'
+        access_schedule:
+          type: array
+          items:
+            type: object
+            required:
+            - amount_cents
+            - starting_at
+            - ending_before
+            - active
+            properties:
+              amount_cents:
+                type: integer
+                minimum: 0
+              starting_at:
+                type: string
+                format: date-time
+              ending_before:
+                type: string
+                format: date-time
+              active:
+                type: boolean
+        next_expiry_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    BillingCreditDeliveryStatus:
+      type: string
+      enum:
+      - awaiting_payment
+      - updating
+      - available
+      - needs_attention
+      - not_applicable
+    OrgLicenseSummary:
+      type: object
+      required:
+      - scope
+      - status
+      - as_of
+      - projection_lag_possible
+      - active_identities
+      - lapsed_identities
+      - purchased_terms_last_12_months
+      - expiring_active_identities_next_30_days
+      - purchases_by_month
+      - expiries_by_month
+      properties:
+        scope:
+          type: string
+          const: organization
+        status:
+          type: string
+          enum:
+          - snapshot
+          - stale
+          - unavailable
+        as_of:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        projection_lag_possible:
+          type: boolean
+          const: true
+        active_identities:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        lapsed_identities:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        purchased_terms_last_12_months:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        expiring_active_identities_next_30_days:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          description: Currently active identities whose latest licence term expires within 30 days of as_of.
+        purchases_by_month:
+          type: array
+          items:
+            type: object
+            required:
+            - month
+            - terms
+            properties:
+              month:
+                type: string
+                pattern: ^\d{4}-\d{2}$
+              terms:
+                type: integer
+                minimum: 0
+        expiries_by_month:
+          type: array
+          items:
+            type: object
+            required:
+            - month
+            - identities
+            properties:
+              month:
+                type: string
+                pattern: ^\d{4}-\d{2}$
+              identities:
+                type: integer
+                minimum: 0
+    BillingAutoRechargeProjection:
+      type: object
+      required:
+      - configured
+      - enabled
+      - threshold_cents
+      - recharge_to_cents
+      - configuration_request_id
+      - payment_status
+      - last_payment_attempt_id
+      - stripe_invoice_id
+      - stripe_payment_intent_id
+      - last_error_code
+      - updated_at
+      - pending_change
+      properties:
+        configured:
+          type: boolean
+        enabled:
+          type: boolean
+        threshold_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 500
+        recharge_to_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 1500
+          maximum: 5000000
+        configuration_request_id:
+          type:
+          - string
+          - 'null'
+        payment_status:
+          type: string
+          enum:
+          - none
+          - pending
+          - action_required
+          - paid
+          - failed
+        last_payment_attempt_id:
+          type:
+          - string
+          - 'null'
+        stripe_invoice_id:
+          type:
+          - string
+          - 'null'
+        stripe_payment_intent_id:
+          type:
+          - string
+          - 'null'
+        last_error_code:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        pending_change:
+          oneOf:
+          - type: object
+            additionalProperties: true
+            required:
+            - request_id
+            - enabled
+            - threshold_cents
+            - recharge_to_cents
+            - status
+            - last_error_code
+            - created_at
+            - updated_at
+            properties:
+              request_id:
+                type: string
+              enabled:
+                type: boolean
+              threshold_cents:
+                type: integer
+                minimum: 500
+              recharge_to_cents:
+                type: integer
+                minimum: 1500
+                maximum: 5000000
+              status:
+                type: string
+                enum:
+                - provisioning
+                - failed
+              last_error_code:
+                type:
+                - string
+                - 'null'
+              created_at:
+                type: string
+                format: date-time
+              updated_at:
+                type: string
+                format: date-time
+          - type: 'null'
+    BillingScheduledContractChange:
+      type: object
+      required:
+      - kind
+      - request_id
+      - status
+      - effective_at
+      - previous_contract_end_at
+      - successor_contract_id
+      - terms
+      - error_code
+      - created_at
+      - updated_at
+      properties:
+        kind:
+          type: string
+          enum:
+          - replacement
+          - renewal
+          - cancellation
+        request_id:
+          type: string
+        status:
+          type: string
+          enum:
+          - provisioning
+          - scheduled
+          - failed
+        effective_at:
+          type: string
+          format: date-time
+        previous_contract_end_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        successor_contract_id:
+          type:
+          - string
+          - 'null'
+        terms:
+          oneOf:
+          - type: object
+            additionalProperties: false
+            required:
+            - tier
+            - cadence
+            - commitment_term_months
+            - commitment_amount_cents
+            - usage_discount_bps
+            - usage_rates
+            properties:
+              tier:
+                type: string
+                enum:
+                - paygo
+                - pilot
+                - growth
+                - scale
+                - enterprise
+              cadence:
+                type: string
+                enum:
+                - monthly
+                - annual
+              commitment_term_months:
+                type: integer
+                enum:
+                - 0
+                - 12
+                - 24
+                - 36
+              commitment_amount_cents:
+                type: integer
+                minimum: 0
+              usage_discount_bps:
+                type: integer
+                minimum: 0
+                maximum: 10000
+              usage_rates:
+                $ref: '#/components/schemas/BillingUsageRateProjection'
+          - type: 'null'
+        error_code:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    BillingMoneyProjection:
+      type: object
+      required:
+      - available_balance_cents
+      - committed_balance_cents
+      - promotional_balance_cents
+      - current_period_spend_cents
+      - current_invoice_total_cents
+      - next_credit_expiry_at
+      - active_reserved_cents
+      - accepted_pending_cents
+      - effective_available_cents
+      properties:
+        available_balance_cents:
+          type:
+          - integer
+          - 'null'
+        committed_balance_cents:
+          type:
+          - integer
+          - 'null'
+        promotional_balance_cents:
+          type:
+          - integer
+          - 'null'
+        current_period_spend_cents:
+          type: integer
+          minimum: 0
+        current_invoice_total_cents:
+          type:
+          - integer
+          - 'null'
+        next_credit_expiry_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        active_reserved_cents:
+          type: integer
+          minimum: 0
+        accepted_pending_cents:
+          type: integer
+          minimum: 0
+        effective_available_cents:
+          type:
+          - integer
+          - 'null'
+    AccountCreditsResponse:
+      type: object
+      required:
+      - billing_account_id
+      - balances
+      properties:
+        billing_account_id:
+          type: string
+        balances:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingCreditBalance'
+    LicenseAlertSettings:
+      type: object
+      required:
+      - threshold_percent
+      properties:
+        threshold_percent:
+          type: integer
+          enum:
+          - 0
+          - 5
+          - 10
+          - 25
+          description: Percentage of active identities scheduled to expire in the following UTC calendar month that triggers one aggregate monthly alert. Default 10; zero disables alerts.
+    BillingContractProjection:
+      type: object
+      required:
+      - tier
+      - cadence
+      - commitment_term_months
+      - commitment_amount_cents
+      - usage_discount_bps
+      - contract_start_at
+      - contract_end_at
+      - current_period_start_at
+      - current_period_end_at
+      - pending_change_at
+      - scheduled_change
+      - usage_rates
+      properties:
+        tier:
+          type:
+          - string
+          - 'null'
+          enum:
+          - paygo
+          - pilot
+          - growth
+          - scale
+          - enterprise
+          - null
+        cadence:
+          type:
+          - string
+          - 'null'
+          enum:
+          - monthly
+          - annual
+          - null
+        commitment_term_months:
+          type: integer
+          enum:
+          - 0
+          - 12
+          - 24
+          - 36
+        commitment_amount_cents:
+          type: integer
+          minimum: 0
+        usage_discount_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          description: Contract discount applied to usage rates only; commitment charges and minimums are unchanged.
+        contract_start_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        contract_end_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        current_period_start_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        current_period_end_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        pending_change_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        scheduled_change:
+          oneOf:
+          - $ref: '#/components/schemas/BillingScheduledContractChange'
+          - type: 'null'
+        usage_rates:
+          oneOf:
+          - $ref: '#/components/schemas/BillingUsageRateProjection'
+          - type: 'null'
+    AccountInvoicesResponse:
+      type: object
+      required:
+      - billing_account_id
+      - authority
+      - invoices
+      properties:
+        billing_account_id:
+          type: string
+        authority:
+          type: string
+          enum:
+          - commercial
+          - mixed
+        invoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingInvoice'
+    BillingInvoice:
+      type: object
+      required:
+      - id
+      - status
+      - type
+      - total_cents
+      - currency
+      - period_start_at
+      - period_end_at
+      - issued_at
+      - line_items
+      - collection
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+        total_cents:
+          type: integer
+        currency:
+          type: string
+          const: usd
+        period_start_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        period_end_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        issued_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        line_items:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            - type
+            - total_cents
+            - quantity
+            - product_id
+            - pricing_dimensions
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              total_cents:
+                type: integer
+              quantity:
+                type:
+                - number
+                - 'null'
+              product_id:
+                type:
+                - string
+                - 'null'
+              pricing_dimensions:
+                type: object
+                additionalProperties:
+                  type: string
+        collection:
+          oneOf:
+          - type: object
+            required:
+            - provider
+            - invoice_id
+            - status
+            - hosted_invoice_url
+            - invoice_pdf
+            - delivery_error
+            properties:
+              provider:
+                type: string
+                const: stripe
+              invoice_id:
+                type: string
+              status:
+                type:
+                - string
+                - 'null'
+              hosted_invoice_url:
+                type:
+                - string
+                - 'null'
+                format: uri
+              invoice_pdf:
+                type:
+                - string
+                - 'null'
+                format: uri
+              delivery_error:
+                type:
+                - string
+                - 'null'
+          - type: 'null'
+    BillingSnapshot:
+      type: object
+      required:
+      - billing_account_id
+      - owner_type
+      - owner_id
+      - source
+      - consumer_org_id
+      - billing_authority
+      - agency_id
+      - consumer_postpay_ceiling_cents
+      - consumer_money
+      - billing_model
+      - collection_method
+      - currency
+      - status
+      - contract
+      - money
+      - payment_method_ready
+      - auto_recharge
+      - latest_invoice
+      - collection
+      - projection
+      properties:
+        billing_account_id:
+          type: string
+        owner_type:
+          type: string
+          enum:
+          - org
+          - agency
+        owner_id:
+          type: string
+        source:
+          type: string
+        consumer_org_id:
+          type: string
+        billing_authority:
+          type: string
+          enum:
+          - self
+          - agency
+        agency_id:
+          type:
+          - string
+          - 'null'
+        consumer_postpay_ceiling_cents:
+          type:
+          - integer
+          - 'null'
+        consumer_money:
+          type: object
+          required:
+          - current_period_spend_cents
+          - active_reserved_cents
+          - accepted_pending_cents
+          - projected_at
+          properties:
+            current_period_spend_cents:
+              type: integer
+              minimum: 0
+            active_reserved_cents:
+              type: integer
+              minimum: 0
+            accepted_pending_cents:
+              type: integer
+              minimum: 0
+            projected_at:
+              type:
+              - string
+              - 'null'
+              format: date-time
+        billing_model:
+          type: string
+          enum:
+          - prepay
+          - postpay
+        collection_method:
+          type: string
+          enum:
+          - charge_automatically
+          - send_invoice
+        currency:
+          type: string
+          const: usd
+        status:
+          type: string
+          enum:
+          - pending
+          - active
+          - payment_action_required
+          - past_due
+          - suspended
+          - canceled
+          - provisioning_failed
+        contract:
+          $ref: '#/components/schemas/BillingContractProjection'
+        money:
+          $ref: '#/components/schemas/BillingMoneyProjection'
+        payment_method_ready:
+          type: boolean
+        auto_recharge:
+          $ref: '#/components/schemas/BillingAutoRechargeProjection'
+        latest_invoice:
+          type: object
+          required:
+          - id
+          - status
+          properties:
+            id:
+              type:
+              - string
+              - 'null'
+            status:
+              type:
+              - string
+              - 'null'
+        collection:
+          $ref: '#/components/schemas/BillingCollectionProjection'
+        projection:
+          type: object
+          required:
+          - projected_at
+          - provider_version
+          properties:
+            projected_at:
+              type:
+              - string
+              - 'null'
+              format: date-time
+            provider_version:
+              type:
+              - string
+              - 'null'
+    AccountAutoRechargeResponse:
+      type: object
+      required:
+      - billing_account_id
+      - auto_recharge
+      - action_url
+      properties:
+        billing_account_id:
+          type: string
+        auto_recharge:
+          $ref: '#/components/schemas/BillingAutoRechargeProjection'
+        action_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+    AccountBillingResponse:
+      oneOf:
+      - $ref: '#/components/schemas/NativeAccountBillingResponse'
+      - $ref: '#/components/schemas/NativeBillingSetupResponse'
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  responses:
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    Conflict:
+      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: 'Request is structurally valid but the resource is in a state that prevents the operation (e.g. expired, pending, or not yet uploaded). See `error` and `code` for the specific reason.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            audience_expired:
+              value:
+                error: Audience expired
+                code: AUDIENCE_EXPIRED
+                message: This audience version expired. Run a refresh to create a new deliverable version.
+            audience_pending:
+              value:
+                error: Audience not ready
+                code: AUDIENCE_PENDING
+                message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
+    BadGateway:
+      description: An upstream billing provider rejected or could not complete the operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

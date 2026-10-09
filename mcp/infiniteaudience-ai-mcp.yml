@@ -1,0 +1,130 @@
+name: Infinite Audience MCP Server
+generated: '2026-10-09'
+method: searched
+source: https://docs.infiniteaudience.ai/agents/mcp/
+status: official
+url: https://mcp.infiniteaudience.ai/mcp
+deployment:
+  mode: remote
+  endpoint: https://mcp.infiniteaudience.ai/mcp
+  auth: oauth
+  verified: probed
+probe:
+  url: https://mcp.infiniteaudience.ai/mcp
+  method: tools/list
+  status: 401
+  www_authenticate: Bearer resource_metadata="https://mcp.infiniteaudience.ai/.well-known/oauth-protected-resource/mcp",
+    error="invalid_token"
+  also: https://api.infiniteaudience.ai/mcp answered 401 (OpenAPI documents POST /mcp
+    on the API host)
+note: Tool names are those the provider documents on its MCP page; the live tools/list
+  is OAuth-gated, so input schemas were not observed.
+tools:
+- name: analyze_audience_upload
+  evidence: documented
+- name: archive_audience
+  evidence: documented
+- name: archive_segment
+  evidence: documented
+- name: build_saved_integration_segment
+  evidence: documented
+- name: cancel_matched_upload
+  evidence: documented
+- name: check_balance
+  evidence: documented
+- name: check_topup_status
+  evidence: documented
+- name: confirm_column_mappings
+  evidence: documented
+- name: count_segment
+  evidence: documented
+- name: create_audience
+  evidence: documented
+- name: create_campaign
+  evidence: documented
+- name: create_segment
+  evidence: documented
+- name: delete_audience
+  evidence: documented
+- name: deliver_audience
+  evidence: documented
+- name: deliver_file_match
+  evidence: documented
+- name: discovery_count
+  evidence: documented
+- name: discovery_crosstab
+  evidence: documented
+- name: discovery_lookup
+  evidence: documented
+- name: discovery_overlap
+  evidence: documented
+- name: duplicate_audience
+  evidence: documented
+- name: duplicate_segment
+  evidence: documented
+- name: get_account_usage
+  evidence: documented
+- name: get_audience
+  evidence: documented
+- name: get_audience_demographics
+  evidence: documented
+- name: get_campaign
+  evidence: documented
+- name: get_data_release
+  evidence: documented
+- name: get_delivery
+  evidence: documented
+- name: get_field_catalog
+  evidence: documented
+- name: get_file_match_job
+  evidence: documented
+- name: get_integration_run
+  evidence: documented
+- name: get_match_run
+  evidence: documented
+- name: get_saved_integration_segment_build
+  evidence: documented
+- name: get_segment
+  evidence: documented
+- name: get_segment_audiences
+  evidence: documented
+- name: get_segment_demographics
+  evidence: documented
+- name: get_workflow_status
+  evidence: documented
+- name: link_audience_to_campaign
+  evidence: documented
+- name: list_all_deliveries
+  evidence: documented
+- name: list_audiences
+  evidence: documented
+- name: list_campaigns
+  evidence: documented
+- name: list_deliveries
+  evidence: documented
+- name: list_file_match_deliveries
+  evidence: documented
+- name: list_file_match_jobs
+  evidence: documented
+- name: list_integration_runs
+  evidence: documented
+- name: list_match_runs
+  evidence: documented
+- name: list_saved_integration_matches
+  evidence: documented
+- name: list_segments
+  evidence: documented
+- name: quote_delivery
+  evidence: documented
+- name: recount_audience
+  evidence: documented
+- name: refresh_audience
+  evidence: documented
+- name: refresh_segment
+  evidence: documented
+- name: respond_to_workflow_gate
+  evidence: documented
+- name: unlink_audience_from_campaign
+  evidence: documented
+- name: update_campaign
+  evidence: documented

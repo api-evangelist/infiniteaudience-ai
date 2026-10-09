@@ -1,0 +1,947 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai OAuth API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged OAuth across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: OAuth
+  description: OAuth 2.0 authorization server for confidential integrations and delegated REST, MCP, and A2A clients. Authenticate on behalf of one of your customers via the standard authorization-code flow with PKCE or the A2A device authorization flow, then use the resulting resource-bound access token.
+paths:
+  /v1/oauth/authorize:
+    get:
+      summary: Begin an OAuth 2.0 authorization request
+      operationId: oauthAuthorize
+      description: Public — no bearer token. Redirect your user's browser here to start the standard OAuth 2.0 authorization-code flow with PKCE (RFC 6749 + RFC 7636). `code_challenge_method` must be `S256` — `plain` is rejected (RFC 9700). On success, the browser is eventually redirected back to your `redirect_uri` with a `code` (and your `state`, if you sent one) to exchange at `POST /v1/oauth/token`. On a validation failure, the browser is redirected back with `error` and `error_description` instead (RFC 6749 §4.1.2.1) — except an unknown `client_id` or an unregistered `redirect_uri`, which return 400 JSON directly rather than a redirect, since there is no verified address yet to redirect to.
+      tags:
+      - OAuth
+      security: []
+      parameters:
+      - name: response_type
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - code
+      - name: client_id
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: redirect_uri
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uri
+      - name: scope
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Space-delimited API scopes (`discovery`, `creator`, MCP/A2A `account-read`) and MCP-only identity scopes (`openid`, `email`). `email` requires `openid`. Defaults to `discovery`.
+      - name: resource
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uri
+        description: 'RFC 8707 resource URI. Required for public MCP/A2A clients. A pre-registered confidential client that omits it receives a REST-bound token.
+
+          '
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Opaque value echoed back on both the success and error redirects.
+      - name: nonce
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 256
+        description: OIDC nonce echoed in the authorization-code ID token when openid is granted.
+      - name: code_challenge
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: code_challenge_method
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - S256
+      responses:
+        '302':
+          description: 'Redirects to the consent page on success, or back to your `redirect_uri` with `error`/`error_description` (and `state`, if you sent one) on a validation failure that occurred after `redirect_uri` was verified.
+
+            '
+        '400':
+          $ref: '#/components/responses/OAuthError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/oauth/token:
+    post:
+      summary: Exchange an authorization code, device code, or refresh token for an access…
+      operationId: oauthToken
+      description: 'Confidential clients authenticate per RFC 6749 §3.2. Public clients send `client_id` with no secret and rely on PKCE or their rotating refresh token. Accepts `application/x-www-form-urlencoded` or `application/json`. Send your `client_id`/`client_secret` via HTTP Basic (`Authorization: Basic base64(client_id:client_secret)`) or as body fields. Public clients use `token_endpoint_auth_method=none`.
+
+        `grant_type=authorization_code` requires `code`, the exact same `redirect_uri` you sent to `/authorize`, and `code_verifier` (the PKCE secret whose SHA-256 hash matches the `code_challenge` you sent to `/authorize`).
+
+        `grant_type=refresh_token` requires `refresh_token` and rotates it — store the `refresh_token` returned in the response and discard the one you presented; it is now rejected if presented again.
+
+        `grant_type=urn:ietf:params:oauth:grant-type:device_code` requires `device_code` and the same A2A `resource` used at device authorization. Honor `authorization_pending` and `slow_down` while the customer completes browser consent.'
+      tags:
+      - OAuth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OAuthTokenRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthTokenRequest'
+      responses:
+        '200':
+          description: A fresh access token and a rotated refresh token, for either grant type.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTokenResponse'
+        '400':
+          $ref: '#/components/responses/OAuthError'
+        '401':
+          $ref: '#/components/responses/OAuthError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/oauth/device_authorization:
+    post:
+      summary: Begin an OAuth device authorization for an A2A client
+      operationId: oauthDeviceAuthorization
+      description: Public and client-authenticated (RFC 8628). Returns a browser verification URL, one-time user code, secret device code, expiry, and polling interval. The request must use the A2A resource. Delegated scopes are limited to `discovery` and optional `creator`.
+      tags:
+      - OAuth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OAuthDeviceAuthorizationRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthDeviceAuthorizationRequest'
+      responses:
+        '200':
+          description: Device authorization details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthDeviceAuthorizationResponse'
+        '400':
+          $ref: '#/components/responses/OAuthError'
+        '401':
+          $ref: '#/components/responses/OAuthError'
+        '500':
+          $ref: '#/components/responses/OAuthError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/oauth/revoke:
+    post:
+      summary: Revoke a token (RFC 7009)
+      operationId: oauthRevoke
+      description: Client-authenticated, same credentials as `/v1/oauth/token`. Call this when your user disconnects the partnership. Always returns 200 with an empty body regardless of whether the presented token was valid, except when client authentication itself fails — there is nothing to distinguish for a caller who might be probing for valid tokens (RFC 7009 §2.2).
+      tags:
+      - OAuth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OAuthRevokeRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthRevokeRequest'
+      responses:
+        '200':
+          description: Returned once the client itself authenticated, regardless of whether the presented token was valid.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          $ref: '#/components/responses/OAuthError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/oauth/register:
+    post:
+      summary: Register a public OAuth client (RFC 7591 fallback)
+      operationId: oauthRegisterClient
+      description: Registrations with no approved grant expire after 24 hours. Restart registration if setup expires. Approved clients do not expire through this cleanup policy. Client names are self-asserted and unverified. Public and rate-limited. Registers a public PKCE and/or device-flow client for MCP/A2A gateways that do not support Client ID Metadata Documents. A device-only registration may omit `redirect_uris` and use an empty `response_types` array. No client secret is issued.
+      tags:
+      - OAuth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthClientRegistrationRequest'
+      responses:
+        '201':
+          description: Public client registration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthClientRegistrationResponse'
+        '400':
+          $ref: '#/components/responses/OAuthError'
+        '401':
+          $ref: '#/components/responses/OAuthError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /.well-known/oauth-authorization-server:
+    get:
+      summary: OAuth 2.0 authorization server metadata (RFC 8414)
+      operationId: oauthMetadata
+      description: Public, static metadata describing this authorization server's endpoints and capabilities.
+      tags:
+      - OAuth
+      security: []
+      responses:
+        '200':
+          description: Authorization server metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthServerMetadata'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /.well-known/openid-configuration:
+    get:
+      summary: OpenID Connect discovery metadata
+      operationId: oidcDiscovery
+      description: Public issuer metadata for person-bound MCP OpenID Connect authorization.
+      tags:
+      - OAuth
+      security: []
+      responses:
+        '200':
+          description: OIDC provider metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcDiscoveryMetadata'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/oauth/jwks:
+    get:
+      summary: Public OIDC ID-token signing keys
+      operationId: oidcJwks
+      description: Public RSA signing keys for current and configured previous ID-token key versions.
+      tags:
+      - OAuth
+      security: []
+      responses:
+        '200':
+          description: JSON Web Key Set.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcJwks'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/oauth/userinfo:
+    get:
+      summary: Get current person-bound OIDC identity
+      operationId: oidcUserInfo
+      description: Validates an MCP OAuth bearer and its active person-bound grant, then returns the current verified email when email was granted. Requires 'openid' scope.
+      tags:
+      - OAuth
+      security:
+      - oidcBearer: []
+      responses:
+        '200':
+          description: Current OIDC identity claims.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcUserInfo'
+        '401':
+          $ref: '#/components/responses/OAuthError'
+    post:
+      summary: Get current person-bound OIDC identity
+      operationId: oidcUserInfoPost
+      description: POST form of OIDC UserInfo; accepts the MCP OAuth bearer in the Authorization header. Requires 'openid' scope.
+      tags:
+      - OAuth
+      security:
+      - oidcBearer: []
+      responses:
+        '200':
+          description: Current OIDC identity claims.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcUserInfo'
+        '401':
+          $ref: '#/components/responses/OAuthError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /.well-known/openai-apps-challenge:
+    get:
+      summary: OpenAI MCP host ownership challenge
+      operationId: openaiAppsChallenge
+      description: Returns the exact plain-text verification token for the production MCP host.
+      tags:
+      - OAuth
+      security: []
+      responses:
+        '200':
+          description: Plain-text domain verification token.
+          content:
+            text/plain:
+              schema:
+                type: string
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /.well-known/oauth-protected-resource:
+    get:
+      summary: REST protected-resource metadata (RFC 9728)
+      operationId: oauthRestProtectedResourceMetadata
+      tags:
+      - OAuth
+      security: []
+      responses:
+        '200':
+          description: REST resource metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProtectedResourceMetadata'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /.well-known/oauth-protected-resource/mcp:
+    get:
+      summary: MCP protected-resource metadata (RFC 9728)
+      operationId: oauthMcpProtectedResourceMetadata
+      tags:
+      - OAuth
+      security: []
+      responses:
+        '200':
+          description: MCP resource metadata used by OAuth-aware clients.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProtectedResourceMetadata'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /.well-known/oauth-protected-resource/a2a:
+    get:
+      summary: A2A protected-resource metadata (RFC 9728)
+      operationId: oauthA2aProtectedResourceMetadata
+      tags:
+      - OAuth
+      security: []
+      responses:
+        '200':
+          description: A2A resource metadata advertised by the Agent Card.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProtectedResourceMetadata'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    OidcDiscoveryMetadata:
+      type: object
+      required:
+      - issuer
+      - authorization_endpoint
+      - token_endpoint
+      - registration_endpoint
+      - revocation_endpoint
+      - userinfo_endpoint
+      - jwks_uri
+      - response_types_supported
+      - subject_types_supported
+      - id_token_signing_alg_values_supported
+      - scopes_supported
+      - claims_supported
+      - token_endpoint_auth_methods_supported
+      - grant_types_supported
+      - code_challenge_methods_supported
+      - authorization_response_iss_parameter_supported
+      properties:
+        issuer:
+          type: string
+          format: uri
+        authorization_endpoint:
+          type: string
+          format: uri
+        token_endpoint:
+          type: string
+          format: uri
+        registration_endpoint:
+          type: string
+          format: uri
+        revocation_endpoint:
+          type: string
+          format: uri
+        userinfo_endpoint:
+          type: string
+          format: uri
+        jwks_uri:
+          type: string
+          format: uri
+        response_types_supported:
+          type: array
+          items:
+            type: string
+        subject_types_supported:
+          type: array
+          items:
+            type: string
+            const: public
+        id_token_signing_alg_values_supported:
+          type: array
+          items:
+            type: string
+            const: RS256
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        claims_supported:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_methods_supported:
+          type: array
+          items:
+            type: string
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+        code_challenge_methods_supported:
+          type: array
+          items:
+            type: string
+        authorization_response_iss_parameter_supported:
+          type: boolean
+          const: true
+    OAuthClientRegistrationResponse:
+      type: object
+      required:
+      - client_id
+      - client_id_issued_at
+      - client_name
+      - redirect_uris
+      - scope
+      - token_endpoint_auth_method
+      - grant_types
+      - response_types
+      properties:
+        client_id:
+          type: string
+        client_id_issued_at:
+          type: integer
+        client_name:
+          type: string
+        redirect_uris:
+          type: array
+          items:
+            type: string
+            format: uri
+        scope:
+          type: string
+        token_endpoint_auth_method:
+          type: string
+          enum:
+          - none
+        grant_types:
+          type: array
+          items:
+            type: string
+        response_types:
+          type: array
+          items:
+            type: string
+    OAuthProtectedResourceMetadata:
+      type: object
+      required:
+      - resource
+      - authorization_servers
+      - bearer_methods_supported
+      - scopes_supported
+      - resource_documentation
+      - resource_policy_uri
+      - resource_tos_uri
+      properties:
+        resource:
+          type: string
+          format: uri
+        authorization_servers:
+          type: array
+          items:
+            type: string
+            format: uri
+        bearer_methods_supported:
+          type: array
+          items:
+            type: string
+            enum:
+            - header
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        resource_documentation:
+          type: string
+          format: uri
+        resource_policy_uri:
+          type: string
+          format: uri
+        resource_tos_uri:
+          type: string
+          format: uri
+    OAuthRevokeRequest:
+      type: object
+      required:
+      - token
+      properties:
+        token:
+          type: string
+        token_type_hint:
+          type: string
+          enum:
+          - access_token
+          - refresh_token
+        client_id:
+          type: string
+        client_secret:
+          type: string
+    OidcUserInfo:
+      type: object
+      required:
+      - sub
+      properties:
+        sub:
+          type: string
+          description: Stable opaque subject for this person in this organization.
+        email:
+          type: string
+          format: email
+          description: Current email when the email scope was granted.
+        email_verified:
+          type: boolean
+          const: true
+          description: Present only for a currently verified email.
+    OAuthTokenResponse:
+      type: object
+      required:
+      - access_token
+      - token_type
+      - expires_in
+      - refresh_token
+      - scope
+      properties:
+        access_token:
+          type: string
+          description: 'Opaque bearer token. Use exactly like an API-key-derived one: `Authorization: Bearer <access_token>`.'
+        id_token:
+          type: string
+          description: RS256 OIDC ID token, present only when the person-bound MCP grant includes openid.
+        token_type:
+          type: string
+          enum:
+          - Bearer
+        expires_in:
+          type: integer
+          description: Seconds until the access token expires (1800).
+        refresh_token:
+          type: string
+          description: Supersedes any previously-issued refresh token for this connection — the old one is now rejected.
+        scope:
+          type: string
+          description: Space-delimited granted scopes.
+    OAuthServerMetadata:
+      type: object
+      required:
+      - issuer
+      - authorization_response_iss_parameter_supported
+      - authorization_endpoint
+      - device_authorization_endpoint
+      - token_endpoint
+      - revocation_endpoint
+      - registration_endpoint
+      - response_types_supported
+      - grant_types_supported
+      - code_challenge_methods_supported
+      - token_endpoint_auth_methods_supported
+      - client_id_metadata_document_supported
+      - resource_indicators_supported
+      - scopes_supported
+      properties:
+        issuer:
+          type: string
+          format: uri
+        authorization_response_iss_parameter_supported:
+          type: boolean
+          const: true
+        authorization_endpoint:
+          type: string
+          format: uri
+        device_authorization_endpoint:
+          type: string
+          format: uri
+        token_endpoint:
+          type: string
+          format: uri
+        revocation_endpoint:
+          type: string
+          format: uri
+        registration_endpoint:
+          type: string
+          format: uri
+        response_types_supported:
+          type: array
+          items:
+            type: string
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+        code_challenge_methods_supported:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_methods_supported:
+          type: array
+          items:
+            type: string
+        client_id_metadata_document_supported:
+          type: boolean
+        resource_indicators_supported:
+          type: boolean
+        scopes_supported:
+          type: array
+          items:
+            type: string
+    OAuthDeviceAuthorizationRequest:
+      type: object
+      required:
+      - client_id
+      - resource
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        resource:
+          type: string
+          format: uri
+        scope:
+          type: string
+          description: Space-delimited `discovery` and optional `creator`; defaults to `discovery`.
+    OAuthClientRegistrationRequest:
+      type: object
+      properties:
+        client_name:
+          type: string
+        redirect_uris:
+          type: array
+          minItems: 0
+          maxItems: 20
+          items:
+            type: string
+            format: uri
+        scope:
+          type: string
+        token_endpoint_auth_method:
+          type: string
+          enum:
+          - none
+        grant_types:
+          type: array
+          items:
+            type: string
+            enum:
+            - authorization_code
+            - urn:ietf:params:oauth:grant-type:device_code
+            - refresh_token
+        response_types:
+          type: array
+          items:
+            type: string
+            enum:
+            - code
+    OAuthErrorResponse:
+      type: object
+      description: RFC 6749 §5.2 / §4.1.2.1 error body — see the OAuthError response component.
+      required:
+      - error
+      - error_description
+      properties:
+        error:
+          type: string
+          enum:
+          - invalid_request
+          - invalid_client
+          - invalid_client_metadata
+          - invalid_grant
+          - invalid_scope
+          - invalid_target
+          - invalid_token
+          - unsupported_response_type
+          - unsupported_grant_type
+          - authorization_pending
+          - slow_down
+          - access_denied
+          - expired_token
+          - server_error
+        error_description:
+          type: string
+    OidcJwks:
+      type: object
+      required:
+      - keys
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            required:
+            - kty
+            - use
+            - alg
+            - kid
+            - n
+            - e
+            properties:
+              kty:
+                type: string
+                const: RSA
+              use:
+                type: string
+                const: sig
+              alg:
+                type: string
+                const: RS256
+              kid:
+                type: string
+              n:
+                type: string
+              e:
+                type: string
+    OAuthTokenRequest:
+      description: 'Encoded as `application/x-www-form-urlencoded` or `application/json`. `client_id`/`client_secret` may instead ride on HTTP Basic auth, in which case both fields are omitted from the body.
+
+        '
+      oneOf:
+      - type: object
+        required:
+        - grant_type
+        - code
+        - redirect_uri
+        - code_verifier
+        properties:
+          grant_type:
+            type: string
+            const: authorization_code
+          code:
+            type: string
+          redirect_uri:
+            type: string
+            format: uri
+          code_verifier:
+            type: string
+            description: RFC 7636 PKCE verifier — must hash (S256) to the code_challenge you sent to /authorize.
+          client_id:
+            type: string
+          client_secret:
+            type: string
+          resource:
+            type: string
+            format: uri
+      - type: object
+        required:
+        - grant_type
+        - refresh_token
+        properties:
+          grant_type:
+            type: string
+            const: refresh_token
+          refresh_token:
+            type: string
+          client_id:
+            type: string
+          client_secret:
+            type: string
+          resource:
+            type: string
+            format: uri
+      - type: object
+        required:
+        - grant_type
+        - device_code
+        - resource
+        properties:
+          grant_type:
+            type: string
+            const: urn:ietf:params:oauth:grant-type:device_code
+          device_code:
+            type: string
+          client_id:
+            type: string
+          client_secret:
+            type: string
+          resource:
+            type: string
+            format: uri
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+    OAuthDeviceAuthorizationResponse:
+      type: object
+      required:
+      - device_code
+      - user_code
+      - verification_uri
+      - verification_uri_complete
+      - expires_in
+      - interval
+      properties:
+        device_code:
+          type: string
+        user_code:
+          type: string
+          example: ABCD-EFGH
+        verification_uri:
+          type: string
+          format: uri
+        verification_uri_complete:
+          type: string
+          format: uri
+        expires_in:
+          type: integer
+          example: 600
+        interval:
+          type: integer
+          example: 5
+  responses:
+    OAuthError:
+      description: 'RFC 6749-shaped OAuth protocol error — `error` is a fixed machine-readable code and `error_description` is a human-readable detail. Deliberately NOT this API''s usual `{error, code, message}` shape — this is the RFC''s own error contract, used only by `/v1/oauth/authorize`, `/v1/oauth/device_authorization`, `/v1/oauth/token`, and `/v1/oauth/revoke`.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OAuthErrorResponse'
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

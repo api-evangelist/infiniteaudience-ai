@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/infiniteaudience-ai/main/json-schema/infiniteaudience-ai-audience-refresh-result-schema.json",
+  "title": "AudienceRefreshResult",
+  "description": "Response of `POST /v1/audiences/{id}/refresh`. Deliberately lighter than the full Audience object: the handler returns only the version/lifecycle attributes it changed plus subtype-specific next-step hints. Fetch `GET /v1/audiences/{id}` for the full audience document.\n",
+  "x-generated": "2026-10-09",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/infiniteaudience-ai-openapi.yml#/components/schemas/AudienceRefreshResult",
+  "type": "object",
+  "required": [
+    "audience_id",
+    "segment_id",
+    "version",
+    "version_created_at",
+    "expires_at",
+    "status",
+    "subtype",
+    "refreshed",
+    "next_step"
+  ],
+  "properties": {
+    "audience_id": {
+      "type": "string"
+    },
+    "segment_id": {
+      "type": "string",
+      "description": "The caller-chosen member segment that was refreshed (echoed back from the request body). An audience is a composition of N member segments with no primary one — this is always present, identifying which member segment's refresh drove this response.\n"
+    },
+    "version": {
+      "type": "integer",
+      "description": "New snapshot version after the refresh."
+    },
+    "version_created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "New 90-day hard expiry."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending"
+      ],
+      "description": "active = the refreshed segment's subtype is filter, refreshed synchronously; pending = matched/similarity/propensity, awaiting re-upload or workflow completion.\n"
+    },
+    "subtype": {
+      "type": "string",
+      "enum": [
+        "filter",
+        "matched",
+        "similarity",
+        "propensity"
+      ],
+      "description": "Subtype of the refreshed segment."
+    },
+    "refreshed": {
+      "type": "boolean",
+      "description": "true when the refreshed segment was re-derived; false only for the filter-subtype no-op path (segment already active, count already null, TTL already fresh) — this route always calls refreshSegmentCore without force, so that no-op path is reachable here exactly as it is on POST /v1/segments/{id}/refresh.\n"
+    },
+    "next_step": {
+      "type": "string",
+      "description": "Human-readable hint for the calling agent on how to proceed (e.g. recount, upload to upload_url, or wait for the workflow).\n"
+    },
+    "upload_url": {
+      "type": "string",
+      "description": "Presigned upload URL (24 h expiry). Present only for the matched subtype, when shard_count was 1 (the default) — absent when sharded, use upload_urls instead.\n"
+    },
+    "upload_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Presigned upload URLs (24 h expiry), one per shard, index-ordered. Present only for the matched subtype when shard_count > 1 was requested — upload_url is absent. Every CSV shard must include the same header row.\n"
+    },
+    "compression": {
+      "type": "string",
+      "enum": [
+        "none",
+        "gzip"
+      ],
+      "description": "Compression for this matched refresh upload."
+    },
+    "upload_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expiry for upload_url/upload_urls. Present only for the matched subtype."
+    },
+    "workflow_run_id": {
+      "type": "string",
+      "description": "Cloud Workflow execution ID. Present only for similarity and propensity subtypes.\n"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+name: Infinite Audience Rate Limits
+generated: '2026-10-09'
+method: none
+source: openapi/infiniteaudience-ai-openapi.yml
+limit_count: 0
+limits: []
+note: The contract declares 429 responses but no numeric limits or rate-limit headers are published in the docs read; webhook deliveries retry on 429.

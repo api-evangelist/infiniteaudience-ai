@@ -1,0 +1,267 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai MCP API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged MCP across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: MCP
+  description: Model Context Protocol session management
+paths:
+  /mcp:
+    servers:
+    - url: https://mcp.infiniteaudience.ai
+      description: Stateless MCP Streamable HTTP server through the shared public HTTPS load balancer
+    post:
+      summary: MCP stateless message dispatch
+      operationId: mcpPost
+      description: Authenticate every POST independently. Send Initialize first, then later MCP messages without a session ID. Responses are JSON-RPC JSON (or 202 for notifications). A retired mcp-session-id receives 404 so clients reinitialize. Requires a Firebase ID token or resource-bound first-party OAuth access token.
+      tags:
+      - MCP
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 'JSON-RPC 2.0 request envelope. Send `initialize` before tool discovery/calls; no server session ID is issued. Subsequent calls dispatch to available MCP methods (see the **MCP — Available Tools** section below).
+
+                '
+              required:
+              - jsonrpc
+              - method
+              properties:
+                jsonrpc:
+                  type: string
+                  enum:
+                  - '2.0'
+                  description: JSON-RPC version. Always `"2.0"`.
+                method:
+                  type: string
+                  description: 'RPC method name. `initialize` for the handshake, then methods such as `tools/list` and `tools/call`.
+
+                    '
+                id:
+                  description: 'Client-assigned request ID echoed in the response. Omit for notifications (no response expected).
+
+                    '
+                  oneOf:
+                  - type: string
+                  - type: integer
+                  - type: 'null'
+                params:
+                  type: object
+                  additionalProperties: true
+                  description: 'Method-specific parameters. For `initialize`, pass protocol version and client capabilities. For `tools/call`, pass `name` (tool name) and `arguments` (tool input object).
+
+                    '
+            examples:
+              initialize:
+                summary: Stateless initialization
+                value:
+                  jsonrpc: '2.0'
+                  id: 1
+                  method: initialize
+                  params:
+                    protocolVersion: '2024-11-05'
+                    capabilities: {}
+                    clientInfo:
+                      name: my-client
+                      version: '1.0'
+              tools_call:
+                summary: Invoke a tool
+                value:
+                  jsonrpc: '2.0'
+                  id: 2
+                  method: tools/call
+                  params:
+                    name: list_audiences
+                    arguments: {}
+      responses:
+        '200':
+          description: MCP response — JSON-RPC 2.0 envelope.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - jsonrpc
+                properties:
+                  jsonrpc:
+                    type: string
+                    enum:
+                    - '2.0'
+                  id:
+                    description: Echoes the request id. Null for notifications.
+                    oneOf:
+                    - type: string
+                    - type: integer
+                    - type: 'null'
+                  result:
+                    description: Present on success; shape depends on the MCP method called.
+                  error:
+                    type: object
+                    description: Present on failure.
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: integer
+                      message:
+                        type: string
+        '202':
+          description: MCP notification accepted; no response body
+        '400':
+          $ref: '#/components/responses/McpProtocolError'
+        '401':
+          $ref: '#/components/responses/McpProtocolError'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/McpProtocolError'
+    get:
+      summary: Unsupported standalone MCP event stream
+      operationId: mcpGet
+      description: Stateless MCP serves JSON responses to POST; no standalone GET SSE stream exists.
+      tags:
+      - MCP
+      security: []
+      responses:
+        '405':
+          $ref: '#/components/responses/McpProtocolError'
+    delete:
+      summary: Unsupported MCP session termination
+      operationId: mcpDelete
+      description: Stateless MCP has no server-side transport session to terminate.
+      tags:
+      - MCP
+      security: []
+      responses:
+        '405':
+          $ref: '#/components/responses/McpProtocolError'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    McpJsonRpcError:
+      type: object
+      required:
+      - jsonrpc
+      - error
+      - id
+      properties:
+        jsonrpc:
+          type: string
+          const: '2.0'
+        error:
+          type: object
+          required:
+          - code
+          - message
+          properties:
+            code:
+              type: integer
+            message:
+              type: string
+        id:
+          type: 'null'
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  responses:
+    McpProtocolError:
+      description: MCP JSON-RPC protocol error (including authentication or unsupported method)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/McpJsonRpcError'
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

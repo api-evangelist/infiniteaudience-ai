@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/infiniteaudience-ai/main/json-schema/infiniteaudience-ai-delivery-object-schema.json",
+  "title": "DeliveryObject",
+  "x-generated": "2026-10-09",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/infiniteaudience-ai-openapi.yml#/components/schemas/DeliveryObject",
+  "type": "object",
+  "required": [
+    "delivery_id",
+    "audience_id",
+    "audience_version",
+    "destination",
+    "status",
+    "cost",
+    "created_at",
+    "expires_at"
+  ],
+  "properties": {
+    "data_release": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/EnrichmentRelease"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "delivery_id": {
+      "type": "string"
+    },
+    "audience_id": {
+      "type": "string"
+    },
+    "audience_version": {
+      "type": "integer"
+    },
+    "destination": {
+      "type": "string",
+      "enum": [
+        "download",
+        "liveramp",
+        "narrative"
+      ]
+    },
+    "template_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "field_list": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "completed",
+        "failed"
+      ]
+    },
+    "cost": {
+      "type": "number",
+      "description": "Conservative USD estimate for usage accepted for billing; not a finalized invoice total."
+    },
+    "estimated_cost": {
+      "type": "number",
+      "description": "Pre-flight safety ceiling for a still-processing delivery. It is released into the final local `cost` estimate once resolution/export completes; the finalized invoice remains authoritative.\n"
+    },
+    "already_delivered": {
+      "type": "boolean",
+      "description": "`true` when this exact audience content, resolved field selection, unmatched-row policy, and destination were already delivered — `cost` is 0 and the existing delivery record is returned.\n"
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable note, present on free re-delivery responses."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "output_format": {
+      "type": "string",
+      "enum": [
+        "csv",
+        "avro",
+        "json",
+        "jsonl"
+      ],
+      "description": "Output file format. Present on `download` deliveries. Avro exports preserve native source column types (including `REPEATED`/array columns) rather than flattening everything to strings. Read endpoints normalize legacy records; an immediate DSP-create response may omit this field.\n"
+    },
+    "output_compression": {
+      "type": "string",
+      "enum": [
+        "none",
+        "gzip"
+      ],
+      "description": "Explicit outer artifact compression, normalized to none for legacy records on read and possibly omitted by an immediate DSP-create response. It never inherits input compression. Avro uses native DEFLATE and therefore reports none here rather than outer gzip.\n"
+    },
+    "output_bytes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Exact sum of stored object sizes across every output part. Null until completion or when no downloadable artifact is produced.\n"
+    },
+    "download_urls": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "Signed download URLs for every completed `download` artifact part, sorted deterministically. Always an array and may contain multiple export parts for any format. Signed URLs expire after 24 hours — call `GET /v1/audiences/{id}/deliveries/{did}` to regenerate fresh URLs at any time.\n"
+    },
+    "output_record_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Actual row count in the exported file. Set at completion for matched audiences only (where the count is unknown until the TVF runs). For filter, similarity, and propensity audiences this equals the audience's `record_count`.\n"
+    },
+    "failure_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "matched_segment_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the matched (file-match) segment resolved from the delivered audience's composition at delivery creation. Populated only when the audience includes a matched segment; null for filter, similarity, and propensity deliveries and for deliveries created before this attribute existed.\n"
+    },
+    "source_job_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The matched segment's originating file-match job ID — links the delivery back to the file-match event that produced its source data. Populated only when the delivered audience resolves a matched segment that carries a source job; null otherwise (including deliveries created before this attribute existed).\n"
+    },
+    "integration_run_id": {
+      "type": "string",
+      "pattern": "^ir_[A-Za-z0-9_-]{40}$",
+      "description": "Present only for an authorized private partnership workflow."
+    }
+  },
+  "$defs": {
+    "EnrichmentRelease": {
+      "type": "object",
+      "required": [
+        "major",
+        "minor"
+      ],
+      "description": "Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.",
+      "properties": {
+        "major": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

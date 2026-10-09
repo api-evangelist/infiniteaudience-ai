@@ -1,0 +1,1402 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Deliveries API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Deliveries across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Deliveries
+  description: Org-wide delivery history and status
+paths:
+  /v1/quote:
+    post:
+      summary: Delivery quote
+      operationId: quoteDelivery
+      description: 'Returns a price estimate for a proposed delivery without executing it. Provide the audience ID, destination, and optionally `field_list` or `template_id` (mutually exclusive) to receive a structured cost breakdown and credit balance information. If neither is provided, the audience fields are used, or audience plus feature-store fields for a pure matched composition. No delivery or charge is made. A fresh quote stores a pending quote and updates the audience''s current quote reference and price; a completed re-export does not create another pending quote. Download is the currently active destination; LiveRamp and Narrative return 503 before a quote or billable record is created until their partner pushes are implemented.
+
+        Returns two cost figures: `cost_estimate` is license-aware (identities this audience already holds an active 12-month license for elsewhere are excluded from the billable count) and `max_cost_estimate` is the worst-case ceiling assuming no identity is pre-licensed. See `license_pricing.status` for whether `cost_estimate` reflects a live or cached computation, or degraded non-blockingly to the max figure.
+
+        Requires ''discovery'' scope.'
+      tags:
+      - Deliveries
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - audience_id
+              - destination
+              properties:
+                audience_id:
+                  type: string
+                  description: 'ID of the audience to quote a delivery for.
+
+                    '
+                destination:
+                  type: string
+                  enum:
+                  - download
+                  - liveramp
+                  - narrative
+                  description: 'Intended destination. `liveramp` and `narrative` currently return `DELIVERY_DESTINATION_UNAVAILABLE` without billing.
+
+                    '
+                template_id:
+                  type:
+                  - string
+                  - 'null'
+                  description: 'Enrichment template ID. `standard_iag` is valid; `standard_enrichment` is valid for pure matched exports and matching. Mutually exclusive with `field_list`. If neither is provided, the enrichment set is used for pure matched output; otherwise the audience set is used.
+
+                    '
+                field_list:
+                  type:
+                  - array
+                  - 'null'
+                  items:
+                    type: string
+                  description: 'Explicit attribute list — every attribute must be a field allowed for this output (see GET /v1/catalog/fields). Mutually exclusive with `template_id`. If neither is provided, the enrichment set is used for pure matched output; otherwise the audience set is used.
+
+                    '
+                include_unmatched:
+                  type: boolean
+                  default: true
+                  description: Include unmatched input rows in matched-audience output.
+                output_format:
+                  type: string
+                  enum:
+                  - csv
+                  - avro
+                  - json
+                  - jsonl
+                  default: csv
+                  description: 'Artifact format being quoted, independent of matched-input format.
+
+                    '
+                output_compression:
+                  type: string
+                  enum:
+                  - none
+                  - gzip
+                  default: none
+                  description: 'gzip is supported for csv/json/jsonl. Avro uses native DEFLATE and rejects outer gzip.
+
+                    '
+      responses:
+        '200':
+          description: 'Price quote — no commitment made.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - audience_id
+                - subtype
+                - destination
+                - template_id
+                - field_list
+                - output_format
+                - output_compression
+                - already_delivered
+                - quote_id
+                - cost_estimate
+                - max_cost_estimate
+                - license_pricing
+                - record_count
+                - match_count
+                - billing_model
+                - billing_authority
+                - billing_projection
+                - available_balance
+                - sufficient_balance
+                - shortfall
+                - budget_ceiling
+                - accrued_balance
+                properties:
+                  audience_id:
+                    type: string
+                  subtype:
+                    type: string
+                    enum:
+                    - filter
+                    - matched
+                    - similarity
+                    - propensity
+                  destination:
+                    type: string
+                  template_id:
+                    type:
+                    - string
+                    - 'null'
+                  field_list:
+                    type:
+                    - array
+                    - 'null'
+                    items:
+                      type: string
+                  output_format:
+                    type: string
+                    enum:
+                    - csv
+                    - avro
+                    - json
+                    - jsonl
+                  output_compression:
+                    type: string
+                    enum:
+                    - none
+                    - gzip
+                  already_delivered:
+                    type: boolean
+                    description: '`true` if this billing identity (audience composition and segment revisions, resolved fields, unmatched-row policy, and destination) has already been delivered. Artifact format/compression are deliberately excluded, so changing only those axes permits a free re-export.
+
+                      '
+                  quote_id:
+                    type:
+                    - string
+                    - 'null'
+                    description: 'ID of the persisted quote backing this estimate. `null` when `already_delivered` is `true` (a free re-delivery has no pending cost, so nothing is persisted).
+
+                      '
+                  cost_estimate:
+                    allOf:
+                    - $ref: '#/components/schemas/CostEstimate'
+                    description: 'The license-aware, expected-to-be-charged estimate — reflects any active licenses this audience''s identities already hold elsewhere (see license_pricing.status). Equals max_cost_estimate exactly when license_pricing.status is unavailable.
+
+                      '
+                  max_cost_estimate:
+                    allOf:
+                    - $ref: '#/components/schemas/CostEstimate'
+                    description: 'The worst-case ceiling, computed as if no identity in this audience were already licensed anywhere. Always present and always the same value regardless of license_pricing.status — use this for a stable upper bound.
+
+                      '
+                  license_pricing:
+                    $ref: '#/components/schemas/LicensePricing'
+                  record_count:
+                    type: integer
+                    description: 'Current audience size.
+
+                      '
+                  match_count:
+                    type:
+                    - integer
+                    - 'null'
+                    description: 'matched subtype only — resolved rows from most recent delivery.
+
+                      '
+                  billing_model:
+                    type: string
+                    enum:
+                    - prepay
+                    - postpay
+                    description: 'Resolved from the org''s own billing_model, or ''postpay'' for parent_billed (agency) orgs. Determines which of available_balance/shortfall vs. budget_ceiling/accrued_balance is populated below.
+
+                      '
+                  billing_authority:
+                    type: string
+                    enum:
+                    - self
+                    - agency
+                    description: Whether the org or an agency owns this billing route.
+                  billing_projection:
+                    type: object
+                    required:
+                    - projected_at
+                    - stale
+                    properties:
+                      projected_at:
+                        type:
+                        - string
+                        - 'null'
+                        format: date-time
+                      stale:
+                        type: boolean
+                    description: Freshness of the provider-backed billing projection.
+                  available_balance:
+                    type:
+                    - number
+                    - 'null'
+                    description: 'Prepay only — effective credit balance after holds. Null for postpay/agency orgs, which have no credit balance.
+
+                      '
+                  sufficient_balance:
+                    type: boolean
+                    description: 'Prepay: whether available_balance ≥ total_cost. Postpay/agency: whether this delivery would stay within the org''s/agency''s optional budget ceiling (always true when no ceiling is set).
+
+                      '
+                  shortfall:
+                    type:
+                    - number
+                    - 'null'
+                    description: 'Prepay only — credits needed beyond current balance (0 when sufficient). Null for postpay/agency.
+
+                      '
+                  budget_ceiling:
+                    type:
+                    - number
+                    - 'null'
+                    description: 'Postpay/agency only — the org''s configured budget ceiling in USD. Null if unset (unlimited) or for prepay.
+
+                      '
+                  accrued_balance:
+                    type:
+                    - number
+                    - 'null'
+                    description: 'Postpay/agency only — accrued USD spend so far this cycle. Null for prepay.
+
+                      '
+              example:
+                audience_id: aud_abc123
+                subtype: filter
+                destination: download
+                template_id: standard_iag
+                field_list: null
+                output_format: csv
+                output_compression: none
+                already_delivered: false
+                quote_id: q_abc123
+                cost_estimate:
+                  base_cost: 0.08
+                  match_cost: 0
+                  field_cost: 0.04
+                  destination_cost: 0
+                  total_cost: 0.12
+                  unit_price: 0.0015
+                  billing_count: 80000
+                max_cost_estimate:
+                  base_cost: 0.08
+                  match_cost: 0
+                  field_cost: 0.04
+                  destination_cost: 0
+                  total_cost: 0.12
+                  unit_price: 0.0015
+                  billing_count: 80000
+                license_pricing:
+                  status: live
+                  evaluated_at: '2026-08-21T12:00:00.000Z'
+                  already_licensed_count: 0
+                record_count: 80000
+                match_count: null
+                billing_model: prepay
+                billing_authority: self
+                billing_projection:
+                  projected_at: '2026-08-21T12:00:00.000Z'
+                  stale: false
+                available_balance: 5
+                sufficient_balance: true
+                shortfall: 0
+                budget_ceiling: null
+                accrued_balance: null
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/deliveries/bulk:
+    post:
+      summary: Bulk deliver multiple audiences
+      operationId: bulkDeliverAudiences
+      description: Accepts a list of audience IDs and shared delivery parameters. Fires N parallel delivery jobs and returns per-audience results as HTTP 207 Multi-Status. Partial failure is acceptable — failed items do not roll back succeeded ones. Download is the currently active destination; LiveRamp and Narrative return 503 before any item or billable record is created. An item whose audience count is unknown and cannot be computed fails with code `AUDIENCE_COUNT_UNAVAILABLE`. Requires 'creator' scope.
+      tags:
+      - Deliveries
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - audience_ids
+              - destination
+              properties:
+                audience_ids:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                  maxItems: 25
+                  description: IDs of audiences to deliver. Max 25 per request.
+                destination:
+                  type: string
+                  enum:
+                  - download
+                  - liveramp
+                  - narrative
+                  description: 'Shared destination. `liveramp` and `narrative` currently return `DELIVERY_DESTINATION_UNAVAILABLE` without billing.
+
+                    '
+                template_id:
+                  type:
+                  - string
+                  - 'null'
+                  description: 'Attribute template ID applied to every audience in the batch. `standard_iag` is valid; `standard_enrichment` is valid for pure matched exports and matching. Mutually exclusive with field_list. If neither is provided, the enrichment set is used for pure matched output; otherwise the audience set is used.
+
+                    '
+                field_list:
+                  type:
+                  - array
+                  - 'null'
+                  items:
+                    type: string
+                  description: 'Explicit attribute list applied to every audience in the batch — every attribute must be a field allowed for that audience. Mutually exclusive with template_id. If neither is provided, the enrichment set is used for pure matched output; otherwise the audience set is used.
+
+                    '
+                output_format:
+                  type: string
+                  enum:
+                  - csv
+                  - avro
+                  - json
+                  - jsonl
+                  default: csv
+                  description: Shared download artifact format for the batch.
+                output_compression:
+                  type: string
+                  enum:
+                  - none
+                  - gzip
+                  default: none
+                  description: 'Shared artifact compression. gzip is supported for csv/json/jsonl; Avro uses native DEFLATE and rejects gzip.
+
+                    '
+                session_id:
+                  type:
+                  - string
+                  - 'null'
+                  description: Chat session ID for push notification routing.
+                campaign_id:
+                  type:
+                  - string
+                  - 'null'
+                  description: Campaign context for notification routing.
+            example:
+              audience_ids:
+              - aud_abc123
+              - aud_def456
+              destination: download
+              template_id: standard_iag
+      responses:
+        '207':
+          description: 'Multi-Status — per-audience results. Each entry contains `audience_id`, `delivery_id` (if created), `status`, and `error` (if failed). Billing capacity errors also expose the same machine-readable `code` and USD-denominated capacity details as the single-audience delivery endpoint.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - results
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - audience_id
+                      - status
+                      properties:
+                        audience_id:
+                          type: string
+                        delivery_id:
+                          type: string
+                          description: Present when a delivery was created or found.
+                        status:
+                          type: string
+                          enum:
+                          - processing
+                          - completed
+                          - error
+                        error:
+                          type: string
+                          description: Error message when status is 'error'.
+                        code:
+                          type: string
+                          description: Machine-readable billing code when billing prevents this item.
+                          enum:
+                          - BILLING_INSUFFICIENT_BALANCE
+                          - BILLING_POSTPAY_CEILING_EXCEEDED
+                          - BILLING_CONSUMER_POSTPAY_CEILING_EXCEEDED
+                          - BILLING_PROJECTION_STALE
+                          - BILLING_NOT_READY
+                        required:
+                          type: number
+                          description: Conservative USD requirement for a prepay billing failure.
+                        available:
+                          type: number
+                          description: Effective USD availability for a prepay billing failure.
+                        shortfall:
+                          type: number
+                          description: USD shortfall for a prepay billing failure.
+                        accrued:
+                          type: number
+                          description: Projected USD spend for a postpay ceiling failure.
+                        ceiling:
+                          type: number
+                          description: Configured USD ceiling for a postpay ceiling failure.
+                        output_format:
+                          type: string
+                          enum:
+                          - csv
+                          - avro
+                          - json
+                          - jsonl
+                          description: Artifact format when an existing or new download delivery is returned.
+                        output_compression:
+                          type: string
+                          enum:
+                          - none
+                          - gzip
+                          description: Artifact compression when an existing or new download delivery is returned.
+              example:
+                results:
+                - audience_id: aud_abc123
+                  delivery_id: dlv_xyz001
+                  status: processing
+                - audience_id: aud_def456
+                  status: error
+                  error: Audience expired on 2026-05-01. Run a refresh first.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}/deliveries:
+    get:
+      summary: List deliveries for an audience
+      operationId: listAudienceDeliveries
+      description: Returns all deliveries (past and pending) for the given audience, newest first. Requires 'discovery' scope.
+      tags:
+      - Deliveries
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Audience document ID.
+
+          '
+      responses:
+        '200':
+          description: 'List of deliveries.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deliveries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeliveryObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      summary: Create a delivery for an audience
+      operationId: createAudienceDelivery
+      description: 'Initiates a delivery of the audience to the specified destination and emits usage only after successful egress. Download is currently active. LiveRamp and Narrative return 503 before a delivery or billable record is created until their partner pushes are implemented. Returns the new DeliveryObject — poll `GET /v1/audiences/{id}/deliveries/{delivery_id}` for status updates. An audience whose record_count is unknown is counted before the delivery is reserved; if that count cannot be computed the request returns 503 `AUDIENCE_COUNT_UNAVAILABLE` and nothing is created.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Deliveries
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Audience document ID.
+
+          '
+      - name: X-Integration-Run-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          pattern: ^ir_[A-Za-z0-9_-]{40}$
+        description: 'OAuth partnership workflows only. Re-authorizes the private audience against the same provider grant and binds delivery, native billing, history, and promotion to the exact partnership run.
+
+          '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - destination
+              properties:
+                destination:
+                  type: string
+                  enum:
+                  - download
+                  - liveramp
+                  - narrative
+                  description: '`download` is active. `liveramp` and `narrative` currently return `DELIVERY_DESTINATION_UNAVAILABLE` without billing.
+
+                    '
+                template_id:
+                  type:
+                  - string
+                  - 'null'
+                  description: 'Enrichment template ID. `standard_iag` and `standard_enrichment` are valid for enrichment (see `templates[]` in GET /v1/catalog/fields). Mutually exclusive with `field_list`. If neither `template_id` nor `field_list` is provided, the enrichment set is used for pure matched output; otherwise the audience set is used.
+
+                    '
+                field_list:
+                  type:
+                  - array
+                  - 'null'
+                  items:
+                    type: string
+                  description: 'Explicit list of attribute names to include in the export (alternative to `template_id`) — every attribute must be a field allowed for that audience. Mutually exclusive with `template_id`. If neither is provided, the enrichment set is used for pure matched output; otherwise the audience set is used. Populated enrichment attributes are returned for every match level. If `iag_household_id` is requested and available for a row, it is exported in the same org-scoped, non-reversible format as `iag_person_id`.
+
+                    '
+                include_unmatched:
+                  type: boolean
+                  default: true
+                  description: '**(matched subtype only)** When `true` (default), the export includes rows from your upload that did not resolve to a real graph match — these appear with null enrichment attributes and, in the exported `iag_person_id` column, a best-effort id deterministically derived from the row''s own identity signals (or `null` if none qualified) rather than a real platform match. Set to `false` to export resolved records only. Every exported row (matched or not) also carries a `row_id` column matching your original upload, so you can correlate a delivered row back to its source input row regardless of match status. Matched rows additionally carry `match_level` (`I`/`H`/`A`/`S`/`D`), `match_type` (e.g. `graph_name_email_match`, `vector_name_address_match`, `spatial_match`), and `match_confidence` (0–1) — all `null` (not derived) on unmatched rows.
+
+                    '
+                webhook_url:
+                  type: string
+                  format: uri
+                  description: 'Optional HTTPS URL to receive `delivery.completed` or `delivery.failed` events for this delivery. Overrides the org-level webhook URL for this request only; if omitted, the org-configured URL is used as the fallback. Every dispatch is signed regardless of which URL is used — see the Webhooks tag for the envelope shape and signing scheme.
+
+                    '
+                liveramp_seat_id:
+                  type: string
+                  description: '(liveramp destination only) Your LiveRamp seat ID.
+
+                    '
+                narrative_dataset_id:
+                  type: string
+                  description: '(narrative destination only) Your Narrative.io dataset ID.
+
+                    '
+                output_format:
+                  type:
+                  - string
+                  - 'null'
+                  enum:
+                  - csv
+                  - avro
+                  - json
+                  - jsonl
+                  description: 'Output file format for download deliveries. Omit to auto-detect: matched audiences default to the format of the original uploaded file (avro → avro, csv → csv, json → json, jsonl → jsonl); all other subtypes default to `csv`. Avro exports preserve native source column types including `REPEATED`/array attributes. Ignored for `liveramp` and `narrative` destinations.
+
+                    '
+                output_compression:
+                  type: string
+                  enum:
+                  - none
+                  - gzip
+                  default: none
+                  description: 'Explicit artifact compression; it never inherits matched input compression. gzip is supported for csv/json/jsonl. Avro uses native DEFLATE and rejects outer gzip. Ignored for non-download destinations.
+
+                    '
+      responses:
+        '201':
+          description: 'Delivery created and queued.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}/deliveries/{delivery_id}:
+    get:
+      summary: Get a single delivery
+      operationId: getAudienceDelivery
+      description: 'Returns status, cost, download URL (if completed), and full metadata for a single delivery. Poll this endpoint after calling `POST /v1/audiences/{id}/deliveries` to track progress.
+
+
+        **Note on `download_urls`**: for completed `download` deliveries, the server regenerates fresh 24-hour presigned URLs on every GET. This means repeated calls return different URLs — all pointing to the same file(s). Always use the `download_urls` from the most recent response.
+
+        Requires ''discovery'' scope.'
+      tags:
+      - Deliveries
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Audience document ID.
+
+          '
+      - name: delivery_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Delivery document ID.
+
+          '
+      responses:
+        '200':
+          description: 'Delivery details.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/match/{id}/deliveries:
+    description: 'Convenience wrapper around POST /v1/audiences/{id}/deliveries for match jobs. The {id} is the match_id (segment document ID) returned by POST /v1/match/file — the server resolves the audience that wraps the segment and forwards the delivery. Always delivers to the download destination.
+
+      '
+    get:
+      summary: List deliveries for a file match job
+      operationId: listFileMatchDeliveries
+      tags:
+      - Deliveries
+      description: 'Lists deliveries for the audience linked to the given match (segment) ID. Resolves the audience that references the segment, then proxies to `GET /v1/audiences/{id}/deliveries` and returns its response unchanged.
+
+        Requires ''discovery'' scope.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'The `match_id` (segment document ID) returned by `POST /v1/match/file`.
+
+          '
+      responses:
+        '200':
+          description: List of deliveries for the linked audience.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deliveries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeliveryObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      summary: Deliver a file match job
+      operationId: deliverFileMatch
+      tags:
+      - Deliveries
+      description: '**Convenience wrapper around `POST /v1/audiences/{id}/deliveries` for file-based match jobs.** Always delivers to the `download` destination — the enriched file is exported to a time-limited signed URL. Omits DSP-only destinations (LiveRamp, Narrative) and their associated parameters.
+
+
+        **Workflow (after POST /v1/match/file):**
+
+        1. Upload your file to the `upload_url` returned by `POST /v1/match/file`. This
+
+        upload is what triggers identity resolution to begin — not this endpoint.
+
+
+        2. *(Recommended)* `POST /v1/match/{segment_id}/analyze` — preview column mapping.
+
+        Check `unmapped_columns` and `confidence` values. If mappings look wrong, rename
+
+        columns in your file and re-upload before triggering delivery.
+
+
+        3. Poll `GET /v1/match/file/{match_id}` until `matching_status` is `completed` (or use a
+
+        `segment.ready` webhook). Calling this endpoint before resolution finishes returns
+
+        `422 AUDIENCE_PENDING`.
+
+
+        4. **`POST /v1/match/{match_id}/deliveries`** (this endpoint) — export the already-
+
+        resolved match to a signed download URL. Optionally supply `template_id` or
+
+        `field_list` to choose which enriched attributes to include in the output — if
+
+        neither is given, the enrichment set is used for pure matched output; otherwise the audience set is used.
+
+
+        5. Poll **`GET /v1/match/{match_id}/deliveries`** for status — it takes the match id
+
+        directly, needs no audience id, and re-signs `download_urls` on every read. (The
+
+        audience-scoped `GET /v1/audiences/{audience_id}/deliveries/{delivery_id}` also
+
+        works but requires the audience id, which this wrapper is designed to let you avoid.)
+
+        When `status: completed`, `download_urls` (array of signed URLs) is returned.
+
+
+        All billing, dedup, reservation, and usage-outbox logic is handled identically to `POST /v1/audiences/{id}/deliveries`. Re-running the exact same (match_id × version × template) is always free.
+
+        Requires ''creator'' scope.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'The `match_id` returned by `POST /v1/match/file`.
+
+          '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                include_unmatched:
+                  type: boolean
+                  default: true
+                  description: 'Include rows that did not resolve to a real graph match in the output file — these appear with null enrichment attributes and, in the exported `iag_person_id` column, a best-effort id deterministically derived from the row''s own identity signals (or `null` if none qualified) rather than a real platform match. Set to `false` to receive only matched records. Defaults to `true`. Every exported row (matched or not) also carries a `row_id` column matching your original upload, for correlating a delivered row back to its source input row regardless of match status. Matched rows additionally carry `match_level` (`I`/`H`/`A`/`S`/`D`), `match_type` (e.g. `graph_name_email_match`, `vector_name_address_match`, `spatial_match`), and `match_confidence` (0–1) — all `null` (not derived) on unmatched rows.
+
+                    '
+                template_id:
+                  type:
+                  - string
+                  - 'null'
+                  description: 'Enrichment template ID. `standard_iag` and `standard_enrichment` are valid for enrichment (see `templates[]` in `GET /v1/catalog/fields`). Mutually exclusive with `field_list`. If neither is provided, the Standard Enrichment set (audience plus feature-store fields) is used for a pure matched export.
+
+                    '
+                field_list:
+                  type:
+                  - array
+                  - 'null'
+                  items:
+                    type: string
+                  description: 'Explicit list of attribute names to append — every attribute must be a valid enrichment attribute. Use `GET /v1/catalog/fields` to browse available attributes. Mutually exclusive with `template_id`. If neither is provided, the enrichment set is used for pure matched output; otherwise the audience set is used. Populated enrichment attributes are returned for every match level. If `iag_household_id` is requested and available for a row, it is exported in the same org-scoped, non-reversible format as `iag_person_id`.
+
+                    '
+                webhook_url:
+                  type: string
+                  format: uri
+                  description: 'Optional HTTPS URL to receive `delivery.completed` or `delivery.failed` events for this delivery. Overrides the org-level webhook URL for this request only; if omitted, the org-configured URL is used as the fallback. Every dispatch is signed regardless of which URL is used — see the Webhooks tag for the envelope shape and signing scheme.
+
+                    '
+                output_format:
+                  type:
+                  - string
+                  - 'null'
+                  enum:
+                  - csv
+                  - avro
+                  - json
+                  - jsonl
+                  description: 'Output file format. Omit to auto-detect from the uploaded file''s format (avro → avro, csv → csv, json → json, jsonl → jsonl). Avro exports preserve native column types including `REPEATED`/array attributes. CSV is the default when format cannot be determined.
+
+                    '
+                output_compression:
+                  type: string
+                  enum:
+                  - none
+                  - gzip
+                  default: none
+                  description: 'Explicit output artifact compression, independent of the uploaded file. gzip is supported for csv/json/jsonl. Avro uses native DEFLATE and rejects outer gzip.
+
+                    '
+            examples:
+              with_template:
+                summary: Deliver using the Standard IAG template
+                value:
+                  template_id: standard_iag
+              with_fields:
+                summary: Deliver a custom attribute set, matched records only
+                value:
+                  field_list:
+                  - age
+                  - gender
+                  - estimated_household_income
+                  include_unmatched: false
+              with_webhook:
+                summary: Deliver with webhook notification
+                value:
+                  template_id: standard_iag
+                  webhook_url: https://hooks.example.com/match-complete
+      responses:
+        '201':
+          description: 'Delivery initiated — or a free re-delivery if this (match_id × version × template) was already completed.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/deliveries:
+    get:
+      summary: List org-wide deliveries
+      operationId: listOrgDeliveries
+      description: Returns a paginated list of all deliveries across all audiences in the org, ordered by creation date descending. Requires 'discovery' scope.
+      tags:
+      - Deliveries
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: audience_id
+        in: query
+        schema:
+          type: string
+        description: 'Filter by specific audience ID.
+
+          '
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - processing
+          - completed
+          - failed
+        description: 'Filter by delivery status.
+
+          '
+      - name: destination
+        in: query
+        schema:
+          type: string
+          enum:
+          - download
+          - liveramp
+          - narrative
+        description: 'Filter by delivery destination.
+
+          '
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 25
+          maximum: 100
+        description: 'Number of results per page.
+
+          '
+      - name: cursor
+        in: query
+        schema:
+          type: string
+        description: 'Pagination cursor from previous response next_cursor attribute.
+
+          '
+      responses:
+        '200':
+          description: 'Paginated delivery list.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deliveries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeliveryObject'
+                  total:
+                    type: integer
+                  next_cursor:
+                    type:
+                    - string
+                    - 'null'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  responses:
+    UnprocessableEntity:
+      description: 'Request is structurally valid but the resource is in a state that prevents the operation (e.g. expired, pending, or not yet uploaded). See `error` and `code` for the specific reason.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            audience_expired:
+              value:
+                error: Audience expired
+                code: AUDIENCE_EXPIRED
+                message: This audience version expired. Run a refresh to create a new deliverable version.
+            audience_pending:
+              value:
+                error: Audience not ready
+                code: AUDIENCE_PENDING
+                message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    PaymentRequired:
+      description: 'The request cannot proceed on billing grounds. `BILLING_INSUFFICIENT_BALANCE` applies only to prepay accounts and includes `required`, `available`, and `shortfall` in USD. `BILLING_POSTPAY_CEILING_EXCEEDED` applies to an account ceiling; `BILLING_CONSUMER_POSTPAY_CEILING_EXCEEDED` applies to an agency child''s routed ceiling. Both ceiling responses include projected `accrued` and configured `ceiling` in USD.
+
+        '
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ErrorResponse'
+            - type: object
+              properties:
+                code:
+                  type: string
+                  enum:
+                  - BILLING_INSUFFICIENT_BALANCE
+                  - BILLING_POSTPAY_CEILING_EXCEEDED
+                  - BILLING_CONSUMER_POSTPAY_CEILING_EXCEEDED
+                shortfall:
+                  type: number
+                required:
+                  type: number
+                available:
+                  type: number
+                accrued:
+                  type: number
+                ceiling:
+                  type: number
+          examples:
+            insufficient_balance:
+              value:
+                error: Insufficient balance
+                code: BILLING_INSUFFICIENT_BALANCE
+                message: Insufficient effective balance
+                required: 1
+                available: 0.75
+                shortfall: 0.25
+            budget_ceiling_reached:
+              value:
+                error: Billing capacity unavailable
+                code: BILLING_POSTPAY_CEILING_EXCEEDED
+                message: Postpay ceiling would be exceeded
+                accrued: 105
+                ceiling: 100
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    DeliveryObject:
+      type: object
+      required:
+      - delivery_id
+      - audience_id
+      - audience_version
+      - destination
+      - status
+      - cost
+      - created_at
+      - expires_at
+      properties:
+        data_release:
+          oneOf:
+          - $ref: '#/components/schemas/EnrichmentRelease'
+          - type: 'null'
+        delivery_id:
+          type: string
+        audience_id:
+          type: string
+        audience_version:
+          type: integer
+        destination:
+          type: string
+          enum:
+          - download
+          - liveramp
+          - narrative
+        template_id:
+          type:
+          - string
+          - 'null'
+        field_list:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - processing
+          - completed
+          - failed
+        cost:
+          type: number
+          description: Conservative USD estimate for usage accepted for billing; not a finalized invoice total.
+        estimated_cost:
+          type: number
+          description: 'Pre-flight safety ceiling for a still-processing delivery. It is released into the final local `cost` estimate once resolution/export completes; the finalized invoice remains authoritative.
+
+            '
+        already_delivered:
+          type: boolean
+          description: '`true` when this exact audience content, resolved field selection, unmatched-row policy, and destination were already delivered — `cost` is 0 and the existing delivery record is returned.
+
+            '
+        message:
+          type: string
+          description: Human-readable note, present on free re-delivery responses.
+        created_at:
+          type: string
+        completed_at:
+          type:
+          - string
+          - 'null'
+        expires_at:
+          type: string
+        output_format:
+          type: string
+          enum:
+          - csv
+          - avro
+          - json
+          - jsonl
+          description: 'Output file format. Present on `download` deliveries. Avro exports preserve native source column types (including `REPEATED`/array columns) rather than flattening everything to strings. Read endpoints normalize legacy records; an immediate DSP-create response may omit this field.
+
+            '
+        output_compression:
+          type: string
+          enum:
+          - none
+          - gzip
+          description: 'Explicit outer artifact compression, normalized to none for legacy records on read and possibly omitted by an immediate DSP-create response. It never inherits input compression. Avro uses native DEFLATE and therefore reports none here rather than outer gzip.
+
+            '
+        output_bytes:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          description: 'Exact sum of stored object sizes across every output part. Null until completion or when no downloadable artifact is produced.
+
+            '
+        download_urls:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'Signed download URLs for every completed `download` artifact part, sorted deterministically. Always an array and may contain multiple export parts for any format. Signed URLs expire after 24 hours — call `GET /v1/audiences/{id}/deliveries/{did}` to regenerate fresh URLs at any time.
+
+            '
+        output_record_count:
+          type:
+          - integer
+          - 'null'
+          description: 'Actual row count in the exported file. Set at completion for matched audiences only (where the count is unknown until the TVF runs). For filter, similarity, and propensity audiences this equals the audience''s `record_count`.
+
+            '
+        failure_reason:
+          type:
+          - string
+          - 'null'
+        matched_segment_id:
+          type:
+          - string
+          - 'null'
+          description: 'ID of the matched (file-match) segment resolved from the delivered audience''s composition at delivery creation. Populated only when the audience includes a matched segment; null for filter, similarity, and propensity deliveries and for deliveries created before this attribute existed.
+
+            '
+        source_job_id:
+          type:
+          - string
+          - 'null'
+          description: 'The matched segment''s originating file-match job ID — links the delivery back to the file-match event that produced its source data. Populated only when the delivered audience resolves a matched segment that carries a source job; null otherwise (including deliveries created before this attribute existed).
+
+            '
+        integration_run_id:
+          type: string
+          pattern: ^ir_[A-Za-z0-9_-]{40}$
+          description: Present only for an authorized private partnership workflow.
+    EnrichmentRelease:
+      type: object
+      required:
+      - major
+      - minor
+      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
+      properties:
+        major:
+          type: integer
+          minimum: 1
+        minor:
+          type: integer
+          minimum: 0
+    LicensePricing:
+      type: object
+      required:
+      - status
+      - evaluated_at
+      - already_licensed_count
+      properties:
+        status:
+          type: string
+          enum:
+          - live
+          - cached
+          - unavailable
+          description: 'Whether cost_estimate reflects a freshly-computed license split (live), a recent cached one (cached, still authoritative — only the underlying counts are reused, dollars are always recomputed from current rates), or could not be determined in time (unavailable — cost_estimate equals max_cost_estimate exactly in this case, so no consumer sees a misleading number).
+
+            '
+        evaluated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: 'When the license split backing cost_estimate was computed. For a cached split this is the ORIGINAL computation time, not now — use it to judge staleness. Null when status is unavailable.
+
+            '
+        already_licensed_count:
+          type:
+          - integer
+          - 'null'
+          description: 'How many of this audience''s candidate identities already hold an active license elsewhere and were therefore excluded from cost_estimate''s billable count. Null when status is unavailable.
+
+            '
+    CostEstimate:
+      type: object
+      required:
+      - base_cost
+      - match_cost
+      - field_cost
+      - destination_cost
+      - total_cost
+      - unit_price
+      - billing_count
+      properties:
+        base_cost:
+          type: number
+          description: Base audience-delivery cost.
+        match_cost:
+          type: number
+          description: One-time deferred file-match cost included only until the underlying run is first delivered.
+        field_cost:
+          type: number
+          description: Total surcharge for requested attributes.
+        destination_cost:
+          type: number
+          description: Destination surcharge (0 for download).
+        total_cost:
+          type: number
+          description: Sum of all cost components.
+        unit_price:
+          type: number
+          description: Effective cost per record.
+        billing_count:
+          type: integer
+          description: Number of records that will be billed.
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

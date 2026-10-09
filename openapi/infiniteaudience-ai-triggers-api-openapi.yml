@@ -1,0 +1,346 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Triggers API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Triggers across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Triggers
+  description: Durable, per-event-filtered webhook-trigger subscriptions (e.g. one per Zap) — distinct from the single implicit URL configured under the Webhooks tag / `/v1/settings/webhook`. Delivery is retried with exponential backoff and dead-lettered after repeated failures. An OAuth-authenticated caller manages only the subscriptions created by its own connection; an API-key/session caller with 'account' scope manages every subscription in the org.
+paths:
+  /v1/webhook-subscriptions:
+    post:
+      summary: Create a webhook-trigger subscription
+      operationId: createWebhookSubscription
+      description: Registers a durable trigger subscription — delivery is retried with exponential backoff and dead-lettered after repeated failures (a 410 response from `target_url` dead-letters immediately and revokes the subscription — this is how Zapier signals "this Zap was turned off"). Requires 'account' scope, or an OAuth access token — in the OAuth case, this subscription is bound to your connection automatically. Capped at 25 active subscriptions per org.
+      tags:
+      - Triggers
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - target_url
+              - events
+              properties:
+                target_url:
+                  type: string
+                  format: uri
+                  description: Must be HTTPS and resolve to a public, non-internal address — validated at creation and re-validated before every delivery attempt.
+                events:
+                  type: array
+                  minItems: 1
+                  items:
+                    $ref: '#/components/schemas/NotifiableEventType'
+      responses:
+        '201':
+          description: Subscription created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSubscriptionCreated'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          description: The org already has 25 active subscriptions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: List webhook-trigger subscriptions
+      operationId: listWebhookSubscriptions
+      description: Requires 'account' scope, or an OAuth access token — in the OAuth case, this list is scoped to subscriptions created by your own connection only.
+      tags:
+      - Triggers
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Subscriptions visible to the caller, most recent first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - subscriptions
+                properties:
+                  subscriptions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookSubscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/webhook-subscriptions/{id}:
+    delete:
+      summary: Revoke a webhook-trigger subscription
+      operationId: revokeWebhookSubscription
+      description: Requires 'account' scope, or an OAuth access token. Idempotent — revoking an already-revoked subscription still returns 204. An OAuth caller may only revoke a subscription bound to its own connection; any other subscription id returns 404 rather than 403, so existence is never leaked.
+      tags:
+      - Triggers
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Subscription revoked (or was already revoked).
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    NotifiableEventType:
+      type: string
+      description: 'Events that can trigger a webhook delivery. Segment and delivery events support ordinary durable subscriptions and the org''s legacy webhook. Partnership events are restricted to the owning OAuth grant and are never sent to an org-wide webhook.
+
+        '
+      enum:
+      - enrichment.release.available
+      - segment.ready
+      - segment.failed
+      - delivery.completed
+      - delivery.failed
+      - integration.enrichment.prepared
+      - integration.enrichment.failed
+      - integration.enrichment.blocked
+      - integration.file.ready
+      - integration.file.failed
+    WebhookSubscriptionCreated:
+      type: object
+      description: 'Response to POST /v1/webhook-subscriptions. `secret` is returned exactly once, in plaintext — it is never retrievable again after this response.
+
+        '
+      required:
+      - id
+      - target_url
+      - events
+      - secret
+      - status
+      - created_at
+      properties:
+        id:
+          type: string
+        target_url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotifiableEventType'
+        secret:
+          type: string
+          description: 'Plaintext HMAC-SHA256 signing secret. Store it now — every subsequent read only returns it masked. Used to compute `X-IA-Signature` on every delivery to this subscription — see the Webhooks tag''s Signing section for the exact scheme.
+
+            '
+        status:
+          type: string
+          enum:
+          - active
+        created_at:
+          type: string
+          format: date-time
+    WebhookSubscription:
+      type: object
+      description: 'A durable event-trigger subscription (e.g. a Zap that is turned on). Delivery is retried with exponential backoff; see the Triggers tag for the ownership model.
+
+        '
+      required:
+      - id
+      - target_url
+      - events
+      - status
+      - created_at
+      - created_by
+      - last_delivery_at
+      - consecutive_failure_count
+      properties:
+        id:
+          type: string
+        target_url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotifiableEventType'
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+          - revoked
+          description: '"disabled" is set automatically after 20 consecutive dead-lettered deliveries; "revoked" is explicit — owner action, disconnecting the partnership, or the target endpoint itself returning 410 Gone.
+
+            '
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          description: Identifier of the creating caller.
+        last_delivery_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        consecutive_failure_count:
+          type: integer
+          description: Resets to 0 on any successful delivery; reaching 20 auto-disables the subscription.
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  responses:
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

@@ -1,0 +1,1951 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Enrichment API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Enrichment across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Enrichment
+  description: Attribute catalog, propensity models, synchronous micro-batch matching, and async file-based identity resolution
+paths:
+  /v1/match/{id}/analyze:
+    post:
+      summary: Analyze matched segment column mapping
+      operationId: analyzeMatchSegment
+      description: 'Streams a bounded schema sample from csv/json/jsonl/Avro input (raw or gzip), analyzes the column structure using AI inference, and returns a mapping of your source columns to standard identity attributes. Takes a **segment_id** (returned by `POST /v1/match/file`) — no audience wrapper required. Call this after uploading your file to preview how columns will be interpreted before the match runs.
+
+
+        **Response attributes to watch:**
+
+        - `columns[].confidence`: values below 0.6 indicate uncertain mappings that are
+
+        worth verifying before the match runs.
+
+
+        - `columns[].warning`: an attribute-level concern flagged by the analyzer (e.g. ambiguous
+
+        column name or missing country codes on phone numbers).
+
+
+        - `unmapped_columns`: columns that could not be mapped and will be excluded from
+
+        identity resolution. If a critical identity attribute (email, phone, last_name) appears
+
+        here, the match will have reduced accuracy or may fail entirely.
+
+
+        - `recommendations`: suggestions for improving match quality.
+
+
+        **If mappings are incorrect:** rename the affected columns in your file to match standard identity attribute names (`email`, `phone`, `email_sha256`, `phone_sha256`, `first_name`, `middle_name`, `last_name`, `name_suffix`, `address_1`, `address_2`, `city`, `state`, `zip`, `dob`, `iag_person_id`) and re-upload. The match workflow will re-analyze automatically.
+
+
+        **Analysis gate:** unless the segment was created/refreshed with `hitl: true`, the platform always runs its own column analysis automatically as part of the match workflow, and by the time this endpoint can return real data the upload has already triggered that automatic resolution — calling it does not pause or gate anything in that case, it''s a read-only preview only. If no usable identity attributes can be resolved, the segment transitions to `failed` and `error_message` describes which columns could not be mapped.
+
+
+        **With `hitl: true`:** the segment''s upload is staged rather than resolving automatically, so this endpoint reads the staged file and genuinely nothing has started yet — review the response, then call `POST /v1/segments/{id}/mappings` to confirm (starts resolution) or `POST /v1/segments/{id}/mappings/cancel` to abort.
+
+        Requires ''discovery'' scope.'
+      tags:
+      - Enrichment
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The segment_id of the matched segment (from POST /v1/match/file).
+      responses:
+        '200':
+          description: Column mapping analysis.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - segment_id
+                - analysis
+                properties:
+                  segment_id:
+                    type: string
+                  analysis:
+                    type: object
+                    required:
+                    - columns
+                    - unmapped_columns
+                    - recommendations
+                    properties:
+                      columns:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - source_column
+                          - mapped_to
+                          - inferred_type
+                          - confidence
+                          - warning
+                          properties:
+                            source_column:
+                              type: string
+                            mapped_to:
+                              type:
+                              - string
+                              - 'null'
+                            inferred_type:
+                              type: string
+                            confidence:
+                              type: number
+                            warning:
+                              type:
+                              - string
+                              - 'null'
+                      unmapped_columns:
+                        type: array
+                        items:
+                          type: string
+                      recommendations:
+                        type: array
+                        items:
+                          type: string
+              example:
+                segment_id: seg_abc123
+                analysis:
+                  columns:
+                  - source_column: Email Address
+                    mapped_to: email
+                    inferred_type: STRING
+                    confidence: 0.98
+                    warning: null
+                  - source_column: Mobile
+                    mapped_to: phone
+                    inferred_type: STRING
+                    confidence: 0.84
+                    warning: Phone numbers lack country codes — US assumed
+                  unmapped_columns: []
+                  recommendations:
+                  - Add country codes to phone numbers for higher match rates
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/catalog/fields:
+    get:
+      summary: Attribute catalog with pricing
+      operationId: getCatalogFields
+      description: Browse output fields, allowed filter operators, coded values and descriptions. product_usage=audience supports audience outputs; filterable and operators determine filtering support. feature_store adds enrichment output fields. compact=true returns bounded pages (20 fields by default), template summaries, and no pricing unless requested. Follow next_cursor; to page enum values pass field_name and values_next_cursor as value_cursor. Coverage is non-null availability, not flag prevalence; array non-empty coverage is unavailable. Requires 'discovery' scope.
+      tags:
+      - Enrichment
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'Attribute catalog.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fields:
+                    type: array
+                    description: 'Available enrichment attributes from the column registry.
+
+                      '
+                    items:
+                      $ref: '#/components/schemas/PublicCatalogField'
+                  templates:
+                    type: array
+                    description: 'Standard IAG contains audience fields. Standard Enrichment contains audience and feature-store output fields.
+
+                      '
+                    items:
+                      type: object
+                      required:
+                      - template_id
+                      - label
+                      properties:
+                        template_id:
+                          type: string
+                          enum:
+                          - standard_iag
+                          - standard_enrichment
+                        label:
+                          type: string
+                        fields:
+                          type: array
+                          items:
+                            type: string
+                          description: Field names in full mode.
+                        field_count:
+                          type: integer
+                          description: Number of template fields in compact mode.
+                    example:
+                    - template_id: standard_iag
+                      label: Standard IAG
+                      fields:
+                      - age
+                      - gender
+                      - estimated_household_income
+                    - template_id: standard_enrichment
+                      label: Standard Enrichment
+                      fields:
+                      - age
+                      - gender
+                      - estimated_household_income
+                      - acs_median_age
+                  pricing:
+                    type:
+                    - object
+                    - 'null'
+                    description: 'Effective per-record pricing for the calling org.
+
+                      '
+                    properties:
+                      base_record_price:
+                        type: number
+                        description: 'Base cost per record (USD).
+
+                          '
+                      matched_record_price:
+                        type: number
+                        description: 'Cost per resolved record for matched audiences (USD).
+
+                          '
+                      micro_batch_price_per_record:
+                        type: number
+                        description: Cost per resolved record for synchronous micro-batch matching (USD).
+                      field_surcharges:
+                        type: object
+                        description: 'Additional per-record cost for specific attributes (field_name → USD).
+
+                          '
+                        additionalProperties:
+                          type: number
+                      delivery_surcharges:
+                        type: object
+                        description: 'Per-record surcharge by destination (destination → USD).
+
+                          '
+                        additionalProperties:
+                          type: number
+                      usage_discount_bps:
+                        type: integer
+                        minimum: 0
+                        maximum: 10000
+                        description: Contract usage-rate discount in basis points; commitment charges and minimums are unchanged.
+                      projected_at:
+                        type:
+                        - string
+                        - 'null'
+                        format: date-time
+                      source:
+                        type: string
+                        enum:
+                        - metronome_contract
+                        - shopify_plan
+                      pricing_version:
+                        type:
+                        - string
+                        - 'null'
+                        description: Approved Shopify pricing version; null for native contract pricing.
+                    required:
+                    - base_record_price
+                    - matched_record_price
+                    - micro_batch_price_per_record
+                    - field_surcharges
+                    - delivery_surcharges
+                    - usage_discount_bps
+                    - source
+                    - projected_at
+                    - pricing_version
+                  total:
+                    type: integer
+                    description: Number of fields matching the filters, before pagination.
+                  next_cursor:
+                    type:
+                    - string
+                    - 'null'
+                    description: Pass as cursor for the next page; null when complete.
+                  product_usage_definitions:
+                    type: object
+                    additionalProperties:
+                      type: string
+                required:
+                - fields
+                - templates
+                - pricing
+                - total
+                - next_cursor
+                - product_usage_definitions
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+      parameters:
+      - name: compact
+        in: query
+        description: Bound response size and use template summaries. MCP and A2A default to this mode.
+        schema:
+          type: boolean
+          default: false
+      - name: product_usage
+        in: query
+        description: Filter by registry product usage.
+        schema:
+          type: string
+          enum:
+          - audience
+          - feature_store
+      - name: template_id
+        in: query
+        description: Restrict fields to a delivery template.
+        schema:
+          type: string
+          enum:
+          - standard_iag
+          - standard_enrichment
+      - name: field_name
+        in: query
+        description: Exact field name; required with value_cursor.
+        schema:
+          type: string
+      - name: search
+        in: query
+        description: Case-insensitive name, label and description search.
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: Maximum fields per page; compact mode defaults to 20.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      - name: cursor
+        in: query
+        description: next_cursor from a previous page.
+        schema:
+          type: string
+      - name: value_cursor
+        in: query
+        description: values_next_cursor from the selected field.
+        schema:
+          type: integer
+          minimum: 0
+      - name: value_limit
+        in: query
+        description: Maximum enum values per field; defaults to 100 for one field or 25 in a compact list.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      - name: include_pricing
+        in: query
+        description: Defaults to false in compact mode and true otherwise. Set false to discover fields without billing setup.
+        schema:
+          type: boolean
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/data-release:
+    get:
+      summary: Current data release version
+      operationId: getDataRelease
+      description: 'Returns the platform''s current data-release version — the same value `POST /v1/match`''s per-row `resolution_action: "current"` label compares a previously-delivered identity''s stored refresh-major against. Cacheable: backed by a cache refreshed roughly every 15 minutes, not a live query.
+
+        Requires ''discovery'' scope.'
+      tags:
+      - Enrichment
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: 'Current data-release version.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current_release_major:
+                    type: integer
+                    description: 'Current full-warehouse-rebuild release version. A previously-delivered identity''s stored refresh-major equal to this value is guaranteed unchanged since last delivered.
+
+                      '
+                  current_release_minor:
+                    type: integer
+                    description: Current incremental-delta release version within the major release.
+                  as_of:
+                    type: string
+                    format: date-time
+                    description: When this snapshot was last refreshed.
+                required:
+                - current_release_major
+                - current_release_minor
+                - as_of
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '503':
+          description: 'The data-release registry has not been populated yet. Retry shortly.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/match:
+    post:
+      summary: Micro-batch synchronous match
+      operationId: matchMicroBatch
+      description: 'Synchronous inline matching for small record sets (up to 100 records). Submit your records and the list of attributes you want appended, and receive matched results immediately.
+
+
+        **Person IDs:** A real match returns a tier `01` `iag_person_id`: a stable, non-reversible ID salted for your organization. The same real identity is consistent inside your organization and different in every other organization. An unmatched row may receive a derived tier `02`–`05` ID from its own submitted signals. That derived value is a continuity label—not a graph match, licensed identity, refresh key, or resolved audience member. Use the match metadata and `match_count`, not ID presence alone, to identify real matches.
+
+
+        **Billing:** Usage is emitted per matched record only (unmatched records are free). The platform reserves a conservative ceiling and durably queues finalized usage for billing rather than debiting a local balance field. `amount_charged` is the conservative USD estimate accepted for provider delivery; it is not a finalized invoice amount.
+
+        Independent workflows for your organization can settle concurrently. License reuse is checked per distinct identity against confirmed canonical history before settlement. If two overlapping workflows settle before either confirmation is visible, both can be charged for that identity; the canonical ledger retains one license period.
+
+
+        **Records array:** one output record per input record — matched or not. Unmatched rows carry `match_level`/`match_type`/`match_confidence: null` and a best-effort `iag_person_id` derived from the row''s own identity signals (or `null` if none qualified) — only real matches are billed. Use `match_count` vs `record_count` to distinguish real matches from derived-only rows.
+
+
+        For datasets larger than 100 records, use `POST /v1/match/file` instead. Upload, analysis, and async matching are free until egress. The first successful delivery involving that file-match run emits its one aggregate match usage set together with normal delivery usage.
+
+
+        **Retries:** pass an `Idempotency-Key` header to make a retried call safe to repeat without a duplicate charge. The same key with an identical body returns the original response verbatim, at zero additional charge (honored for 24 hours); the same key with a different body is rejected with 409 `IDEMPOTENCY_KEY_CONFLICT`. Without this header, every call reserves and charges independently — recommended for any client that may retry on timeout.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Enrichment
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 160
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$
+        description: 'Optional. Makes a retried call safe to repeat — see the endpoint description''s **Retries** section.
+
+          '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - records
+              properties:
+                records:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  description: 'Records to match (max 100). Each object should include at least one identity signal: `email` (or `email_sha256`), `phone` (or `phone_sha256`), `full_name` (or `first_name`+`last_name`), or address attributes (`address_1`, `city`, `state`, `zip`). All attributes are optional — include only what you have. Any extra attributes you include are echoed back unchanged.
+
+                    '
+                  items:
+                    type: object
+                    additionalProperties: true
+                    properties:
+                      row_id:
+                        type: string
+                        minLength: 1
+                        pattern: \S
+                        description: 'Optional correlation ID, preserved exactly. Must contain at least one non-whitespace character. Omitted IDs default to the record''s 1-indexed string position ("1", "2", ...). All effective IDs must be unique across this request, including custom/generated IDs. Duplicate IDs reject the whole request with 400 DUPLICATE_ROW_ID; invalid supplied IDs return 400 INVALID_ROW_ID.
+
+                          '
+                      email:
+                        type: string
+                        format: email
+                        description: Primary email address.
+                      phone:
+                        type: string
+                        description: Phone number in any standard format.
+                      email_sha256:
+                        type: string
+                        description: 'Lowercase-hex SHA-256 hash of a normalized email address, for clients whose own systems never expose raw email addresses (e.g. data co-op / clean-room partners using the same hashing convention). The platform passes this through without re-hashing. Do not submit an already-hashed value in `email` — it would be hashed a second time and never match.
+
+                          '
+                      phone_sha256:
+                        type: string
+                        description: 'Lowercase-hex SHA-256 hash of a normalized phone number. Same pre-hashed semantics as `email_sha256`.
+
+                          '
+                      full_name:
+                        type: string
+                        description: 'Optional convenience field. When provided (and first_name / last_name are absent), the engine parses this into first_name, middle_name, last_name, and name_suffix automatically. The parsed components are used for matching; the original full_name value is echoed back unchanged.
+
+                          '
+                      first_name:
+                        type: string
+                      middle_name:
+                        type: string
+                      last_name:
+                        type: string
+                      name_suffix:
+                        type: string
+                        description: Generational suffix (e.g. `JR`, `SR`, `III`).
+                      emails:
+                        type: array
+                        items:
+                          type: string
+                          format: email
+                        description: 'Additional raw email addresses beyond `email`, tried as extra match permutations.
+
+                          '
+                      emails_sha256:
+                        type: array
+                        items:
+                          type: string
+                        description: Pre-hashed counterpart to `emails`.
+                      phones:
+                        type: array
+                        items:
+                          type: string
+                        description: 'Additional raw phone numbers beyond `phone`, tried as extra match permutations.
+
+                          '
+                      phones_sha256:
+                        type: array
+                        items:
+                          type: string
+                        description: Pre-hashed counterpart to `phones`.
+                      addresses:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MatchAddress'
+                        description: 'Additional addresses beyond `address_1`/`city`/`state`/`zip`, tried as extra match permutations.
+
+                          '
+                      address_1:
+                        type: string
+                        description: Street address line 1.
+                      address_2:
+                        type: string
+                        description: Street address line 2 (apt, suite, etc.).
+                      city:
+                        type: string
+                      state:
+                        type: string
+                        description: Two-letter US state code.
+                      zip:
+                        type: string
+                        description: 5- or 9-digit ZIP code.
+                      dob:
+                        type: string
+                        description: Date of birth — any parseable date format (e.g. YYYY-MM-DD).
+                      iag_person_id:
+                        type: string
+                        description: 'A previously-issued tier `01` person ID from this organization (format `CLIENTCODE_TIER_HASH`, e.g. returned by a prior call to this endpoint, a matched delivery, or a licensed audience delivery). A valid ID can go directly to refresh without repeating identity matching. A foreign, malformed, or derived tier `02`–`05` ID cannot be used for direct refresh; the row falls back to its other identity signals, if any.
+
+                          '
+                field_list:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Enrichment attribute names to append on match — every attribute must be a field allowed for this output (see `GET /v1/catalog/fields`). Mutually exclusive with `template_id`. If neither is provided, the Standard Enrichment set (fields tagged `audience` or `feature_store`) is used. Populated enrichment attributes are returned for every accepted match level.
+
+                    '
+                template_id:
+                  type: string
+                  description: 'Pre-built enrichment bundle ID. `standard_iag` and `standard_enrichment` are valid (see `templates[]` in `GET /v1/catalog/fields`). Mutually exclusive with `field_list`. If neither is provided, the Standard Enrichment set is used.
+
+                    '
+                match_level:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - I
+                    - H
+                    - D
+                    - S
+                    - A
+                  description: 'Filter results to specific match levels. `I` = individual, `H` = household, `D` = digital (email/phone only match), `S` = spatial (nearby-address proximity match), `A` = address-level. Defaults to all 5 levels (`[''I'', ''H'', ''D'', ''S'', ''A'']`) if omitted. A prior real match at one of the requested levels or a settled record license can authorize direct Refresh of a tier-01 ID. An identity without a prior real match at a requested level reports null `match_level`. Include I when requesting direct ID lookup because the engine classifies that path as I.
+
+                    '
+                spatial_mode:
+                  type: string
+                  enum:
+                  - residential
+                  - work
+                  - auto
+                  default: residential
+                  description: 'Phase 3 spatial trade-area profile. `residential` is the default; use `work` for workplace-oriented spatial matching, or `auto` for dynamic commercial workplace routing.
+
+                    '
+                create_scratch_segment:
+                  type: boolean
+                  default: false
+                  description: 'When true, materialize the real matched identities from this completed response as a reusable 24-hour matched scratch segment. This reuses the already-paid result and does not run matching or billing again. The response''s `scratch_segment` is null when no identities matched.
+
+                    '
+      responses:
+        '200':
+          description: 'Matched records.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data_release:
+                    oneOf:
+                    - $ref: '#/components/schemas/EnrichmentRelease'
+                    - type: 'null'
+                  records:
+                    type: array
+                    description: 'One output record per input record — matched or not. Matched rows carry a resolved `iag_person_id`, `match_level`/`match_type`/`match_confidence`, and (when requested) enrichment attributes. Unmatched rows carry `match_level`/`match_type`/`match_confidence: null` and a best-effort derived `iag_person_id` (see `iag_person_id` below) computed from the row''s own identity signals, or `null` if none qualified. Use `match_count` vs `record_count` to distinguish real matches from derived-only rows — only real matches are billed. Input attributes are echoed back unchanged; resolved enrichment attributes are added alongside them.
+
+                      '
+                    items:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        row_id:
+                          type: string
+                          description: 'Correlates a matched output row back to its position in the submitted records array (1-indexed as a string when the input didn''t supply one).
+
+                            '
+                        email:
+                          type: string
+                          format: email
+                        phone:
+                          type: string
+                        email_sha256:
+                          type: string
+                          description: 'Present when the request included `email_sha256`, echoed back unchanged.
+
+                            '
+                        phone_sha256:
+                          type: string
+                          description: 'Present when the request included `phone_sha256`, echoed back unchanged.
+
+                            '
+                        full_name:
+                          type:
+                          - string
+                          - 'null'
+                          description: 'Present when the request included full_name; the original submitted value, echoed back unchanged. Null when the request did not include one.
+
+                            '
+                        first_name:
+                          type: string
+                        middle_name:
+                          type: string
+                          description: 'Echoed back when present on input, or populated from `full_name` parsing when the request supplied `full_name` without `first_name`/`last_name`.
+
+                            '
+                        last_name:
+                          type: string
+                        name_suffix:
+                          type: string
+                          description: 'Generational suffix (e.g. `JR`, `SR`, `III`). Echoed back when present on input, or populated from `full_name`/`last_name` parsing.
+
+                            '
+                        address_1:
+                          type: string
+                        address_2:
+                          type: string
+                        city:
+                          type: string
+                        state:
+                          type: string
+                        zip:
+                          type: string
+                        dob:
+                          type: string
+                        emails:
+                          type: array
+                          items:
+                            type: string
+                            format: email
+                          description: Additional raw emails from the request, echoed back unchanged.
+                        emails_sha256:
+                          type: array
+                          items:
+                            type: string
+                          description: Additional pre-hashed emails from the request, echoed back unchanged.
+                        phones:
+                          type: array
+                          items:
+                            type: string
+                          description: Additional raw phones from the request, echoed back unchanged.
+                        phones_sha256:
+                          type: array
+                          items:
+                            type: string
+                          description: Additional pre-hashed phones from the request, echoed back unchanged.
+                        addresses:
+                          type: array
+                          items:
+                            type: object
+                            additionalProperties: true
+                          description: Additional addresses from the request, echoed back unchanged.
+                        iag_person_id:
+                          type:
+                          - string
+                          - 'null'
+                          description: 'Org-scoped, non-reversible identifier — never a raw internal id. The same real identity receives a consistent tier-01 ID within one organization and a different ID in every other organization. Format: `CLIENTCODE_TIER_HASH`. `TIER` is `01` for a real graph match (see `match_level`/`match_type`/`match_confidence`) or `02`–`05` for a best-effort id deterministically derived from the row''s own identity signals when it did NOT match (name+address, email, name+phone, or name+zip, in that priority order). `null` when the row is unmatched and no identity signal qualified for derivation. A tier-01 id may be resubmitted as input (see `iag_person_id` on the request schema above) to re-resolve the same match; derived (tier 02–05) ids cannot be.
+
+                            '
+                        match_level:
+                          type:
+                          - string
+                          - 'null'
+                          enum:
+                          - I
+                          - H
+                          - A
+                          - S
+                          - D
+                          - null
+                          description: 'Granularity of the match. `I` = individual, `H` = household, `A` = address-level, `S` = spatial (nearby-address proximity match), `D` = digital (email/phone only match). Null on unmatched rows and on direct Refresh when no real observation exists at a requested level, including audience-only identities. Other direct Refresh rows report the most recent requested real level, not the ID lookup''s label.
+
+                            '
+                        match_type:
+                          type: string
+                          description: 'Matching strategy that produced the result (e.g. `graph_name_email_match`, `vector_name_address_match`, `spatial_match`). Present only on matched records.
+
+                            '
+                        match_confidence:
+                          type: number
+                          description: 'Confidence score for the match (0–1). Present only on matched records.
+
+                            '
+                        enrichment:
+                          type: object
+                          additionalProperties: true
+                          description: 'Requested enrichment attributes keyed by column name (e.g. `acs_housing_units`, `usda_median_hh_income_2023`). Only present when `field_list` or `template_id` was provided and the record matched.
+
+                            '
+                        resolution_action:
+                          type: string
+                          enum:
+                          - resolved
+                          - refreshed
+                          - current
+                          - unmatched
+                          - identity_unavailable
+                          description: 'Customer-facing resolution outcome for this row, orthogonal to `license_action` below. `resolved` = an organic PII match (no id submitted for this row). `refreshed` = the caller submitted a valid `iag_person_id` for this row (direct Refresh) and the platform cannot confirm this identity''s enrichment is unchanged since it was last delivered — whether or not this call was also billed (see `license_action`). `current` = same as `refreshed`, but the platform''s data-release registry (see `GET /v1/data-release`) confirms that the identity remains on the same refresh-major release as its last delivery. The response contains current-mart values for the fields requested in this call; the requested field set may differ from an earlier call. `unmatched` = no real match, never licensed. `identity_unavailable` = a previously valid seeded id no longer resolves to deliverable data (deletion, suppression, retirement, or a split graph identity — the underlying reason is deliberately never distinguished here); the record otherwise looks exactly like an ordinary unmatched row. The platform''s full vocabulary also defines `invalid`, reserved for a reject-the-row policy this API does not yet implement — it is not returned today, but a client should not treat its future appearance as a breaking change.
+
+                            '
+                        license_action:
+                          type: string
+                          enum:
+                          - none
+                          - started
+                          - renewed
+                          description: 'License effect of this row''s resolution, independent of `resolution_action` — a row can simultaneously be `resolution_action: resolved` and `license_action: renewed`. `none` = no license period was started or renewed this call (already active, unmatched, or identity_unavailable). `started` = this identity had no prior confirmed license claim and one was started. `renewed` = a prior confirmed claim existed (even if expired) and the period was renewed.
+
+                            '
+                        license_expires_at:
+                          type:
+                          - string
+                          - 'null'
+                          description: 'ISO-8601 timestamp the identity''s current license period expires. Populated when reusing an existing active license (`license_action: none`) and for a row starting or renewing a period in this same call (`license_action: started` or `renewed` — a fixed 12 months from now). Null when no license period applies (e.g. an unmatched or identity_unavailable row).
+
+                            '
+                  record_count:
+                    type: integer
+                    description: 'Total number of input records processed.
+
+                      '
+                  match_count:
+                    type: integer
+                    description: 'Number of authorized records returned for a known identity.
+
+                      '
+                  license_approval_required_count:
+                    type: integer
+                    minimum: 0
+                    description: 'Matched inputs withheld because the integration operation did not authorize a new licence or renewal. These inputs produce no enrichment output or licence charge and require explicit purchase approval. Ordinary manually requested matching returns zero.
+
+                      '
+                  billable_identity_count:
+                    type: integer
+                    description: 'Number of unique real identities charged for this operation, deduplicated by internal identity rather than row count. Duplicate rows resolving to the same identity are counted once; a resubmitted `iag_person_id` for an identity with an active license contributes zero (free Refresh). May be less than or equal to `match_count`, and is the value actually billed — `match_count` describes matching, not billing.
+
+                      '
+                  match_rate:
+                    type: number
+                    description: 'match_count / record_count.
+
+                      '
+                  amount_charged:
+                    type: number
+                    description: 'Conservative platform estimate in USD for usage accepted for delivery (e.g. `0.30` means $0.30 estimated). This legacy-named field is not a local credit debit or finalized invoice amount; unmatched records emit no usage.
+
+                      '
+                  run_id:
+                    type: string
+                    description: 'Unique identifier for this match run. Pass to `GET /v1/match/runs/{runId}` to retrieve full details or audit this call later. Requires ''discovery'' scope to read.
+
+                      '
+                  scratch_segment:
+                    oneOf:
+                    - type: object
+                      additionalProperties: false
+                      required:
+                      - segment_id
+                      - name
+                      - record_count
+                      - ephemeral
+                      - expires_at
+                      properties:
+                        segment_id:
+                          type: string
+                        name:
+                          type: string
+                        record_count:
+                          type: integer
+                          minimum: 1
+                        ephemeral:
+                          type: boolean
+                          const: true
+                        expires_at:
+                          type: string
+                          format: date-time
+                    - type: 'null'
+                    description: 'The reusable matched scratch segment created from this call when `create_scratch_segment` is true; null when there were no real matches.
+
+                      '
+                  scratch_segment_error:
+                    type: object
+                    additionalProperties: false
+                    required:
+                    - code
+                    - message
+                    properties:
+                      code:
+                        type: string
+                        const: SCRATCH_SEGMENT_CREATION_FAILED
+                      message:
+                        type: string
+                    description: 'Present only when matching and billing succeeded but the optional, non-billable scratch-segment materialization failed.
+
+                      '
+        '400':
+          $ref: '#/components/responses/MicroMatchBadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+          description: 'BILLING_NOT_READY — the billing account/route isn''t active. `IDEMPOTENCY_KEY_CONFLICT` — the `Idempotency-Key` header was already used with a different request body. `IDEMPOTENCY_REQUEST_IN_PROGRESS` — another request with this key is in flight; retry after the seconds in `Retry-After`. `LICENSE_ACQUISITION_BUSY` — another attempt of this same billing operation is still settling; independent operations are unaffected.
+
+            '
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/match/file:
+    post:
+      summary: Start an async file-based identity resolution job
+      operationId: createFileMatch
+      description: Creates a **matched segment** by uploading a customer list for identity resolution.
+      tags:
+      - Enrichment
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 160
+          pattern: ^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$
+        description: 'Optional. Makes a retried create call safe to repeat — see the endpoint description''s **Retries** section.
+
+          '
+      - name: X-Integration-Execution-Key
+        in: header
+        required: false
+        schema:
+          type: string
+          minLength: 8
+          maxLength: 220
+          pattern: ^[A-Za-z0-9:_-]{8,220}$
+        description: 'OAuth partnerships only. A provider-stable execution key that creates or replays a private partnership run. Use the returned integration_run_id for status and delivery requests.
+
+          '
+      requestBody:
+        required: false
+        description: 'All attributes are optional. You may omit the request body entirely or send `{}` — both are equivalent and will create a CSV match job with an auto-generated name.
+
+          '
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                  description: 'Optional label for this match job. Defaults to `"File Match — {ISO date}"` if omitted.
+
+                    '
+                file_format:
+                  type: string
+                  enum:
+                  - csv
+                  - avro
+                  - json
+                  - jsonl
+                  default: csv
+                  description: 'Input file format. `csv` (default) treats every column as a single scalar value — multi-value/array attributes (email, phone, address_1, etc.) are not supported in csv. `avro` supports native array columns — use it when your file already encodes multi-value attributes as proper arrays. `json` and `jsonl` also support native array columns and are parsed identically — newline-delimited JSON, one record object per line (not a single top-level JSON array).
+
+                    '
+                compression:
+                  type: string
+                  enum:
+                  - none
+                  - gzip
+                  default: none
+                  description: 'gzip means the complete underlying file is a gzip stream. Upload raw gzip bytes with the underlying format''s Content-Type and no Content-Encoding. gzip is not supported with file_format=avro (avro is already internally compressed) — rejected with 400 UNSUPPORTED_INPUT_COMPRESSION.
+
+                    '
+                create_audience:
+                  type: boolean
+                  default: true
+                  description: 'When true (default), automatically creates a thin audience wrapper referencing the new matched segment. The `audience_id` is returned in the response and can be used for delivery immediately once the segment is active.
+
+                    '
+                campaign_id:
+                  type: string
+                  description: 'Campaign this file match is built for. Recorded as the matched segment''s `origin_campaign_id` and, with `create_audience`, links the wrapper audience to it (an audience belongs to at most one campaign). Optional — when omitted, a delegated chat/A2A session''s campaign is used, otherwise there is no campaign. An unknown id returns 400 `INVALID_CAMPAIGN_ID` and nothing is created.
+
+                    '
+                webhook_url:
+                  type: string
+                  format: uri
+                  description: 'Optional HTTPS URL to receive segment.ready or segment.failed events when the identity matching job completes. Overrides the org-level webhook URL for this request only.
+
+                    '
+                hitl:
+                  type: boolean
+                  default: false
+                  description: 'Requires an explicit confirmation step before identity resolution runs — see the two workflow sequences above. Defaults to false (upload alone resolves automatically, the existing behavior).
+
+                    '
+                match_level:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - I
+                    - H
+                    - D
+                    - S
+                    - A
+                  description: 'Filter which match levels are accepted for this job. `I` = individual, `H` = household, `D` = digital (email/phone only match), `S` = spatial (nearby-address proximity match), `A` = address-level. Defaults to all 5 levels (`[''I'', ''H'', ''D'', ''S'', ''A'']`) if omitted. This affects which rows match and at what level; populated enrichment fields are returned for all accepted levels.
+
+                    '
+                spatial_mode:
+                  type: string
+                  enum:
+                  - residential
+                  - work
+                  - auto
+                  default: residential
+                  description: 'Phase 3 spatial trade-area profile. `residential` is the default; use `work` for workplace-oriented spatial matching, or `auto` for dynamic commercial workplace routing.
+
+                    '
+                shard_count:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                  default: 1
+                  description: 'Set > 1 for same-format shards. Every CSV shard must include the same header row, and all shards must share schema and compression. Returns upload_urls instead of upload_url.
+
+                    '
+            examples:
+              minimal:
+                summary: Minimal request — omit the body entirely or send `{}` (CSV, auto-named)
+                value: {}
+              named:
+                summary: Named match job — CSV
+                value:
+                  name: Q2 2026 CRM Refresh
+              with_campaign:
+                summary: Match job linked to a campaign
+                value:
+                  name: Q2 2026 CRM Refresh
+                  campaign_id: camp_abc123
+      responses:
+        '201':
+          description: 'File match job created — upload your file to the returned upload_url to proceed.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - match_id
+                - segment_id
+                - name
+                - status
+                - upload_expires_at
+                - expires_at
+                - file_format
+                - compression
+                properties:
+                  match_id:
+                    type: string
+                    description: Backward-compatible alias of segment_id.
+                  segment_id:
+                    type: string
+                    description: 'Unique ID for this matched segment. Poll `GET /v1/segments/{segment_id}` until status is active.
+
+                      '
+                  audience_id:
+                    type: string
+                    description: 'ID of the auto-created audience wrapper. Present when create_audience is true. Use for deliveries once the segment is active.
+
+                      '
+                  integration_run_id:
+                    type: string
+                    pattern: ^ir_[A-Za-z0-9_-]{40}$
+                    description: 'Present when X-Integration-Execution-Key created a private OAuth partnership run.
+
+                      '
+                  name:
+                    type: string
+                    description: 'Label assigned to the job (supplied or auto-generated).
+
+                      '
+                  status:
+                    type: string
+                    enum:
+                    - pending
+                    description: 'Always `pending` on creation — the segment is awaiting file upload. Poll `GET /v1/segments/{segment_id}` — it will show `status: pending` until identity resolution completes, then `status: active`.
+
+                      '
+                  upload_url:
+                    type: string
+                    description: '30-minute signed upload URL. Upload your file to this URL with the `Content-Type` matching your `file_format`. No `Authorization` header required. Present when `shard_count` is 1 (the default) — absent when sharded, use `upload_urls` instead.
+
+                      '
+                  upload_urls:
+                    type: array
+                    items:
+                      type: string
+                    description: '30-minute signed upload URLs, one per shard, index-ordered. Present only when `shard_count` > 1 was requested — `upload_url` is absent. Every CSV shard must include the same header row.
+
+                      '
+                  upload_expires_at:
+                    type: string
+                    format: date-time
+                    description: 'ISO timestamp when `upload_url`/`upload_urls` expires (30 minutes from creation).
+
+                      '
+                  expires_at:
+                    type: string
+                    description: 'ISO date — 90-day hard expiry for this segment. After this date the segment and associated files are permanently deleted.
+
+                      '
+                  file_format:
+                    type: string
+                    enum:
+                    - csv
+                    - avro
+                    - json
+                    - jsonl
+                    description: 'Confirmed file format for this job.
+
+                      '
+                  compression:
+                    type: string
+                    enum:
+                    - none
+                    - gzip
+                    description: Confirmed input artifact compression.
+              examples:
+                csv_job:
+                  summary: CSV job with audience (default)
+                  value:
+                    match_id: seg_csv123
+                    segment_id: seg_csv123
+                    audience_id: aud_csv123
+                    name: Q2 2026 CRM Refresh
+                    status: pending
+                    upload_url: https://storage.googleapis.com/cf-uploads/enrichment-uploads/org_x/seg_csv123/input.csv?X-Goog-Signature=...
+                    upload_expires_at: '2026-06-22T19:30:00.000Z'
+                    expires_at: '2026-09-27'
+                    file_format: csv
+                    compression: none
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          description: '`IDEMPOTENCY_KEY_CONFLICT` — the `Idempotency-Key` header was already used with a different request body. `IDEMPOTENCY_REQUEST_IN_PROGRESS` — another request with this key is in flight; retry after the seconds in `Retry-After`.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                - code
+                - message
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - IDEMPOTENCY_KEY_CONFLICT
+                    - IDEMPOTENCY_REQUEST_IN_PROGRESS
+                  message:
+                    type: string
+    get:
+      summary: List file match jobs
+      operationId: listFileMatchJobs
+      tags:
+      - Enrichment
+      description: 'List file match jobs for the org, newest first. Cursor-paginated. Optional `status` filter. Job history persists even after the underlying segment or its linked audience is deleted from Library — deleted jobs are not excluded from this list.
+
+        Requires ''discovery'' scope.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 30
+          maximum: 100
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque next_cursor from the previous response. Keep filters unchanged. Mutually exclusive with legacy before.
+      - in: query
+        name: before
+        schema:
+          type: string
+          format: date-time
+        description: Exclusive upper bound cursor on created_at (ISO 8601)
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - pending
+          - active
+          - failed
+          - archived
+          - expired
+        description: Filter by segment status
+      responses:
+        '200':
+          description: Paginated list of file match jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileMatchJobList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/match/runs:
+    get:
+      summary: List micro-batch match runs
+      operationId: listMatchRuns
+      tags:
+      - Enrichment
+      description: 'List micro-batch match history for the org, newest first. Cursor-paginated — pass next_cursor as cursor. Legacy before timestamps remain accepted, but cursor also preserves ordering when records share a timestamp.
+
+        Requires ''discovery'' scope.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 30
+          maximum: 100
+        description: Max records per page
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque next_cursor from the previous response. Keep filters unchanged. Mutually exclusive with legacy before.
+      - in: query
+        name: before
+        schema:
+          type: string
+          format: date-time
+        description: Exclusive upper bound cursor on created_at (ISO 8601)
+      responses:
+        '200':
+          description: Paginated list of micro-batch match runs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchRunList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/match/runs/{runId}:
+    get:
+      summary: Get a micro-batch match run
+      operationId: getMatchRun
+      tags:
+      - Enrichment
+      description: 'Get a single micro-batch match run by ID.
+
+        Requires ''discovery'' scope.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: path
+        name: runId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Micro-batch match run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchRun'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/match/file/{matchId}:
+    get:
+      summary: Get a file match job
+      operationId: getFileMatchJob
+      tags:
+      - Enrichment
+      description: 'Get a single file match job by segment ID. Returns 404 if the segment does not exist or is not a matched-subtype segment.
+
+        Requires ''discovery'' scope.'
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: path
+        name: matchId
+        required: true
+        schema:
+          type: string
+      - in: header
+        name: X-Integration-Run-Id
+        required: false
+        schema:
+          type: string
+          pattern: ^ir_[A-Za-z0-9_-]{40}$
+        description: 'Required for an OAuth partnership to access a private file job; the run must belong to the same active OAuth grant.
+
+          '
+      responses:
+        '200':
+          description: File match job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileMatchJob'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    MatchAddress:
+      type: object
+      additionalProperties: true
+      required: []
+      description: 'One additional address, tried as an extra match permutation alongside the record''s primary address. Only the keys listed here are read. Any other key (for example `street`, `line1`, or `postal`) is ignored and contributes nothing to matching, so rename such fields before sending. Include `address_1` in every entry. Send the ZIP code as `zip`. `zip5`, `postal_code`, and `zip_code` are accepted as aliases; when an entry carries more than one, the first non-empty value in the order `zip`, `zip5`, `postal_code`, `zip_code` is used.
+
+        '
+      properties:
+        address_1:
+          type: string
+          description: Street address line 1.
+        address_2:
+          type: string
+          description: Street address line 2 (apt, suite, etc.).
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+          description: ZIP code. Preferred key.
+        zip5:
+          type: string
+          description: Alias for `zip`.
+        postal_code:
+          type: string
+          description: Alias for `zip`.
+        zip_code:
+          type: string
+          description: Alias for `zip`.
+    MatchRun:
+      type: object
+      description: A single micro-batch match run record. `amount_charged` is a conservative pending-usage estimate, not a finalized invoice amount.
+      required:
+      - run_id
+      - type
+      - status
+      - input_record_count
+      - match_count
+      - match_rate
+      - amount_charged
+      - field_list
+      - created_at
+      - expires_at
+      - data_release
+      properties:
+        data_release:
+          oneOf:
+          - $ref: '#/components/schemas/EnrichmentRelease'
+          - type: 'null'
+        run_id:
+          type: string
+        type:
+          type: string
+          enum:
+          - microbatch
+        status:
+          type: string
+          enum:
+          - completed
+          - failed
+        input_record_count:
+          type: integer
+        match_count:
+          type: integer
+        match_rate:
+          type: number
+          format: float
+        amount_charged:
+          type: number
+          format: float
+          description: Conservative USD estimate accepted for billing; not a finalized invoice total.
+        field_list:
+          type: array
+          items:
+            type: string
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        expires_at:
+          type:
+          - string
+          - 'null'
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    MappingWarning:
+      type: object
+      required:
+      - source_column
+      - code
+      - warning
+      properties:
+        source_column:
+          type: string
+          description: The uploaded file's column the warning is about.
+        code:
+          type: string
+          enum:
+          - analysis
+          - nested_addresses
+          description: '`analysis` is the automatic column analysis''s warning on a low-confidence mapping; `nested_addresses` is the platform''s check of the `addresses` column.
+
+            '
+        warning:
+          type: string
+    MatchRunList:
+      type: object
+      required:
+      - runs
+      - has_more
+      - next_cursor
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchRun'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
+          description: Pass as cursor for the next page; null at the end.
+    EnrichmentRelease:
+      type: object
+      required:
+      - major
+      - minor
+      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
+      properties:
+        major:
+          type: integer
+          minimum: 1
+        minor:
+          type: integer
+          minimum: 0
+    FileMatchJob:
+      type: object
+      description: A file-based match job (matched-subtype segment)
+      required:
+      - match_id
+      - name
+      - status
+      - matching_status
+      - input_record_count
+      - match_count
+      - match_rate
+      - amount_charged
+      - file_format
+      - compression
+      - segment_id
+      - audience_id
+      - audience_status
+      - source_job_id
+      - created_at
+      - expires_at
+      - data_release
+      properties:
+        data_release:
+          oneOf:
+          - $ref: '#/components/schemas/EnrichmentRelease'
+          - type: 'null'
+        match_id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending
+          - active
+          - failed
+          - archived
+          - expired
+        matching_status:
+          type:
+          - string
+          - 'null'
+          enum:
+          - pending
+          - processing
+          - completed
+          - failed
+          - null
+        input_record_count:
+          type:
+          - integer
+          - 'null'
+        match_count:
+          type:
+          - integer
+          - 'null'
+        match_rate:
+          type:
+          - number
+          - 'null'
+          format: float
+        amount_charged:
+          type:
+          - number
+          - 'null'
+          description: 'One-time file-match USD estimate accepted when this run first participates in a successful delivery. Null before first delivery; excludes the delivery''s separate audience/destination/field usage and is not a finalized invoice amount.
+
+            '
+        file_format:
+          type:
+          - string
+          - 'null'
+          enum:
+          - csv
+          - avro
+          - json
+          - jsonl
+          - null
+        compression:
+          type: string
+          enum:
+          - none
+          - gzip
+          description: Input artifact compression, normalized to none for legacy jobs.
+        column_mappings:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        mapping_warnings:
+          type:
+          - array
+          - 'null'
+          description: 'Warnings about how the uploaded file''s columns are used. `analysis` entries are the automatic column analysis''s warnings on low-confidence mappings (below 0.6) that feed matching, and appear only when that analysis produced `column_mappings`. A `nested_addresses` entry is recomputed on every matching run, whoever supplied the mappings, when the `addresses` column has unrecognized keys or is not an array of address objects (it is then ignored). `null` before the first run''s analysis step. Returned by the single-job lookup only.
+
+            '
+          items:
+            $ref: '#/components/schemas/MappingWarning'
+        error_message:
+          type:
+          - string
+          - 'null'
+        segment_id:
+          type: string
+        audience_id:
+          type:
+          - string
+          - 'null'
+        audience_status:
+          type:
+          - string
+          - 'null'
+          enum:
+          - active
+          - archived
+          - null
+          description: 'Whether the linked audience (if any) is still active in Library. `archived` covers both an explicitly archived audience and a deleted one. `null` when there''s no `audience_id`, or its audience document no longer exists. This job''s own history is unaffected either way — it persists even after the underlying segment or audience is deleted from Library.
+
+            '
+        source_job_id:
+          type:
+          - string
+          - 'null'
+        integration_run_id:
+          type: string
+          pattern: ^ir_[A-Za-z0-9_-]{40}$
+          description: Present only for an authorized private partnership workflow.
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        expires_at:
+          type:
+          - string
+          - 'null'
+    PublicCatalogField:
+      type: object
+      required:
+      - field_name
+      - aliases
+      - label
+      - data_type
+      - description
+      - product_usage
+      - filterable
+      - groupable
+      - operators
+      - text_comparison_modes
+      - default_text_comparison
+      - trim_whitespace_supported
+      - enum_values
+      - value_labels
+      - coverage_rate
+      - coverage_basis
+      - values_total
+      - values_next_cursor
+      properties:
+        field_name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+          description: Accepted input names for this field; saved definitions use field_name.
+        label:
+          type: string
+        data_type:
+          type: string
+        description:
+          type: string
+        product_usage:
+          type: array
+          items:
+            type: string
+        groupable:
+          type: boolean
+          description: Whether this field can be used for group_by or a crosstab dimension. Filtering support alone does not imply grouping support.
+        filterable:
+          type: boolean
+        operators:
+          type: array
+          items:
+            type: string
+        text_comparison_modes:
+          type: array
+          items:
+            type: string
+            enum:
+            - exact
+            - case_insensitive
+        default_text_comparison:
+          type:
+          - string
+          - 'null'
+          enum:
+          - exact
+          - null
+        trim_whitespace_supported:
+          type: boolean
+        enum_values:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        value_labels:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+        coverage_rate:
+          type:
+          - number
+          - 'null'
+          description: Non-null availability, not true-flag prevalence. Null when non-empty array coverage is unavailable.
+        coverage_basis:
+          type: string
+          enum:
+          - non_null
+          - unavailable
+        coverage_note:
+          type: string
+        values_total:
+          type: integer
+        values_next_cursor:
+          type:
+          - integer
+          - 'null'
+    FileMatchJobList:
+      type: object
+      required:
+      - jobs
+      - has_more
+      - next_cursor
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileMatchJob'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
+          description: Pass as cursor for the next page; null at the end.
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  responses:
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    MicroMatchBadRequest:
+      description: 'Invalid micro-batch request. DUPLICATE_ROW_ID means two records share an effective row_id, including collisions with automatically assigned positional IDs. INVALID_ROW_ID means a supplied ID is null, non-string, empty, or whitespace-only. Row-ID validation rejects the whole request before idempotency writes, billing reservations, or matching.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            duplicate_row_id:
+              value:
+                error: Bad Request
+                code: DUPLICATE_ROW_ID
+                message: Duplicate row_id "2" found in request; row_id values must be unique.
+            invalid_row_id:
+              value:
+                error: Bad Request
+                code: INVALID_ROW_ID
+                message: row_id at record 1 must be a non-empty string containing a non-whitespace character.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    PaymentRequired:
+      description: 'The request cannot proceed on billing grounds. `BILLING_INSUFFICIENT_BALANCE` applies only to prepay accounts and includes `required`, `available`, and `shortfall` in USD. `BILLING_POSTPAY_CEILING_EXCEEDED` applies to an account ceiling; `BILLING_CONSUMER_POSTPAY_CEILING_EXCEEDED` applies to an agency child''s routed ceiling. Both ceiling responses include projected `accrued` and configured `ceiling` in USD.
+
+        '
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ErrorResponse'
+            - type: object
+              properties:
+                code:
+                  type: string
+                  enum:
+                  - BILLING_INSUFFICIENT_BALANCE
+                  - BILLING_POSTPAY_CEILING_EXCEEDED
+                  - BILLING_CONSUMER_POSTPAY_CEILING_EXCEEDED
+                shortfall:
+                  type: number
+                required:
+                  type: number
+                available:
+                  type: number
+                accrued:
+                  type: number
+                ceiling:
+                  type: number
+          examples:
+            insufficient_balance:
+              value:
+                error: Insufficient balance
+                code: BILLING_INSUFFICIENT_BALANCE
+                message: Insufficient effective balance
+                required: 1
+                available: 0.75
+                shortfall: 0.25
+            budget_ceiling_reached:
+              value:
+                error: Billing capacity unavailable
+                code: BILLING_POSTPAY_CEILING_EXCEEDED
+                message: Postpay ceiling would be exceeded
+                accrued: 105
+                ceiling: 100
+    Conflict:
+      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: 'Request is structurally valid but the resource is in a state that prevents the operation (e.g. expired, pending, or not yet uploaded). See `error` and `code` for the specific reason.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            audience_expired:
+              value:
+                error: Audience expired
+                code: AUDIENCE_EXPIRED
+                message: This audience version expired. Run a refresh to create a new deliverable version.
+            audience_pending:
+              value:
+                error: Audience not ready
+                code: AUDIENCE_PENDING
+                message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
+    BadGateway:
+      description: An upstream billing provider rejected or could not complete the operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    InternalServerError:
+      description: Unexpected server failure.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

@@ -1,0 +1,17 @@
+name: Infinite Audience Plans
+generated: '2026-10-09'
+method: searched
+source: https://dev.infiniteaudience.ai/llms.txt
+audience: business-product
+pricing_basis: negotiated
+published: false
+delivery:
+  delivery: managed
+plan_count: 1
+plans:
+- name: Enterprise
+  description: CPM (cost per thousand records) model; customer pricing is obtained from a delivery quote.
+  price: Contact sales
+  price_text: Contact sales for custom enterprise pricing
+  features: []
+  limits: []

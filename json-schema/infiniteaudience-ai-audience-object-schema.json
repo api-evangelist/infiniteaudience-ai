@@ -1,0 +1,402 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/infiniteaudience-ai/main/json-schema/infiniteaudience-ai-audience-object-schema.json",
+  "title": "AudienceObject",
+  "x-generated": "2026-10-09",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/infiniteaudience-ai-openapi.yml#/components/schemas/AudienceObject",
+  "type": "object",
+  "required": [
+    "audience_id",
+    "name",
+    "campaign_id",
+    "status",
+    "version",
+    "expires_at",
+    "visibility",
+    "segment_refs",
+    "segments",
+    "excluded_segments",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "data_release": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/EnrichmentRelease"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "audience_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived",
+        "expired"
+      ],
+      "description": "active = ready for delivery; archived = soft-deleted via PATCH status:archived (excluded from list by default); expired = past 90-day TTL. Note: pending/failed statuses belong on segments, not audiences.\n"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "quote_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the most recent delivery quote for this audience."
+    },
+    "quote_total_cents": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Total cost in cents from the most recent delivery quote."
+    },
+    "parent_audience_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the audience this was forked from (null if not a fork)."
+    },
+    "forked_from_snapshot_version": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Snapshot version of the parent audience at the time of forking."
+    },
+    "record_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Total resolved records across all composed segments."
+    },
+    "matched_record_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Records contributed by matched-subtype segments in this audience's composition. Present only when the composition includes at least one included matched segment; null for pure-filter or non-matched compositions.\n"
+    },
+    "match_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Records resolved to a known identity, for an audience created via the direct file-upload flow (POST /v1/match/file). Populated when that upload's matching pipeline completes; null before then or for audiences not created that way — use matched_record_count for a composition-level matched count instead.\n"
+    },
+    "input_record_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Rows in the originally uploaded identity file, for an audience created via POST /v1/match/file. Same population conditions as match_count.\n"
+    },
+    "match_rate": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "match_count / input_record_count, rounded to 4 decimal places. Null unless both match_count and input_record_count are present.\n"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "ISO date — 90-day hard expiry from creation"
+    },
+    "version_created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "org",
+        "private"
+      ],
+      "description": "org (default) — visible to all members of the org. private — visible only to the creating user.\n"
+    },
+    "segment_refs": {
+      "type": "array",
+      "description": "Composition of segments that define this audience. Each entry specifies a segment and its role (include or exclude) in the set operation.\n",
+      "items": {
+        "type": "object",
+        "required": [
+          "segment_id",
+          "role"
+        ],
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "description": "ID of the referenced segment."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "include",
+              "exclude"
+            ],
+            "description": "Whether the segment's records are included in or excluded from the audience."
+          }
+        }
+      }
+    },
+    "segment_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Cache of include-role segment IDs (denormalized from segment_refs for query efficiency)."
+    },
+    "excluded_segment_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Cache of exclude-role segment IDs (denormalized from segment_refs for query efficiency)."
+    },
+    "segments": {
+      "type": "array",
+      "description": "Expanded summaries of the include-role segments, in `segment_ids` order. Populated on both list and single-GET responses. Best-effort — missing or deleted segment docs are skipped, so this array may be shorter than `segment_ids`.\n",
+      "items": {
+        "$ref": "#/$defs/ExpandedSegment"
+      }
+    },
+    "excluded_segments": {
+      "type": "array",
+      "description": "Expanded summaries of the exclude-role segments, in `excluded_segment_ids` order. Same expansion semantics as `segments`.\n",
+      "items": {
+        "$ref": "#/$defs/ExpandedSegment"
+      }
+    },
+    "set_logic": {
+      "type": "string",
+      "enum": [
+        "union",
+        "intersection"
+      ],
+      "description": "How the include-role segments are combined: `union` = a record matches ANY included segment (OR); `intersection` = a record must match EVERY included segment (AND). Segments in `excluded_segment_ids` are always subtracted from that result (AND NOT), regardless of `set_logic`.\n"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "campaign_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The one campaign this audience belongs to, or null."
+    }
+  },
+  "$defs": {
+    "EnrichmentRelease": {
+      "type": "object",
+      "required": [
+        "major",
+        "minor"
+      ],
+      "description": "Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.",
+      "properties": {
+        "major": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "ExpandedSegment": {
+      "type": "object",
+      "description": "Constituent segment summary and saved filter definition. Audiences may combine multiple segment subtypes; there is no primary segment or audience subtype.",
+      "required": [
+        "id",
+        "name",
+        "record_count",
+        "subtype",
+        "input_record_count",
+        "match_count"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Segment document ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Segment display name."
+        },
+        "record_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Cached record count of the segment. Null if never counted."
+        },
+        "subtype": {
+          "type": "string",
+          "enum": [
+            "filter",
+            "matched",
+            "similarity",
+            "propensity"
+          ],
+          "description": "Subtype of the constituent segment."
+        },
+        "input_record_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "matched subtype only. Count of records in the uploaded identity file. Null otherwise."
+        },
+        "match_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "matched subtype only. Count of records successfully matched. Null otherwise."
+        },
+        "filter_groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FilterGroup"
+          }
+        },
+        "current_version": {
+          "type": "integer"
+        },
+        "record_limit": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "Filter": {
+      "type": "object",
+      "description": "A single filter condition for audience discovery or job execution",
+      "required": [
+        "field",
+        "op"
+      ],
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Canonical catalog field_name (e.g. age or state). ZIP5 also accepts zip, zip_code, or postal_code as input aliases; saved responses use zip5."
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "=",
+            "!=",
+            "<",
+            "<=",
+            ">",
+            ">=",
+            "IN",
+            "NOT IN",
+            "BETWEEN",
+            "LIKE",
+            "ARRAY_CONTAINS",
+            "ARRAY_CONTAINS_ANY",
+            "IS NULL",
+            "IS NOT NULL"
+          ],
+          "description": "Comparison operator"
+        },
+        "text_comparison": {
+          "type": "string",
+          "enum": [
+            "exact",
+            "case_insensitive"
+          ],
+          "description": "Optional STRING comparison mode for =, !=, IN, NOT IN, and LIKE, or ARRAY<STRING> membership mode for ARRAY_CONTAINS and ARRAY_CONTAINS_ANY. Defaults to exact. Case-insensitive mode applies Unicode case folding to both the stored value and the supplied value.\n"
+        },
+        "trim_whitespace": {
+          "type": "boolean",
+          "description": "Optionally trim leading and trailing whitespace on both sides of a STRING or ARRAY<STRING> comparison. Defaults to false; independent of text_comparison.\n"
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "description": "The value to match against. For state, a published two-letter code or full State name is accepted and normalized to the code. Scalar types (`string`, `number`, `boolean`) are used for single-value operators (`=`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `ARRAY_CONTAINS`). Pass an **array** for `IN`, `NOT IN`, and `ARRAY_CONTAINS_ANY` — pass the array directly with no comma-encoding. `BETWEEN` takes a two-element array `[low, high]`. Omit entirely for `IS NULL` / `IS NOT NULL` checks.\n"
+        }
+      }
+    },
+    "FilterGroup": {
+      "type": "object",
+      "description": "A group of Filter conditions. All `filters` within a single group are **always ANDed together** — there is no per-group intra-operator. The `combinator` attribute is an **inter-group** operator: it controls how this group is joined to the immediately preceding group in the array. The `combinator` on the first group (index 0) is always ignored.\n\nExample — `(city = \"NYC\" AND state = \"NY\") OR (state = \"CA\")`:\n```json [\n  { \"id\": \"g1\", \"filters\": [{\"field\":\"city\",\"op\":\"=\",\"value\":\"NYC\"},\n                            {\"field\":\"state\",\"op\":\"=\",\"value\":\"NY\"}],\n    \"combinator\": \"AND\" },\n  { \"id\": \"g2\", \"filters\": [{\"field\":\"state\",\"op\":\"=\",\"value\":\"CA\"}],\n    \"combinator\": \"OR\" }\n] ```\nGroup g1's `combinator` is irrelevant (it is the first group). Group g2's `combinator: \"OR\"` means the result is `(g1) OR (g2)`.\n",
+      "required": [
+        "id",
+        "filters",
+        "combinator"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable identifier (UUID or NanoID). Used to track groups across edits.\n"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Filter"
+          },
+          "description": "One or more filter conditions. All conditions in this array are combined with AND. Provide at least one filter per group.\n"
+        },
+        "combinator": {
+          "type": "string",
+          "enum": [
+            "AND",
+            "OR"
+          ],
+          "description": "**Inter-group operator.** Joins this group to the previous group in the array. `AND` narrows the result; `OR` broadens it. Ignored on the first group (index 0) — that group has no predecessor to join.\n"
+        }
+      }
+    }
+  }
+}

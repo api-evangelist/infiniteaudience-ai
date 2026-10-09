@@ -1,0 +1,525 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Webhooks API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Webhooks across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Webhooks
+  description: '**Outbound webhook notifications** — the platform POSTs to your endpoint when async operations finish.'
+paths: {}
+webhooks:
+  segment.ready:
+    post:
+      operationId: webhookSegmentReady
+      summary: Segment build succeeded
+      description: 'POSTed to your webhook URL when an async segment (matched file upload, similarity, or propensity) completes successfully. Configure your URL via `PUT /v1/settings/webhook`, supply `webhook_url` per-request, or subscribe via `POST /v1/webhook-subscriptions`. `subject.id` is the segment id; `data.audience_id` is also present when an audience wrapper was auto-created alongside the segment (`create_audience: true`, which is the default for matched segments). See the Webhooks tag for the envelope shape and signing scheme.'
+      tags:
+      - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SegmentWebhookReadyPayload'
+            example:
+              id: evt_1a2b3c4d5e6f7a8b9c0d1e2f
+              type: segment.ready
+              created_at: '2026-08-26T18:04:12.000Z'
+              api_version: '2026-08-06'
+              org_id: org_xyz
+              subject:
+                kind: segment
+                id: seg_abc123
+                name: High-Value Purchasers
+              data:
+                status: completed
+                audience_id: aud_abc123
+                match_count: 1200000
+                record_count: 1500000
+              links: {}
+      responses:
+        '200':
+          description: Your endpoint acknowledged the event.
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  segment.failed:
+    post:
+      operationId: webhookSegmentFailed
+      summary: Segment build failed
+      description: POSTed to your webhook URL when an async segment build fails due to an enrichment or workflow error. See the Webhooks tag for the envelope shape and signing scheme.
+      tags:
+      - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SegmentWebhookFailedPayload'
+            example:
+              id: evt_2b3c4d5e6f7a8b9c0d1e2f1a
+              type: segment.failed
+              created_at: '2026-08-26T18:04:12.000Z'
+              api_version: '2026-08-06'
+              org_id: org_xyz
+              subject:
+                kind: segment
+                id: seg_abc123
+                name: High-Value Purchasers
+              data:
+                status: failed
+                failure_reason: No usable identity columns found in uploaded file.
+              links: {}
+      responses:
+        '200':
+          description: Your endpoint acknowledged the event.
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  delivery.completed:
+    post:
+      operationId: webhookDeliveryCompleted
+      summary: Delivery export completed
+      description: POSTed to your webhook URL when a delivery export finishes and download URLs (or an equivalent destination confirmation) are available. `subject.id` is the delivery id. See the Webhooks tag for the envelope shape and signing scheme.
+      tags:
+      - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryWebhookCompletedPayload'
+            example:
+              id: evt_3c4d5e6f7a8b9c0d1e2f1a2b
+              type: delivery.completed
+              created_at: '2026-08-26T18:04:12.000Z'
+              api_version: '2026-08-06'
+              org_id: org_xyz
+              subject:
+                kind: delivery
+                id: del_abc123
+                name: null
+              data:
+                status: completed
+                destination: download
+                output_record_count: 1200000
+                completed_at: '2026-08-26T18:04:10.000Z'
+                output_format: csv
+                output_compression: gzip
+                output_bytes: 48213099
+                download_urls:
+                - https://storage.googleapis.com/cf-exports/org_xyz/del_abc123/output.csv?X-Goog-Signature=...
+              links: {}
+      responses:
+        '200':
+          description: Your endpoint acknowledged the event.
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  delivery.failed:
+    post:
+      operationId: webhookDeliveryFailed
+      summary: Delivery export failed
+      description: POSTed to your webhook URL when a delivery export fails. See the Webhooks tag for the envelope shape and signing scheme.
+      tags:
+      - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryWebhookFailedPayload'
+            example:
+              id: evt_4d5e6f7a8b9c0d1e2f1a2b3c
+              type: delivery.failed
+              created_at: '2026-08-26T18:04:12.000Z'
+              api_version: '2026-08-06'
+              org_id: org_xyz
+              subject:
+                kind: delivery
+                id: del_abc123
+                name: null
+              data:
+                status: failed
+                destination: download
+                failure_reason: Insufficient matched records to produce output.
+              links: {}
+      responses:
+        '200':
+          description: Your endpoint acknowledged the event.
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    SegmentWebhookReadyPayload:
+      type: object
+      description: 'Canonical envelope posted to your webhook when an async segment (matched file upload, similarity, or propensity) completes successfully.
+
+        '
+      required:
+      - id
+      - type
+      - created_at
+      - api_version
+      - org_id
+      - subject
+      - data
+      - links
+      properties:
+        id:
+          type: string
+          description: Unique per event firing — stable across retries of the same delivery.
+          example: evt_1a2b3c4d5e6f7a8b9c0d1e2f
+        type:
+          type: string
+          enum:
+          - segment.ready
+        created_at:
+          type: string
+          format: date-time
+        api_version:
+          type: string
+          example: '2026-08-06'
+        org_id:
+          type: string
+        subject:
+          type: object
+          description: Identifies the segment this event is about.
+          required:
+          - kind
+          - id
+          - name
+          properties:
+            kind:
+              type: string
+              enum:
+              - segment
+            id:
+              type: string
+            name:
+              type:
+              - string
+              - 'null'
+        data:
+          type: object
+          required:
+          - status
+          description: '`status` is always present; the remaining fields vary by segment subtype and creation path — treat any field not listed here as additive.
+
+            '
+          properties:
+            status:
+              type: string
+              enum:
+              - completed
+            audience_id:
+              type:
+              - string
+              - 'null'
+              description: 'If create_audience was true when the segment was created, the ID of the auto-created audience wrapper. Null otherwise.
+
+                '
+            match_count:
+              type:
+              - integer
+              - 'null'
+              description: Present for matched subtype only.
+            record_count:
+              type:
+              - integer
+              - 'null'
+            mapping_warnings:
+              type: array
+              description: 'Matched subtype only, and only when there are warnings — the same entries as `mapping_warnings` on `GET /v1/match/file/{matchId}`.
+
+                '
+              items:
+                $ref: '#/components/schemas/MappingWarning'
+          additionalProperties: true
+        links:
+          type: object
+          additionalProperties: true
+          description: Reserved for future related-resource links. Currently always empty.
+    MappingWarning:
+      type: object
+      required:
+      - source_column
+      - code
+      - warning
+      properties:
+        source_column:
+          type: string
+          description: The uploaded file's column the warning is about.
+        code:
+          type: string
+          enum:
+          - analysis
+          - nested_addresses
+          description: '`analysis` is the automatic column analysis''s warning on a low-confidence mapping; `nested_addresses` is the platform''s check of the `addresses` column.
+
+            '
+        warning:
+          type: string
+    DeliveryWebhookFailedPayload:
+      type: object
+      description: 'Canonical envelope posted to your webhook when a delivery export fails.
+
+        '
+      required:
+      - id
+      - type
+      - created_at
+      - api_version
+      - org_id
+      - subject
+      - data
+      - links
+      properties:
+        id:
+          type: string
+          example: evt_1a2b3c4d5e6f7a8b9c0d1e2f
+        type:
+          type: string
+          enum:
+          - delivery.failed
+        created_at:
+          type: string
+          format: date-time
+        api_version:
+          type: string
+          example: '2026-08-06'
+        org_id:
+          type: string
+        subject:
+          type: object
+          description: Identifies the delivery this event is about.
+          required:
+          - kind
+          - id
+          - name
+          properties:
+            kind:
+              type: string
+              enum:
+              - delivery
+            id:
+              type: string
+            name:
+              type:
+              - string
+              - 'null'
+        data:
+          type: object
+          required:
+          - status
+          - destination
+          - failure_reason
+          description: '`status`, `destination`, and `failure_reason` are always present; the remaining fields vary by delivery path — treat any field not listed here as additive.
+
+            '
+          properties:
+            status:
+              type: string
+              enum:
+              - failed
+            destination:
+              type: string
+              enum:
+              - download
+              - liveramp
+              - narrative
+            failure_reason:
+              type: string
+              description: Human-readable reason the delivery failed.
+          additionalProperties: true
+        links:
+          type: object
+          additionalProperties: true
+          description: Reserved for future related-resource links. Currently always empty.
+    SegmentWebhookFailedPayload:
+      type: object
+      description: 'Canonical envelope posted to your webhook when an async segment build fails due to an enrichment or workflow error.
+
+        '
+      required:
+      - id
+      - type
+      - created_at
+      - api_version
+      - org_id
+      - subject
+      - data
+      - links
+      properties:
+        id:
+          type: string
+          example: evt_1a2b3c4d5e6f7a8b9c0d1e2f
+        type:
+          type: string
+          enum:
+          - segment.failed
+        created_at:
+          type: string
+          format: date-time
+        api_version:
+          type: string
+          example: '2026-08-06'
+        org_id:
+          type: string
+        subject:
+          type: object
+          description: Identifies the segment this event is about.
+          required:
+          - kind
+          - id
+          - name
+          properties:
+            kind:
+              type: string
+              enum:
+              - segment
+            id:
+              type: string
+            name:
+              type:
+              - string
+              - 'null'
+        data:
+          type: object
+          required:
+          - status
+          description: '`status` is always present; the remaining fields vary by failure path — treat any field not listed here as additive.
+
+            '
+          properties:
+            status:
+              type: string
+              enum:
+              - failed
+            failure_reason:
+              type: string
+              description: Human-readable explanation of the failure.
+            audience_id:
+              type:
+              - string
+              - 'null'
+              description: Audience wrapper ID if one was created alongside the segment.
+          additionalProperties: true
+        links:
+          type: object
+          additionalProperties: true
+          description: Reserved for future related-resource links. Currently always empty.
+    DeliveryWebhookCompletedPayload:
+      type: object
+      description: 'Canonical envelope posted to your webhook when a delivery export finishes and download URLs (or an equivalent destination confirmation) are available.
+
+        '
+      required:
+      - id
+      - type
+      - created_at
+      - api_version
+      - org_id
+      - subject
+      - data
+      - links
+      properties:
+        id:
+          type: string
+          example: evt_1a2b3c4d5e6f7a8b9c0d1e2f
+        type:
+          type: string
+          enum:
+          - delivery.completed
+        created_at:
+          type: string
+          format: date-time
+        api_version:
+          type: string
+          example: '2026-08-06'
+        org_id:
+          type: string
+        subject:
+          type: object
+          description: Identifies the delivery this event is about.
+          required:
+          - kind
+          - id
+          - name
+          properties:
+            kind:
+              type: string
+              enum:
+              - delivery
+            id:
+              type: string
+            name:
+              type:
+              - string
+              - 'null'
+        data:
+          type: object
+          required:
+          - status
+          - destination
+          description: '`status` and `destination` are always present; the remaining fields vary by destination and delivery path — treat any field not listed here as additive.
+
+            '
+          properties:
+            status:
+              type: string
+              enum:
+              - completed
+            destination:
+              type: string
+              enum:
+              - download
+              - liveramp
+              - narrative
+            output_record_count:
+              type: integer
+            completed_at:
+              type: string
+              format: date-time
+            output_format:
+              type: string
+            output_compression:
+              type: string
+            output_bytes:
+              type: integer
+            download_urls:
+              type: array
+              items:
+                type: string
+                format: uri
+              description: Signed download URLs (valid 24 hours). Present for destination=download only.
+          additionalProperties: true
+        links:
+          type: object
+          additionalProperties: true
+          description: Reserved for future related-resource links. Currently always empty.
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

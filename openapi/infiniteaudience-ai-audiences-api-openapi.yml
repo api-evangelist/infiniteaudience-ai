@@ -1,0 +1,1904 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Audiences API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Audiences across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Audiences
+  description: Build, store, and manage named audience definitions
+paths:
+  /v1/audiences:
+    post:
+      summary: Create an audience
+      operationId: createAudience
+      description: 'Creates a named audience — a subtype-agnostic composition wrapper that references one or more segments (include or exclude role) for delivery.
+
+
+        Audiences are always `status: active` immediately on creation. The underlying segments determine data readiness — only deliver an audience after all its include-role segments are active.
+
+
+        **Composition options:**
+
+
+        - Use `segment_refs` (preferred) to specify each segment and its role
+
+        (`include` or `exclude`) explicitly.
+
+
+        - Use `segment_ids` / `excluded_segment_ids` (convenience shorthand)
+
+        as a flat list when all included segments share the same include role.
+
+
+        - Use `set_logic` to control how multiple include-role segments are
+
+        combined: `union` (default) — a record matches ANY included segment (OR) —
+
+        or `intersection` — a record must match EVERY included segment (AND).
+
+
+        - Excluded segments are always subtracted from the composed include
+
+        result (AND NOT), regardless of `set_logic`:
+
+        result = (included segments combined by set_logic) MINUS (excluded segments).
+
+
+        To create matched, similarity, or propensity segments, use `POST /v1/segments`. An unknown `campaign_id` returns 400 `INVALID_CAMPAIGN_ID` and nothing is created.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                  description: 'Display name for the audience.
+
+                    '
+                segment_refs:
+                  type: array
+                  description: 'Preferred composition format. Each entry specifies a segment and its role. Supersedes `segment_ids` / `excluded_segment_ids` if provided.
+
+                    '
+                  items:
+                    type: object
+                    required:
+                    - segment_id
+                    - role
+                    properties:
+                      segment_id:
+                        type: string
+                      role:
+                        type: string
+                        enum:
+                        - include
+                        - exclude
+                segment_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Convenience shorthand: IDs of segments to include (role: include). Use segment_refs for mixed include/exclude compositions.
+
+                    '
+                excluded_segment_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Convenience shorthand: IDs of segments to exclude from the composition.
+
+                    '
+                set_logic:
+                  type: string
+                  enum:
+                  - union
+                  - intersection
+                  default: union
+                  description: 'How to combine the include-role segments. Exclusions always apply as AND NOT.
+
+                    '
+                visibility:
+                  type: string
+                  enum:
+                  - org
+                  - private
+                  description: 'org (default) — visible to all members of the org. private — visible only to the creating user.
+
+                    '
+                campaign_id:
+                  type: string
+                  description: 'Optional. If provided, the created audience is automatically linked to this campaign. The audience can belong to at most one campaign at a time. Omit if you are not using campaign workspaces. Must name an existing campaign in your organisation; an unknown id returns 400 `INVALID_CAMPAIGN_ID` and nothing is created.
+
+                    '
+            examples:
+              segment_refs:
+                summary: Audience with explicit segment roles
+                value:
+                  name: West Coast Adults 25-44
+                  segment_refs:
+                  - segment_id: seg_abc123
+                    role: include
+                  - segment_id: seg_def456
+                    role: include
+                  - segment_id: seg_sup789
+                    role: exclude
+                  set_logic: union
+              shorthand:
+                summary: Audience using shorthand segment_ids
+                value:
+                  name: Q3 CRM Audience
+                  segment_ids:
+                  - seg_abc123
+                  - seg_def456
+                  set_logic: union
+              with_campaign:
+                summary: Audience linked to a campaign
+                value:
+                  name: Q3 West Coast Adults
+                  segment_ids:
+                  - seg_abc123
+                  campaign_id: camp_abc123
+      responses:
+        '201':
+          description: 'Audience created.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceObject'
+              examples:
+                created:
+                  summary: Audience created
+                  value:
+                    audience_id: aud_abc123
+                    name: West Coast Adults 25-44
+                    campaign_id: camp_abc123
+                    status: active
+                    version: 1
+                    record_count: null
+                    expires_at: '2026-09-27'
+                    visibility: org
+                    segment_refs:
+                    - segment_id: seg_abc123
+                      role: include
+                    - segment_id: seg_def456
+                      role: include
+                    segment_ids:
+                    - seg_abc123
+                    - seg_def456
+                    excluded_segment_ids: []
+                    segments:
+                    - id: seg_abc123
+                      name: West Coast States
+                      record_count: 1204331
+                      subtype: filter
+                      input_record_count: null
+                      match_count: null
+                    - id: seg_def456
+                      name: Adults 25-44
+                      record_count: 8443210
+                      subtype: filter
+                      input_record_count: null
+                      match_count: null
+                    excluded_segments: []
+                    set_logic: union
+                    created_at: '2026-06-22T18:00:00Z'
+                    updated_at: '2026-06-22T18:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    get:
+      summary: List audiences for the caller's org
+      operationId: listAudiences
+      description: Returns non-deleted audiences for the org, newest first, a page at a time (`limit` default 25, max 100). Each row includes expanded `segments` / `excluded_segments` summaries (id, name, record_count, subtype) for its constituent segments — the same expansion as `GET /v1/audiences/{id}` — and the audience's `campaign_id` (null when unlinked). Filtered-out rows (archived unless `include_archived`, deleted, or excluded by `campaign_id`/`unlinked`) can leave a page with fewer than `limit` audiences; keep following `next_cursor` until it is null. Requires 'discovery' scope.
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: include_archived
+        in: query
+        schema:
+          type: boolean
+          default: false
+        description: When true, archived audiences are included in results.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+        description: Number of results per page (max 100).
+      - name: cursor
+        in: query
+        schema:
+          type: string
+        description: The `next_cursor` from the previous page.
+      - name: campaign_id
+        in: query
+        schema:
+          type: string
+        description: 'Only audiences linked to this campaign, ordered by when each was linked (newest first) rather than by creation time. An unknown campaign is a 400 `INVALID_CAMPAIGN_ID`. Cannot be combined with `unlinked`. Its `next_cursor` is only valid with the same `campaign_id` (otherwise 400 `INVALID_CURSOR`), and stays valid when audiences are unlinked between pages.
+
+          '
+      - name: unlinked
+        in: query
+        schema:
+          type: boolean
+          default: false
+        description: 'When true, only audiences that belong to no campaign. Cannot be combined with `campaign_id` (400 `CONFLICTING_FILTERS`).
+
+          '
+      responses:
+        '200':
+          description: 'Paginated audience list.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - audiences
+                - total
+                - next_cursor
+                properties:
+                  audiences:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AudienceObject'
+                  total:
+                    type: integer
+                    description: Number of audiences on this page.
+                  next_cursor:
+                    type:
+                    - string
+                    - 'null'
+                    description: Pass as `cursor` on the next request. Null when no further pages exist.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}:
+    get:
+      summary: Get an audience by ID
+      operationId: getAudience
+      description: Returns the audience with expanded segment metadata — both include-role (`segments`) and exclude-role (`excluded_segments`) summaries, each carrying the segment's `subtype`. Requires 'discovery' scope.
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Audience document with expanded segment metadata.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceObject'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update an audience
+      operationId: updateAudience
+      description: 'Fully replaces the audience''s `name`, `segment_ids`, `excluded_segment_ids`, and `set_logic` with the provided values. Audiences are subtype-agnostic composition wrappers — to change which segments are composed, update the segment ID lists here.
+
+
+        **Composition model:** `set_logic: union` combines included segments with OR (match ANY); `intersection` combines them with AND (match EVERY). Segments in `excluded_segment_ids` are always subtracted from that result (AND NOT), regardless of `set_logic`.
+
+
+        **Count invalidation:** changing the segment composition **clears the cached `record_count`**. Call `POST /v1/audiences/{id}/count` after updating to recompute it. The `record_count` will be `null` until recomputed.
+
+
+        **Versioning:** the audience `version` is incremented on every successful PUT. Previously completed deliveries at prior versions remain accessible in delivery history.
+
+
+        The update itself emits no billable usage.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                segment_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Full replacement list of included segment IDs.
+
+                    '
+                excluded_segment_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Full replacement list of excluded segment IDs.
+
+                    '
+                set_logic:
+                  type: string
+                  enum:
+                  - union
+                  - intersection
+      responses:
+        '200':
+          description: 'Updated audience.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Partially update an audience
+      operationId: patchAudience
+      description: 'Applies a partial update to an audience. Accepts any subset of the attributes below — only provided attributes are updated. Use `add_segment_id` / `remove_segment_id` for incremental segment edits (preferred over replacing the full `segment_ids` array). Use `name` to rename.
+
+
+        **Composition model:** `set_logic: union` combines included segments with OR (match ANY); `intersection` combines them with AND (match EVERY). Excluded segments (`add_excluded_segment_id`) are always subtracted from that result (AND NOT), regardless of `set_logic`.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Rename the audience.
+
+                    '
+                status:
+                  type: string
+                  enum:
+                  - archived
+                  - active
+                  description: 'Valid user-settable transitions: `archived` — soft-deletes the audience; excluded from list results by default. `active` — restores a previously archived audience back to active; **rejected with 400 (`INVALID_STATUS_TRANSITION`) if the current status is not `archived`**. System-managed statuses (`pending`, `expired`, `failed`) cannot be set via this endpoint and will be rejected with 400.
+
+                    '
+                set_logic:
+                  type: string
+                  enum:
+                  - union
+                  - intersection
+                add_segment_id:
+                  type: string
+                  description: 'Append a single segment ID to the included list.
+
+                    '
+                remove_segment_id:
+                  type: string
+                  description: 'Remove a single segment ID from the included list.
+
+                    '
+                add_excluded_segment_id:
+                  type: string
+                  description: 'Append a single segment ID to the excluded list.
+
+                    '
+                remove_excluded_segment_id:
+                  type: string
+                  description: 'Remove a single segment ID from the excluded list.
+
+                    '
+      responses:
+        '200':
+          description: 'Updated audience.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete an audience
+      operationId: deleteAudience
+      description: 'Soft-deletes the audience by marking it as archived. The audience is excluded from `GET /v1/audiences` list responses and cannot be used for new deliveries, but its delivery history remains accessible via `GET /v1/audiences/{id}/deliveries`.
+
+
+        **In-flight deliveries** that are already processing are not cancelled — they will complete normally. New delivery requests against an archived audience are rejected with `404`.
+
+
+        To restore an archived audience, use `PATCH /v1/audiences/{id}` with `{ "status": "active" }`. Idempotent — deleting an already-archived audience returns `204` without error. The archive action emits no billable usage.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: 'Deleted.
+
+            '
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}/duplicate:
+    post:
+      summary: Duplicate an audience with lineage tracking
+      operationId: duplicateAudience
+      description: Duplicates an audience with lineage tracking. Preserves composition (segment_ids, excluded_segment_ids, set_logic) and metadata. Records parent_audience_id, derived_from, and the source's segment version snapshot for lineage. Resets record_count to null, forcing a fresh recount. An unknown `campaign_id` returns 400 `INVALID_CAMPAIGN_ID` and nothing is created. Requires 'creator' scope.
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Source audience document ID.
+
+          '
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                  description: 'Display name for the duplicate. Defaults to "<source name> (copy)".
+
+                    '
+                campaign_id:
+                  type: string
+                  description: 'Optional — link the duplicate into this campaign on creation. Must name an existing campaign in your organisation; an unknown id returns 400 `INVALID_CAMPAIGN_ID` and nothing is created.
+
+                    '
+      responses:
+        '201':
+          description: 'Duplicated audience created.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}/count:
+    post:
+      summary: Recompute record count for an audience
+      operationId: recountAudience
+      description: 'Recomputes the record count for a saved audience based on its current composition — included segments combined by `set_logic` (`union` = OR, `intersection` = AND) minus any `excluded_segment_ids` (AND NOT). Call after adding or removing segments. Updates `audience.record_count`.
+
+        Requires ''discovery'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Audience document ID.
+
+          '
+      responses:
+        '200':
+          description: 'Count computed.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audience_id:
+                    type: string
+                  record_count:
+                    type: integer
+                  matched_record_count:
+                    type: integer
+                    description: 'Records contributed by matched-subtype segments in this audience''s composition. Present only when the composition includes at least one included matched segment; absent for pure-filter or non-matched compositions.
+
+                      '
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/QueryExecutionError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}/demographics:
+    get:
+      summary: Get demographic breakdown for an audience
+      operationId: getAudienceDemographics
+      description: 'Returns a computed demographic breakdown for the audience, evaluated over the audience as a composition: its include-role segments combined per set_logic, minus any excluded segments. Works for every composition — pure-filter, a single non-filter subtype (matched, similarity, propensity), or a genuine mix — via a materialized scratch id-set bridge for compositions that include a non-filter segment. Response is cached server-side for 20 minutes. A population or individual demographic cell below the 50-record privacy floor returns 422 without a partial breakdown.
+
+        Requires ''discovery'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Audience document ID.
+
+          '
+      responses:
+        '200':
+          description: 'Demographic breakdown.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - audience_id
+                - audience_name
+                - total_count
+                - age_breakdown
+                - geo_breakdown
+                - generated_at
+                properties:
+                  audience_id:
+                    type: string
+                  audience_name:
+                    type: string
+                  total_count:
+                    type: integer
+                  age_breakdown:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - label
+                      - pct
+                      properties:
+                        label:
+                          type: string
+                        pct:
+                          type: number
+                  geo_breakdown:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - label
+                      - count
+                      properties:
+                        label:
+                          type: string
+                        count:
+                          type: integer
+                  breakdown_extra:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - label
+                      - pct
+                      properties:
+                        label:
+                          type: string
+                        pct:
+                          type: number
+                  extra_field:
+                    type: string
+                  generated_at:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/AggregationFloorNotMet'
+        '502':
+          $ref: '#/components/responses/QueryExecutionError'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}/refresh:
+    post:
+      summary: Refresh a member segment and this audience's composed metadata
+      operationId: refreshAudience
+      description: 'Re-derives one member segment of this audience from the latest identity graph data, then bumps only this audience''s own composed metadata (`snapshot_version`/`expires_at`/`status`; `record_count` is cleared and must be re-requested via `POST /v1/audiences/{id}/count`).
+
+        An audience is a composition of N member segments (possibly mixed subtypes) — there is no "primary" segment. You must name exactly which member segment to refresh via the required `segment_id` body field (list an audience''s segments via `GET /v1/audiences/{id}`). That segment''s refresh delegates entirely to the same implementation `POST /v1/segments/{id}/refresh` uses, so behavior for the named segment is identical either way. This route never touches any OTHER segment in the composition, and — since segment refresh is deliberately non-cascading — never touches any OTHER audience that happens to reference the same segment.
+
+        Behavior is driven by the refreshed segment''s subtype:
+
+
+        **filter** — Synchronous refresh. The audience is immediately returned as `status: active` with an incremented version number and a new 90-day `expires_at`. The `record_count` is cleared and must be re-requested via `POST /v1/audiences/{id}/count`.
+
+
+        **matched** — Returns a fresh presigned `upload_url` (24 h expiry) — or `upload_urls` (an array, one per shard) when `shard_count` > 1, in which case `upload_url` is absent. The new upload may be raw or gzip. With `hitl` unset/false (default): returns `status: pending` immediately and the URL(s) target the canonical upload path — re-upload your identity list and identity resolution runs automatically once every declared shard has been uploaded. With `hitl: true`: the segment''s status is left untouched and the URL(s) instead target a staging location — call `POST /v1/match/{segment_id}/analyze` to preview column mappings, then `POST /v1/audiences/{id}/mappings` to confirm (starts resolution) or `POST /v1/audiences/{id}/mappings/cancel` to abort.
+
+
+        **similarity/propensity** — Re-launches the generation workflow. Returns `status: pending` plus a `workflow_run_id`; poll `GET /v1/workflows/{workflow_run_id}` until completion.
+
+
+        **Important:** Delivery requests are rejected with 422 while constituent segments are still being processed.
+
+
+        To refresh a single segment without touching its audience wrappers, use `POST /v1/segments/{id}/refresh` — it updates only that segment and returns `affected_audiences` for follow-up.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Audience document ID.
+
+          '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - segment_id
+              properties:
+                segment_id:
+                  type: string
+                  description: 'Required. ID of the member segment (within this audience''s composition) to refresh. Rejected with 400 `SEGMENT_ID_REQUIRED` if omitted, or 400 `SEGMENT_NOT_A_MEMBER` if the segment is not a member of this audience. `GET /v1/audiences/{id}` to list this audience''s segments.
+
+                    '
+                hitl:
+                  type: boolean
+                  default: false
+                  description: 'Requires an explicit confirmation step before the automated pipeline proceeds. **(similarity / propensity)** the refresh workflow pauses at a human-in-the-loop review gate — use `POST /v1/workflows/{workflow_run_id}/resume` with `gate_id` and `response` to submit answers and resume. **(matched)** the re-upload is staged instead of landing at the path that triggers automatic identity resolution — see the `matched` bullet above. Ignored for filter. Default: `false` (fully automated).
+
+                    '
+                shard_count:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                  default: 1
+                  description: '**(matched only)** Set > 1 for same-format shards. Every CSV shard must include the same header, and all shards must share schema and compression. Returns `upload_urls` instead of `upload_url`.
+
+                    '
+                compression:
+                  type: string
+                  enum:
+                  - none
+                  - gzip
+                  default: none
+                  description: '**(matched only)** Compression for this new upload. It does not inherit the previous upload. Send raw gzip bytes without Content-Encoding. gzip is not supported for avro-format segments — rejected with 400 UNSUPPORTED_INPUT_COMPRESSION.
+
+                    '
+      responses:
+        '200':
+          description: 'Audience refreshed. Inspect `status` to determine next steps. See `next_step` for a machine-readable hint.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceRefreshResult'
+              example:
+                audience_id: aud_xyz123
+                segment_id: seg_abc123
+                version: 2
+                version_created_at: '2026-06-30T14:00:00Z'
+                expires_at: '2026-09-28T14:00:00Z'
+                status: active
+                subtype: filter
+                refreshed: true
+                next_step: Call recount_audience to refresh the record count before quoting or delivering.
+        '400':
+          description: '`SEGMENT_ID_REQUIRED` — `segment_id` was omitted from the request body. `SEGMENT_NOT_A_MEMBER` — the given `segment_id` is not a member of this audience. `UNKNOWN_SUBTYPE` — the segment has an unrecognized subtype and cannot be refreshed. `UNSUPPORTED_INPUT_COMPRESSION` — `compression=gzip` was requested for an avro-format matched member segment.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                - code
+                - message
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - SEGMENT_ID_REQUIRED
+                    - SEGMENT_NOT_A_MEMBER
+                    - UNKNOWN_SUBTYPE
+                    - UNSUPPORTED_INPUT_COMPRESSION
+                  message:
+                    type: string
+              example:
+                error: Bad Request
+                code: SEGMENT_ID_REQUIRED
+                message: segment_id is required — choose which member segment to refresh. GET /v1/audiences/:id to list this audience's segments.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          description: 'The audience does not exist (simple-tier body, no `code`), or the given `segment_id` does not resolve to any segment document (`SEGMENT_NOT_FOUND`) despite having passed the membership check (e.g. deleted concurrently).
+
+            '
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  title: AudienceNotFound
+                  required:
+                  - error
+                  additionalProperties: false
+                  properties:
+                    error:
+                      type: string
+                      description: '"Audience not found"'
+                - type: object
+                  title: SegmentNotFound
+                  required:
+                  - error
+                  - code
+                  - message
+                  properties:
+                    error:
+                      type: string
+                    code:
+                      type: string
+                      enum:
+                      - SEGMENT_NOT_FOUND
+                    message:
+                      type: string
+        '409':
+          description: 'The named segment cannot be refreshed. `SEGMENT_ARCHIVED` — the segment is archived; restore it first (`PATCH` `status: active` via `PATCH /v1/segments/{id}`). `SHARED_SOURCE_DATA` — matched duplicate that references another segment''s match data; refreshing it here would overwrite the source segment''s upload. The message names the source segment id to refresh instead.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                - code
+                - message
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - SEGMENT_ARCHIVED
+                    - SHARED_SOURCE_DATA
+                  message:
+                    type: string
+        '422':
+          description: '`MISSING_POSITIVE_CLASS_ID` — **(propensity only)** the segment predates `positive_class_segment_id` storage and cannot be auto-refreshed; delete and recreate it.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                - code
+                - message
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - MISSING_POSITIVE_CLASS_ID
+                  message:
+                    type: string
+        '500':
+          description: '`WORKFLOW_LAUNCH_FAILED` — the similarity/propensity re-launch workflow call failed; retry. Presigned-URL generation failures for the matched subtype return a simple-tier body with no `code`.
+
+            '
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  title: WorkflowLaunchFailed
+                  required:
+                  - error
+                  - code
+                  - message
+                  properties:
+                    error:
+                      type: string
+                    code:
+                      type: string
+                      enum:
+                      - WORKFLOW_LAUNCH_FAILED
+                    message:
+                      type: string
+                - type: object
+                  title: PresignedUrlError
+                  required:
+                  - error
+                  additionalProperties: false
+                  properties:
+                    error:
+                      type: string
+                      description: '"Failed to generate presigned upload URL"'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}/mappings:
+    post:
+      summary: Confirm column mapping overrides for a matched audience
+      operationId: confirmAudienceMappings
+      description: 'Stores confirmed column mapping overrides for this audience''s matched member segment. Call this after reviewing the `POST /v1/match/{id}/analyze` response to correct any incorrect predictions. Sets `mapping_confirmed: true` so the platform skips its own analysis and uses these mappings directly.
+
+
+        If the underlying segment was refreshed with `hitl: true`, the upload is still staged — this call also moves the staged file into place and starts identity resolution, which is why it can return 500 `STAGING_COPY_FAILED` if that move fails (the segment is left unchanged in that case; retry the call). Use `POST /v1/audiences/{id}/mappings/cancel` instead to abort a staged upload without confirming.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Audience document ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - column_mappings
+              properties:
+                column_mappings:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: 'Map of source column name → standard identity attribute name. Use `"(skip)"` as the value to explicitly exclude a column. Skip entries are stored and echoed back; a skipped column is never used for matching, even if its name equals a standard attribute (e.g. a column literally named `email`).
+
+                    '
+      responses:
+        '200':
+          description: Mappings saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ok
+                - column_mappings
+                properties:
+                  ok:
+                    type: boolean
+                  column_mappings:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: 'STAGING_COPY_FAILED — moving a staged (`hitl: true`) upload into place failed; the segment is unchanged, retry the call.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - error
+                - code
+                - message
+                properties:
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                    - STAGING_COPY_FAILED
+                  message:
+                    type: string
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/{id}/mappings/cancel:
+    post:
+      summary: Abort a staged (hitl:true) matched-segment upload without confirming
+      operationId: cancelAudienceMappings
+      description: 'Audience-scoped counterpart of `POST /v1/segments/{id}/mappings/cancel` — resolves this audience''s matched member segment and clears its staged upload. Performs no file move and no status/mapping-state change — the segment is left exactly as it was. Idempotent: returns 200 even if nothing is currently staged.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Audience document ID.
+      responses:
+        '200':
+          description: Staged upload cleared (or already clear).
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ok
+                properties:
+                  ok:
+                    type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/bulk:
+    patch:
+      summary: Bulk update audiences
+      operationId: bulkPatchAudiences
+      description: 'Apply set_logic, segment add/remove, or status changes to multiple audiences in a single request. Audiences are subtype-agnostic composition wrappers, so this applies uniformly regardless of which segment subtypes (filter, matched, similarity, propensity) they compose. Fail-closed ownership validation — any unauthorized ID returns 403 before any writes. Max 50 audiences per call. Returns 207 for partial success.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - audience_ids
+              properties:
+                audience_ids:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                  maxItems: 50
+                  description: 'IDs of audiences to update (1–50).
+
+                    '
+                set_logic:
+                  type: string
+                  enum:
+                  - union
+                  - intersection
+                  description: 'New set_logic to apply to all specified audiences.
+
+                    '
+                add_segment_id:
+                  type: string
+                  description: 'Segment ID to append to the included list of each audience.
+
+                    '
+                remove_segment_id:
+                  type: string
+                  description: 'Segment ID to remove from the included list of each audience.
+
+                    '
+                status:
+                  type: string
+                  enum:
+                  - archived
+                  - active
+                  description: 'Valid user-settable transitions, applied to every audience in `audience_ids`: `archived` — soft-deletes the audience; excluded from list results by default. `active` — restores a previously archived audience back to active; rejected with 400 (`INVALID_STATUS_TRANSITION`) if the current status is not `archived`. System-managed statuses (`pending`, `expired`, `failed`) cannot be set via this endpoint and are rejected with 400.
+
+                    '
+      responses:
+        '200':
+          description: 'All audiences updated.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated:
+                    type: integer
+                  failed:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        error:
+                          type: string
+        '207':
+          description: 'Partial success — at least one audience failed. Check the `failed` array.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated:
+                    type: integer
+                    description: Number of audiences successfully updated.
+                  failed:
+                    type: array
+                    description: Details for each audience that could not be updated.
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        error:
+                          type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    delete:
+      summary: Bulk archive (soft-delete) audiences
+      operationId: bulkArchiveAudiences
+      description: 'Soft-deletes multiple audiences in a single request. Fail-closed ownership validation. Max 50 per call.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - audience_ids
+              properties:
+                audience_ids:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                  maxItems: 50
+      responses:
+        '200':
+          description: 'Audiences archived.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: integer
+                  not_found:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: 'One or more IDs not owned by caller.
+
+            '
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/audiences/bulk-create:
+    post:
+      summary: Bulk create audiences
+      operationId: bulkCreateAudiences
+      description: 'Create up to 25 composition audiences in a single request. Each item wraps one or more pre-existing segments (any subtype — filter, matched, similarity, or propensity) via `segment_ids`/`excluded_segment_ids` or `segment_refs`; it does not create new segments. To generate a new matched/similarity/ propensity *segment* and its wrapper audience in one call, use `POST /v1/segments` with `create_audience: true` instead. Optionally links all created audiences to a campaign via the audience_links sub-collection. An unknown `campaign_id` returns 400 `INVALID_CAMPAIGN_ID` and nothing is created. An item that references a segment that does not exist, is deleted, or is not accessible is not created and is reported in `errors`.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Audiences
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - audiences
+              properties:
+                audiences:
+                  type: array
+                  minItems: 1
+                  maxItems: 25
+                  items:
+                    type: object
+                    required:
+                    - name
+                    properties:
+                      name:
+                        type: string
+                      segment_refs:
+                        type: array
+                        description: 'Explicit membership specs with role — preferred over segment_ids/excluded_segment_ids when present (takes precedence if both are supplied).
+
+                          '
+                        items:
+                          type: object
+                          required:
+                          - segment_id
+                          - role
+                          properties:
+                            segment_id:
+                              type: string
+                            role:
+                              type: string
+                              enum:
+                              - include
+                              - exclude
+                      segment_ids:
+                        type: array
+                        items:
+                          type: string
+                        minItems: 1
+                      excluded_segment_ids:
+                        type: array
+                        items:
+                          type: string
+                      set_logic:
+                        type: string
+                        enum:
+                        - union
+                        - intersection
+                      record_count:
+                        type: integer
+                        description: 'Optional known record count. When omitted, the platform computes it at creation: an audience of exactly one included filter segment (no exclusions) takes that segment''s stored count; any other composition is counted immediately. A count that is still running after a few seconds, fails, or waits on a segment that is still building leaves record_count null in the response (a running count still lands on the audience); refresh with POST /v1/audiences/{id}/count.
+
+                          '
+                      visibility:
+                        type: string
+                        enum:
+                        - org
+                        - private
+                        description: 'Visibility of the created audience. Defaults to ''org''.
+
+                          '
+                campaign_id:
+                  type: string
+                  description: 'Link all created audiences to this campaign. Must name an existing campaign in your organisation; an unknown id returns 400 `INVALID_CAMPAIGN_ID` and nothing is created.
+
+                    '
+      responses:
+        '201':
+          description: 'Audiences created.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: integer
+                  audiences:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AudienceObject'
+                  failed:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        error:
+                          type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  responses:
+    QueryExecutionError:
+      description: 'The underlying analytics query failed, or (`AGGREGATION_FLOOR_NOT_MET`) a non-discovery route encountered a result below the privacy floor. `message` is always a friendly, client-safe description — the raw backend error is never returned.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            aggregation_floor_not_met:
+              value:
+                error: Bad Gateway
+                code: AGGREGATION_FLOOR_NOT_MET
+                message: For privacy reasons, a minimum of 50 records is required to view this information.
+            table_missing:
+              value:
+                error: Bad Gateway
+                code: BQ_TABLE_MISSING
+                message: This data is missing — it may have expired or the original upload never finished processing. Try re-uploading, or contact support if this persists.
+    AggregationFloorNotMet:
+      description: The result is below the minimum population that can be returned while preserving privacy.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Privacy threshold not met
+            code: AGGREGATION_FLOOR_NOT_MET
+            message: For privacy reasons, a minimum of 50 records is required to view this information.
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+  schemas:
+    ExpandedSegment:
+      type: object
+      description: Constituent segment summary and saved filter definition. Audiences may combine multiple segment subtypes; there is no primary segment or audience subtype.
+      required:
+      - id
+      - name
+      - record_count
+      - subtype
+      - input_record_count
+      - match_count
+      properties:
+        id:
+          type: string
+          description: Segment document ID.
+        name:
+          type: string
+          description: Segment display name.
+        record_count:
+          type:
+          - integer
+          - 'null'
+          description: Cached record count of the segment. Null if never counted.
+        subtype:
+          type: string
+          enum:
+          - filter
+          - matched
+          - similarity
+          - propensity
+          description: Subtype of the constituent segment.
+        input_record_count:
+          type:
+          - integer
+          - 'null'
+          description: matched subtype only. Count of records in the uploaded identity file. Null otherwise.
+        match_count:
+          type:
+          - integer
+          - 'null'
+          description: matched subtype only. Count of records successfully matched. Null otherwise.
+        filter_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterGroup'
+        current_version:
+          type: integer
+        record_limit:
+          type:
+          - integer
+          - 'null'
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    FilterGroup:
+      type: object
+      description: "A group of Filter conditions. All `filters` within a single group are **always ANDed together** — there is no per-group intra-operator. The `combinator` attribute is an **inter-group** operator: it controls how this group is joined to the immediately preceding group in the array. The `combinator` on the first group (index 0) is always ignored.\n\nExample — `(city = \"NYC\" AND state = \"NY\") OR (state = \"CA\")`:\n```json [\n  { \"id\": \"g1\", \"filters\": [{\"field\":\"city\",\"op\":\"=\",\"value\":\"NYC\"},\n                            {\"field\":\"state\",\"op\":\"=\",\"value\":\"NY\"}],\n    \"combinator\": \"AND\" },\n  { \"id\": \"g2\", \"filters\": [{\"field\":\"state\",\"op\":\"=\",\"value\":\"CA\"}],\n    \"combinator\": \"OR\" }\n] ```\nGroup g1's `combinator` is irrelevant (it is the first group). Group g2's `combinator: \"OR\"` means the result is `(g1) OR (g2)`.\n"
+      required:
+      - id
+      - filters
+      - combinator
+      properties:
+        id:
+          type: string
+          description: 'Stable identifier (UUID or NanoID). Used to track groups across edits.
+
+            '
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+          description: 'One or more filter conditions. All conditions in this array are combined with AND. Provide at least one filter per group.
+
+            '
+        combinator:
+          type: string
+          enum:
+          - AND
+          - OR
+          description: '**Inter-group operator.** Joins this group to the previous group in the array. `AND` narrows the result; `OR` broadens it. Ignored on the first group (index 0) — that group has no predecessor to join.
+
+            '
+    Filter:
+      type: object
+      description: A single filter condition for audience discovery or job execution
+      required:
+      - field
+      - op
+      properties:
+        field:
+          type: string
+          description: Canonical catalog field_name (e.g. age or state). ZIP5 also accepts zip, zip_code, or postal_code as input aliases; saved responses use zip5.
+        op:
+          type: string
+          enum:
+          - '='
+          - '!='
+          - <
+          - <=
+          - '>'
+          - '>='
+          - IN
+          - NOT IN
+          - BETWEEN
+          - LIKE
+          - ARRAY_CONTAINS
+          - ARRAY_CONTAINS_ANY
+          - IS NULL
+          - IS NOT NULL
+          description: Comparison operator
+        text_comparison:
+          type: string
+          enum:
+          - exact
+          - case_insensitive
+          description: 'Optional STRING comparison mode for =, !=, IN, NOT IN, and LIKE, or ARRAY<STRING> membership mode for ARRAY_CONTAINS and ARRAY_CONTAINS_ANY. Defaults to exact. Case-insensitive mode applies Unicode case folding to both the stored value and the supplied value.
+
+            '
+        trim_whitespace:
+          type: boolean
+          description: 'Optionally trim leading and trailing whitespace on both sides of a STRING or ARRAY<STRING> comparison. Defaults to false; independent of text_comparison.
+
+            '
+        value:
+          oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: array
+            items:
+              oneOf:
+              - type: string
+              - type: number
+          description: 'The value to match against. For state, a published two-letter code or full State name is accepted and normalized to the code. Scalar types (`string`, `number`, `boolean`) are used for single-value operators (`=`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `ARRAY_CONTAINS`). Pass an **array** for `IN`, `NOT IN`, and `ARRAY_CONTAINS_ANY` — pass the array directly with no comma-encoding. `BETWEEN` takes a two-element array `[low, high]`. Omit entirely for `IS NULL` / `IS NOT NULL` checks.
+
+            '
+    EnrichmentRelease:
+      type: object
+      required:
+      - major
+      - minor
+      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
+      properties:
+        major:
+          type: integer
+          minimum: 1
+        minor:
+          type: integer
+          minimum: 0
+    AudienceObject:
+      type: object
+      required:
+      - audience_id
+      - name
+      - campaign_id
+      - status
+      - version
+      - expires_at
+      - visibility
+      - segment_refs
+      - segments
+      - excluded_segments
+      - created_at
+      - updated_at
+      properties:
+        data_release:
+          oneOf:
+          - $ref: '#/components/schemas/EnrichmentRelease'
+          - type: 'null'
+        audience_id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - archived
+          - expired
+          description: 'active = ready for delivery; archived = soft-deleted via PATCH status:archived (excluded from list by default); expired = past 90-day TTL. Note: pending/failed statuses belong on segments, not audiences.
+
+            '
+        version:
+          type: integer
+        quote_id:
+          type:
+          - string
+          - 'null'
+          description: ID of the most recent delivery quote for this audience.
+        quote_total_cents:
+          type:
+          - integer
+          - 'null'
+          description: Total cost in cents from the most recent delivery quote.
+        parent_audience_id:
+          type:
+          - string
+          - 'null'
+          description: ID of the audience this was forked from (null if not a fork).
+        forked_from_snapshot_version:
+          type:
+          - integer
+          - 'null'
+          description: Snapshot version of the parent audience at the time of forking.
+        record_count:
+          type:
+          - integer
+          - 'null'
+          description: Total resolved records across all composed segments.
+        matched_record_count:
+          type:
+          - integer
+          - 'null'
+          description: 'Records contributed by matched-subtype segments in this audience''s composition. Present only when the composition includes at least one included matched segment; null for pure-filter or non-matched compositions.
+
+            '
+        match_count:
+          type:
+          - integer
+          - 'null'
+          description: 'Records resolved to a known identity, for an audience created via the direct file-upload flow (POST /v1/match/file). Populated when that upload''s matching pipeline completes; null before then or for audiences not created that way — use matched_record_count for a composition-level matched count instead.
+
+            '
+        input_record_count:
+          type:
+          - integer
+          - 'null'
+          description: 'Rows in the originally uploaded identity file, for an audience created via POST /v1/match/file. Same population conditions as match_count.
+
+            '
+        match_rate:
+          type:
+          - number
+          - 'null'
+          description: 'match_count / input_record_count, rounded to 4 decimal places. Null unless both match_count and input_record_count are present.
+
+            '
+        expires_at:
+          type: string
+          description: ISO date — 90-day hard expiry from creation
+        version_created_at:
+          type:
+          - string
+          - 'null'
+        visibility:
+          type: string
+          enum:
+          - org
+          - private
+          description: 'org (default) — visible to all members of the org. private — visible only to the creating user.
+
+            '
+        segment_refs:
+          type: array
+          description: 'Composition of segments that define this audience. Each entry specifies a segment and its role (include or exclude) in the set operation.
+
+            '
+          items:
+            type: object
+            required:
+            - segment_id
+            - role
+            properties:
+              segment_id:
+                type: string
+                description: ID of the referenced segment.
+              role:
+                type: string
+                enum:
+                - include
+                - exclude
+                description: Whether the segment's records are included in or excluded from the audience.
+        segment_ids:
+          type: array
+          items:
+            type: string
+          description: Cache of include-role segment IDs (denormalized from segment_refs for query efficiency).
+        excluded_segment_ids:
+          type: array
+          items:
+            type: string
+          description: Cache of exclude-role segment IDs (denormalized from segment_refs for query efficiency).
+        segments:
+          type: array
+          description: 'Expanded summaries of the include-role segments, in `segment_ids` order. Populated on both list and single-GET responses. Best-effort — missing or deleted segment docs are skipped, so this array may be shorter than `segment_ids`.
+
+            '
+          items:
+            $ref: '#/components/schemas/ExpandedSegment'
+        excluded_segments:
+          type: array
+          description: 'Expanded summaries of the exclude-role segments, in `excluded_segment_ids` order. Same expansion semantics as `segments`.
+
+            '
+          items:
+            $ref: '#/components/schemas/ExpandedSegment'
+        set_logic:
+          type: string
+          enum:
+          - union
+          - intersection
+          description: 'How the include-role segments are combined: `union` = a record matches ANY included segment (OR); `intersection` = a record must match EVERY included segment (AND). Segments in `excluded_segment_ids` are always subtracted from that result (AND NOT), regardless of `set_logic`.
+
+            '
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        campaign_id:
+          type:
+          - string
+          - 'null'
+          description: The one campaign this audience belongs to, or null.
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+    AudienceRefreshResult:
+      type: object
+      description: 'Response of `POST /v1/audiences/{id}/refresh`. Deliberately lighter than the full Audience object: the handler returns only the version/lifecycle attributes it changed plus subtype-specific next-step hints. Fetch `GET /v1/audiences/{id}` for the full audience document.
+
+        '
+      required:
+      - audience_id
+      - segment_id
+      - version
+      - version_created_at
+      - expires_at
+      - status
+      - subtype
+      - refreshed
+      - next_step
+      properties:
+        audience_id:
+          type: string
+        segment_id:
+          type: string
+          description: 'The caller-chosen member segment that was refreshed (echoed back from the request body). An audience is a composition of N member segments with no primary one — this is always present, identifying which member segment''s refresh drove this response.
+
+            '
+        version:
+          type: integer
+          description: New snapshot version after the refresh.
+        version_created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+          description: New 90-day hard expiry.
+        status:
+          type: string
+          enum:
+          - active
+          - pending
+          description: 'active = the refreshed segment''s subtype is filter, refreshed synchronously; pending = matched/similarity/propensity, awaiting re-upload or workflow completion.
+
+            '
+        subtype:
+          type: string
+          enum:
+          - filter
+          - matched
+          - similarity
+          - propensity
+          description: Subtype of the refreshed segment.
+        refreshed:
+          type: boolean
+          description: 'true when the refreshed segment was re-derived; false only for the filter-subtype no-op path (segment already active, count already null, TTL already fresh) — this route always calls refreshSegmentCore without force, so that no-op path is reachable here exactly as it is on POST /v1/segments/{id}/refresh.
+
+            '
+        next_step:
+          type: string
+          description: 'Human-readable hint for the calling agent on how to proceed (e.g. recount, upload to upload_url, or wait for the workflow).
+
+            '
+        upload_url:
+          type: string
+          description: 'Presigned upload URL (24 h expiry). Present only for the matched subtype, when shard_count was 1 (the default) — absent when sharded, use upload_urls instead.
+
+            '
+        upload_urls:
+          type: array
+          items:
+            type: string
+          description: 'Presigned upload URLs (24 h expiry), one per shard, index-ordered. Present only for the matched subtype when shard_count > 1 was requested — upload_url is absent. Every CSV shard must include the same header row.
+
+            '
+        compression:
+          type: string
+          enum:
+          - none
+          - gzip
+          description: Compression for this matched refresh upload.
+        upload_expires_at:
+          type: string
+          format: date-time
+          description: Expiry for upload_url/upload_urls. Present only for the matched subtype.
+        workflow_run_id:
+          type: string
+          description: 'Cloud Workflow execution ID. Present only for similarity and propensity subtypes.
+
+            '
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

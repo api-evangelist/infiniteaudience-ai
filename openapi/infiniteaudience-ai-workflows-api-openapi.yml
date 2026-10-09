@@ -1,0 +1,366 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Workflows API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Workflows across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Workflows
+  description: Monitor async audience pipeline progress (similarity and propensity subtypes). Poll GET /v1/workflows/{workflow_run_id} or respond to HITL gates via POST /v1/workflows/{workflow_run_id}/resume.
+paths:
+  /v1/workflows/{workflow_run_id}:
+    get:
+      summary: Get workflow status
+      operationId: getWorkflowStatus
+      description: Returns the current status of a similarity or propensity audience workflow run. Poll this endpoint after creating a similarity or propensity audience to track progress. Use `wait_for_workflow` (MCP) for a blocking poll, or call this endpoint directly for non-blocking status checks. Only runs owned by the caller's organization are accessible; other IDs return 404. Requires 'discovery' scope.
+      tags:
+      - Workflows
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: workflow_run_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'The workflow run ID returned in the POST /v1/audiences response.
+
+          '
+      responses:
+        '200':
+          description: 'Workflow status.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflow_run_id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                    - running
+                    - paused
+                    - completed
+                    - failed
+                    description: 'running = steps executing normally; paused = waiting for HITL gate response (only when hitl=true); completed = workflow finished, audience is active; failed = workflow encountered an unrecoverable error.
+
+                      '
+                  current_step:
+                    type: integer
+                    description: 'Current step index (1-based).
+
+                      '
+                  step_count:
+                    type: integer
+                    description: 'Total number of steps in the workflow.
+
+                      '
+                  failure:
+                    type: object
+                    required:
+                    - code
+                    - message
+                    description: Safe failure reason and next action; present when status is failed. Raw provider errors are not returned.
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                  paused_gate:
+                    type:
+                    - object
+                    - 'null'
+                    description: 'Present only when status is paused and hitl=true. Contains gate info for user response.
+
+                      '
+                    properties:
+                      gate_id:
+                        type: string
+                        description: 'Opaque gate identifier — pass to POST /v1/workflows/{workflow_run_id}/resume.
+
+                          '
+                      message:
+                        type: string
+                        description: 'Human-readable message describing the decision needed.
+
+                          '
+                      options:
+                        type: array
+                        items:
+                          type: string
+                        description: 'Valid response values — pick one and pass as `response` to the resume endpoint.
+
+                          '
+              examples:
+                running:
+                  summary: Workflow in progress
+                  value:
+                    workflow_run_id: wf_abc123
+                    status: running
+                    current_step: 2
+                    step_count: 5
+                    paused_gate: null
+                paused:
+                  summary: Workflow paused at HITL gate
+                  value:
+                    workflow_run_id: wf_abc123
+                    status: paused
+                    current_step: 3
+                    step_count: 5
+                    paused_gate:
+                      gate_id: gate_review_icp
+                      message: Review the generated ICP profile and confirm it matches your target audience.
+                      options:
+                      - approve
+                      - reject
+                      - refine
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/workflows/{workflow_run_id}/resume:
+    post:
+      summary: Respond to a HITL workflow gate
+      operationId: resumeWorkflow
+      description: 'Submit a user response to a paused gate, resuming the workflow from its paused state. Only relevant when the audience was created with `hitl: true`. The `response` value must match one of the `options` presented in the `paused_gate` object from `GET /v1/workflows/{workflow_run_id}`. Only runs owned by the caller''s organization can be resumed; other IDs return 404. Stale gates or non-paused runs return 409; invalid options return 400. Requires ''creator'' scope.'
+      tags:
+      - Workflows
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: workflow_run_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'The workflow run ID to resume.
+
+          '
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - gate_id
+              - response
+              properties:
+                gate_id:
+                  type: string
+                  description: 'Gate identifier from the paused_gate object.
+
+                    '
+                response:
+                  type: string
+                  description: 'Selected option — must match one of the values in paused_gate.options.
+
+                    '
+            examples:
+              approve:
+                summary: Approve the ICP profile
+                value:
+                  gate_id: gate_review_icp
+                  response: approve
+      responses:
+        '200':
+          description: 'Gate response accepted, workflow resumed.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflow_run_id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                    - running
+                    - completed
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  responses:
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    BadGateway:
+      description: An upstream billing provider rejected or could not complete the operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

@@ -1,0 +1,936 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Integrations API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Integrations across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Integrations
+paths:
+  /v1/account/automatic-purchases:
+    get:
+      summary: Read automatic purchase permission
+      operationId: getAutomaticPurchasePermission
+      description: Requires 'account' scope. Read native-platform automatic new-licence purchase permission and rollout availability, including while frozen or disconnected.
+      tags:
+      - Integrations
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Current permission or a non-purchasing preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContinuousPurchaseControlRead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    post:
+      summary: Preview or approve automatic purchase permission
+      operationId: approveAutomaticPurchasePermission
+      description: Requires 'creator' scope. Requires an owner or admin. Approve only new-licence purchases for selected HubSpot/Klaviyo integrations, with pooled record and spending limits per actual payer billing period. Preview does not purchase. Approval requires the reviewed revision, current terms fingerprint and stable request ID. Does not authorize renewals or destination charges. Controls remain subject to rollout availability. Each Shopify store manages its separate permission in its embedded app.
+      tags:
+      - Integrations
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Current permission or a non-purchasing preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContinuousPurchaseControlResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContinuousPurchaseControlCommand'
+    delete:
+      summary: Revoke automatic purchase permission
+      operationId: revokeAutomaticPurchasePermission
+      description: Requires 'creator' scope. Requires an owner or admin. Stops future native automatic new-licence purchases. Shopify permissions are unaffected. Already-delivered work may still settle. Available while frozen or disconnected and does not reset consumed allowance.
+      tags:
+      - Integrations
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Current permission or a non-purchasing preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContinuousPurchaseAuthorizationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/connections/{id}/monthly-renewal:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: Organization-owned HubSpot or Klaviyo connection ID.
+      schema:
+        type: string
+    get:
+      summary: Read monthly renewal permission
+      operationId: getMonthlyRenewalPermission
+      description: Requires 'account' scope. Read current connection permission and rollout availability, including while disconnected or the organization is frozen.
+      tags:
+      - Integrations
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Current renewal permission or a non-purchasing preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlyRenewalControlRead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    post:
+      summary: Preview or approve monthly renewal permission
+      operationId: approveMonthlyRenewalPermission
+      description: Requires 'creator' scope. Requires an owner or admin. Preview does not purchase. Approval binds selected attributes, monthly record/spending limits and current organization billing terms. A stable request ID makes retries safe. Paid scheduling remains subject to rollout availability.
+      tags:
+      - Integrations
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Current renewal permission or a non-purchasing preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlyRenewalControlResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonthlyRenewalControlCommand'
+    delete:
+      summary: Revoke monthly renewal permission
+      operationId: revokeMonthlyRenewalPermission
+      description: Requires 'creator' scope. Requires an owner or admin. Stops future renewal execution; already-delivered results may still settle under their original approval. Available while the organization is frozen or the connection is disconnected.
+      tags:
+      - Integrations
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Current renewal permission or a non-purchasing preview.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - authorization
+                properties:
+                  authorization:
+                    oneOf:
+                    - $ref: '#/components/schemas/MonthlyRenewalAuthorization'
+                    - type: 'null'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/connections/{provider}:
+    delete:
+      summary: Disconnect an outbound integration
+      operationId: deleteConnection
+      description: Disconnects the active HubSpot or Klaviyo account using an explicit retain-versus-remove policy for app-owned provider data. With `remove`, provider cleanup must succeed before the connection is revoked. With `retain`, existing provider data remains while future enrichment and monitoring stop. Requires 'account' scope and an owner/admin member. After disconnection, a fresh OAuth authorization may connect this provider account to another organization. The new association has a separate connection ID; historical jobs, usage charges, and identity licences remain with their original organization.
+      tags:
+      - Integrations
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: path
+        name: provider
+        required: true
+        description: The outbound provider to disconnect.
+        schema:
+          type: string
+          enum:
+          - hubspot
+          - klaviyo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - app_data_policy
+              properties:
+                app_data_policy:
+                  type: string
+                  enum:
+                  - retain
+                  - remove
+      responses:
+        '200':
+          description: The provider connection was disconnected.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - disconnected
+                properties:
+                  disconnected:
+                    type: boolean
+                    const: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    ContinuousPurchaseScope:
+      type: object
+      required:
+      - provider
+      - connection_id
+      - selected_fields
+      properties:
+        provider:
+          type: string
+          enum:
+          - shopify
+          - hubspot
+          - klaviyo
+        connection_id:
+          type: string
+          minLength: 1
+          maxLength: 240
+        selected_fields:
+          type: array
+          minItems: 1
+          items:
+            type: string
+    ContinuousPurchaseControlCommand:
+      oneOf:
+      - type: object
+        required:
+        - action
+        - scopes
+        - max_records_per_period
+        - max_charge_cents_per_period
+        properties:
+          action:
+            type: string
+            const: preview
+          scopes:
+            type: array
+            minItems: 1
+            maxItems: 50
+            items:
+              allOf:
+              - $ref: '#/components/schemas/ContinuousPurchaseScope'
+              - type: object
+                properties:
+                  provider:
+                    type: string
+                    enum:
+                    - hubspot
+                    - klaviyo
+          max_records_per_period:
+            type: integer
+            minimum: 1
+            maximum: 100000000
+          max_charge_cents_per_period:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+          expires_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+        additionalProperties: false
+      - type: object
+        required:
+        - action
+        - scopes
+        - max_records_per_period
+        - max_charge_cents_per_period
+        - request_id
+        - expected_revision
+        - billing_terms_fingerprint
+        properties:
+          action:
+            type: string
+            const: approve
+          scopes:
+            type: array
+            minItems: 1
+            maxItems: 50
+            items:
+              allOf:
+              - $ref: '#/components/schemas/ContinuousPurchaseScope'
+              - type: object
+                properties:
+                  provider:
+                    type: string
+                    enum:
+                    - hubspot
+                    - klaviyo
+          max_records_per_period:
+            type: integer
+            minimum: 1
+            maximum: 100000000
+          max_charge_cents_per_period:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+          expires_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+          request_id:
+            type: string
+            minLength: 1
+            maxLength: 240
+          expected_revision:
+            type:
+            - string
+            - 'null'
+          billing_terms_fingerprint:
+            type: string
+            pattern: ^[a-f0-9]{64}$
+        additionalProperties: false
+    ContinuousPurchaseAuthorizationResult:
+      type: object
+      required:
+      - authorization
+      properties:
+        authorization:
+          oneOf:
+          - $ref: '#/components/schemas/ContinuousPurchaseAuthorization'
+          - type: 'null'
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    MonthlyRenewalControlRead:
+      type: object
+      required:
+      - available
+      - authorization
+      - enabled_fields
+      properties:
+        available:
+          type: boolean
+        authorization:
+          oneOf:
+          - $ref: '#/components/schemas/MonthlyRenewalAuthorization'
+          - type: 'null'
+        enabled_fields:
+          type: array
+          items:
+            type: string
+    ContinuousPurchaseControlResult:
+      oneOf:
+      - $ref: '#/components/schemas/ContinuousPurchaseAuthorizationResult'
+      - $ref: '#/components/schemas/ContinuousPurchasePreview'
+    ContinuousPurchaseAuthorization:
+      type: object
+      required:
+      - version
+      - org_id
+      - enabled
+      - revision
+      - billing_terms_fingerprint
+      - scopes
+      - max_records_per_period
+      - max_charge_cents_per_period
+      - expires_at
+      - approved_by
+      - approved_at
+      - revoked_by
+      - revoked_at
+      properties:
+        version:
+          type: integer
+          const: 1
+        org_id:
+          type: string
+        enabled:
+          type: boolean
+        revision:
+          type: string
+        billing_terms_fingerprint:
+          type: string
+        scopes:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/ContinuousPurchaseScope'
+        max_records_per_period:
+          type: integer
+          minimum: 1
+          maximum: 100000000
+        max_charge_cents_per_period:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        approved_by:
+          type: string
+        approved_at:
+          type: string
+          format: date-time
+        revoked_by:
+          type:
+          - string
+          - 'null'
+        revoked_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    MonthlyRenewalControlResult:
+      oneOf:
+      - type: object
+        required:
+        - authorization
+        properties:
+          authorization:
+            oneOf:
+            - $ref: '#/components/schemas/MonthlyRenewalAuthorization'
+            - type: 'null'
+      - type: object
+        required:
+        - billing_terms_fingerprint
+        - billing_channel
+        - currency
+        - worst_case_cents
+        - full_limit_fits_budget
+        - selected_fields
+        - max_records_per_month
+        - max_charge_cents_per_month
+        - expires_at
+        properties:
+          billing_terms_fingerprint:
+            type: string
+          billing_channel:
+            type: string
+            enum:
+            - native
+            - shopify
+          currency:
+            type: string
+          worst_case_cents:
+            type: integer
+            minimum: 0
+          full_limit_fits_budget:
+            type: boolean
+          selected_fields:
+            type: array
+            minItems: 1
+            items:
+              type: string
+          max_records_per_month:
+            type: integer
+            minimum: 1
+            maximum: 100000000
+          max_charge_cents_per_month:
+            type: integer
+            minimum: 1
+          expires_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+    MonthlyRenewalControlCommand:
+      oneOf:
+      - type: object
+        additionalProperties: false
+        required:
+        - action
+        - selected_fields
+        - max_records_per_month
+        - max_charge_cents_per_month
+        properties:
+          action:
+            type: string
+            const: preview
+          selected_fields:
+            type: array
+            minItems: 1
+            items:
+              type: string
+          max_records_per_month:
+            type: integer
+            minimum: 1
+            maximum: 100000000
+          max_charge_cents_per_month:
+            type: integer
+            minimum: 1
+          expires_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+      - type: object
+        additionalProperties: false
+        required:
+        - action
+        - selected_fields
+        - max_records_per_month
+        - max_charge_cents_per_month
+        - request_id
+        - billing_terms_fingerprint
+        properties:
+          action:
+            type: string
+            const: approve
+          selected_fields:
+            type: array
+            minItems: 1
+            items:
+              type: string
+          max_records_per_month:
+            type: integer
+            minimum: 1
+            maximum: 100000000
+          max_charge_cents_per_month:
+            type: integer
+            minimum: 1
+          expires_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+          request_id:
+            type: string
+          billing_terms_fingerprint:
+            type: string
+    ContinuousPurchasePreview:
+      type: object
+      required:
+      - billing_channel
+      - currency
+      - billing_terms_fingerprint
+      - current_revision
+      - period
+      - consumed
+      - scopes
+      - max_records_per_period
+      - max_charge_cents_per_period
+      - expires_at
+      properties:
+        billing_channel:
+          type: string
+          enum:
+          - native
+          - shopify
+        currency:
+          type: string
+        billing_terms_fingerprint:
+          type: string
+        current_revision:
+          type:
+          - string
+          - 'null'
+        period:
+          type: object
+          required:
+          - id
+          - start_at
+          - end_at
+          properties:
+            id:
+              type: string
+            start_at:
+              type: string
+              format: date-time
+            end_at:
+              type: string
+              format: date-time
+        consumed:
+          type: object
+          required:
+          - reserved_charge_cents
+          - settled_charge_cents
+          - reserved_records
+          - settled_records
+          properties:
+            reserved_charge_cents:
+              type: integer
+              minimum: 0
+            settled_charge_cents:
+              type: integer
+              minimum: 0
+            reserved_records:
+              type: integer
+              minimum: 0
+            settled_records:
+              type: integer
+              minimum: 0
+        scopes:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/ContinuousPurchaseScope'
+        max_records_per_period:
+          type: integer
+          minimum: 1
+          maximum: 100000000
+        max_charge_cents_per_period:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    ContinuousPurchaseControlRead:
+      type: object
+      required:
+      - available
+      - authorization
+      - connections
+      properties:
+        available:
+          type: boolean
+        authorization:
+          oneOf:
+          - $ref: '#/components/schemas/ContinuousPurchaseAuthorization'
+          - type: 'null'
+        connections:
+          type: array
+          items:
+            type: object
+            required:
+            - provider
+            - connection_id
+            - display_name
+            - available
+            - enabled_fields
+            properties:
+              provider:
+                type: string
+                enum:
+                - shopify
+                - hubspot
+                - klaviyo
+              connection_id:
+                type: string
+              display_name:
+                type: string
+              available:
+                type: boolean
+              enabled_fields:
+                type: array
+                items:
+                  type: string
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+    MonthlyRenewalAuthorization:
+      type: object
+      required:
+      - version
+      - org_id
+      - provider
+      - connection_id
+      - revision
+      - enabled
+      - scope
+      - selected_fields
+      - max_records_per_month
+      - max_charge_cents_per_month
+      - expires_at
+      - currency
+      - billing_terms_fingerprint
+      - approved_by
+      - approved_at
+      - revoked_by
+      - revoked_at
+      properties:
+        version:
+          type: integer
+          const: 1
+        org_id:
+          type: string
+        provider:
+          type: string
+          enum:
+          - shopify
+          - hubspot
+          - klaviyo
+        connection_id:
+          type: string
+          description: Numeric shop ID for Shopify; provider-prefixed connection ID for HubSpot/Klaviyo.
+        revision:
+          type: string
+        enabled:
+          type: boolean
+        scope:
+          type: string
+          const: known_expired_connection_identities
+        selected_fields:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        max_records_per_month:
+          type: integer
+          minimum: 1
+          maximum: 100000000
+        max_charge_cents_per_month:
+          type: integer
+          minimum: 1
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        currency:
+          type: string
+        billing_terms_fingerprint:
+          type: string
+        approved_by:
+          type: string
+        approved_at:
+          type: string
+          format: date-time
+        revoked_by:
+          type:
+          - string
+          - 'null'
+        revoked_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+  responses:
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    Conflict:
+      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadGateway:
+      description: An upstream billing provider rejected or could not complete the operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

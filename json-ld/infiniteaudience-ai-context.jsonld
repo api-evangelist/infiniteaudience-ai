@@ -1,0 +1,1605 @@
+{
+  "@context": {
+    "@vocab": "https://infiniteaudience.ai/schema#",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "infiniteaudience": "https://infiniteaudience.ai/schema#",
+    "PublicCatalogField": "infiniteaudience:PublicCatalogField",
+    "field_name": {
+      "@id": "infiniteaudience:field_name",
+      "@type": "xsd:string"
+    },
+    "aliases": {
+      "@id": "infiniteaudience:aliases",
+      "@container": "@list"
+    },
+    "label": {
+      "@id": "infiniteaudience:label",
+      "@type": "xsd:string"
+    },
+    "data_type": {
+      "@id": "infiniteaudience:data_type",
+      "@type": "xsd:string"
+    },
+    "description": {
+      "@id": "infiniteaudience:description",
+      "@type": "xsd:string"
+    },
+    "product_usage": {
+      "@id": "infiniteaudience:product_usage",
+      "@container": "@list"
+    },
+    "groupable": {
+      "@id": "infiniteaudience:groupable",
+      "@type": "xsd:boolean"
+    },
+    "filterable": {
+      "@id": "infiniteaudience:filterable",
+      "@type": "xsd:boolean"
+    },
+    "operators": {
+      "@id": "infiniteaudience:operators",
+      "@container": "@list"
+    },
+    "text_comparison_modes": {
+      "@id": "infiniteaudience:text_comparison_modes",
+      "@container": "@list"
+    },
+    "default_text_comparison": {
+      "@id": "infiniteaudience:default_text_comparison",
+      "@type": "xsd:string"
+    },
+    "trim_whitespace_supported": {
+      "@id": "infiniteaudience:trim_whitespace_supported",
+      "@type": "xsd:boolean"
+    },
+    "enum_values": {
+      "@id": "infiniteaudience:enum_values",
+      "@container": "@list"
+    },
+    "value_labels": {
+      "@id": "infiniteaudience:value_labels"
+    },
+    "coverage_rate": {
+      "@id": "infiniteaudience:coverage_rate",
+      "@type": "xsd:decimal"
+    },
+    "coverage_basis": {
+      "@id": "infiniteaudience:coverage_basis",
+      "@type": "xsd:string"
+    },
+    "coverage_note": {
+      "@id": "infiniteaudience:coverage_note",
+      "@type": "xsd:string"
+    },
+    "values_total": {
+      "@id": "infiniteaudience:values_total",
+      "@type": "xsd:integer"
+    },
+    "values_next_cursor": {
+      "@id": "infiniteaudience:values_next_cursor",
+      "@type": "xsd:integer"
+    },
+    "MatchAddress": "infiniteaudience:MatchAddress",
+    "address_1": {
+      "@id": "infiniteaudience:address_1",
+      "@type": "xsd:string"
+    },
+    "address_2": {
+      "@id": "infiniteaudience:address_2",
+      "@type": "xsd:string"
+    },
+    "city": {
+      "@id": "infiniteaudience:city",
+      "@type": "xsd:string"
+    },
+    "state": {
+      "@id": "infiniteaudience:state",
+      "@type": "xsd:string"
+    },
+    "zip": {
+      "@id": "infiniteaudience:zip",
+      "@type": "xsd:string"
+    },
+    "zip5": {
+      "@id": "infiniteaudience:zip5",
+      "@type": "xsd:string"
+    },
+    "postal_code": {
+      "@id": "infiniteaudience:postal_code",
+      "@type": "xsd:string"
+    },
+    "zip_code": {
+      "@id": "infiniteaudience:zip_code",
+      "@type": "xsd:string"
+    },
+    "McpJsonRpcError": "infiniteaudience:McpJsonRpcError",
+    "jsonrpc": {
+      "@id": "infiniteaudience:jsonrpc",
+      "@type": "xsd:string"
+    },
+    "error": {
+      "@id": "infiniteaudience:error"
+    },
+    "id": {
+      "@id": "infiniteaudience:id"
+    },
+    "ContinuousPurchaseScope": "infiniteaudience:ContinuousPurchaseScope",
+    "provider": {
+      "@id": "infiniteaudience:provider",
+      "@type": "xsd:string"
+    },
+    "connection_id": {
+      "@id": "infiniteaudience:connection_id",
+      "@type": "xsd:string"
+    },
+    "selected_fields": {
+      "@id": "infiniteaudience:selected_fields",
+      "@container": "@list"
+    },
+    "ContinuousPurchaseAuthorization": "infiniteaudience:ContinuousPurchaseAuthorization",
+    "version": {
+      "@id": "infiniteaudience:version",
+      "@type": "xsd:integer"
+    },
+    "org_id": {
+      "@id": "infiniteaudience:org_id",
+      "@type": "xsd:string"
+    },
+    "enabled": {
+      "@id": "infiniteaudience:enabled",
+      "@type": "xsd:boolean"
+    },
+    "revision": {
+      "@id": "infiniteaudience:revision",
+      "@type": "xsd:string"
+    },
+    "billing_terms_fingerprint": {
+      "@id": "infiniteaudience:billing_terms_fingerprint",
+      "@type": "xsd:string"
+    },
+    "scopes": {
+      "@id": "infiniteaudience:scopes",
+      "@container": "@list"
+    },
+    "max_records_per_period": {
+      "@id": "infiniteaudience:max_records_per_period",
+      "@type": "xsd:integer"
+    },
+    "max_charge_cents_per_period": {
+      "@id": "infiniteaudience:max_charge_cents_per_period",
+      "@type": "xsd:integer"
+    },
+    "expires_at": {
+      "@id": "infiniteaudience:expires_at",
+      "@type": "xsd:dateTime"
+    },
+    "approved_by": {
+      "@id": "infiniteaudience:approved_by",
+      "@type": "xsd:string"
+    },
+    "approved_at": {
+      "@id": "infiniteaudience:approved_at",
+      "@type": "xsd:dateTime"
+    },
+    "revoked_by": {
+      "@id": "infiniteaudience:revoked_by",
+      "@type": "xsd:string"
+    },
+    "revoked_at": {
+      "@id": "infiniteaudience:revoked_at",
+      "@type": "xsd:dateTime"
+    },
+    "ContinuousPurchaseControlRead": "infiniteaudience:ContinuousPurchaseControlRead",
+    "available": {
+      "@id": "infiniteaudience:available",
+      "@type": "xsd:boolean"
+    },
+    "authorization": {
+      "@id": "infiniteaudience:authorization"
+    },
+    "connections": {
+      "@id": "infiniteaudience:connections",
+      "@container": "@list"
+    },
+    "ContinuousPurchaseAuthorizationResult": "infiniteaudience:ContinuousPurchaseAuthorizationResult",
+    "ContinuousPurchasePreview": "infiniteaudience:ContinuousPurchasePreview",
+    "billing_channel": {
+      "@id": "infiniteaudience:billing_channel",
+      "@type": "xsd:string"
+    },
+    "currency": {
+      "@id": "infiniteaudience:currency",
+      "@type": "xsd:string"
+    },
+    "current_revision": {
+      "@id": "infiniteaudience:current_revision",
+      "@type": "xsd:string"
+    },
+    "period": {
+      "@id": "infiniteaudience:period"
+    },
+    "consumed": {
+      "@id": "infiniteaudience:consumed"
+    },
+    "MonthlyRenewalAuthorization": "infiniteaudience:MonthlyRenewalAuthorization",
+    "scope": {
+      "@id": "infiniteaudience:scope",
+      "@type": "xsd:string"
+    },
+    "max_records_per_month": {
+      "@id": "infiniteaudience:max_records_per_month",
+      "@type": "xsd:integer"
+    },
+    "max_charge_cents_per_month": {
+      "@id": "infiniteaudience:max_charge_cents_per_month",
+      "@type": "xsd:integer"
+    },
+    "MonthlyRenewalControlRead": "infiniteaudience:MonthlyRenewalControlRead",
+    "enabled_fields": {
+      "@id": "infiniteaudience:enabled_fields",
+      "@container": "@list"
+    },
+    "CostEstimate": "infiniteaudience:CostEstimate",
+    "base_cost": {
+      "@id": "infiniteaudience:base_cost",
+      "@type": "xsd:decimal"
+    },
+    "match_cost": {
+      "@id": "infiniteaudience:match_cost",
+      "@type": "xsd:decimal"
+    },
+    "field_cost": {
+      "@id": "infiniteaudience:field_cost",
+      "@type": "xsd:decimal"
+    },
+    "destination_cost": {
+      "@id": "infiniteaudience:destination_cost",
+      "@type": "xsd:decimal"
+    },
+    "total_cost": {
+      "@id": "infiniteaudience:total_cost",
+      "@type": "xsd:decimal"
+    },
+    "unit_price": {
+      "@id": "infiniteaudience:unit_price",
+      "@type": "xsd:decimal"
+    },
+    "billing_count": {
+      "@id": "infiniteaudience:billing_count",
+      "@type": "xsd:integer"
+    },
+    "LicensePricing": "infiniteaudience:LicensePricing",
+    "status": {
+      "@id": "infiniteaudience:status",
+      "@type": "xsd:string"
+    },
+    "evaluated_at": {
+      "@id": "infiniteaudience:evaluated_at",
+      "@type": "xsd:dateTime"
+    },
+    "already_licensed_count": {
+      "@id": "infiniteaudience:already_licensed_count",
+      "@type": "xsd:integer"
+    },
+    "IntegrationRunCounts": "infiniteaudience:IntegrationRunCounts",
+    "input": {
+      "@id": "infiniteaudience:input",
+      "@type": "xsd:integer"
+    },
+    "matched": {
+      "@id": "infiniteaudience:matched",
+      "@type": "xsd:integer"
+    },
+    "delivered": {
+      "@id": "infiniteaudience:delivered",
+      "@type": "xsd:integer"
+    },
+    "applied": {
+      "@id": "infiniteaudience:applied",
+      "@type": "xsd:integer"
+    },
+    "unchanged": {
+      "@id": "infiniteaudience:unchanged",
+      "@type": "xsd:integer"
+    },
+    "skipped": {
+      "@id": "infiniteaudience:skipped",
+      "@type": "xsd:integer"
+    },
+    "failed": {
+      "@id": "infiniteaudience:failed",
+      "@type": "xsd:integer"
+    },
+    "IntegrationRun": "infiniteaudience:IntegrationRun",
+    "data_release": {
+      "@id": "infiniteaudience:data_release"
+    },
+    "run_id": {
+      "@id": "infiniteaudience:run_id",
+      "@type": "xsd:string"
+    },
+    "connection_display_name": {
+      "@id": "infiniteaudience:connection_display_name",
+      "@type": "xsd:string"
+    },
+    "kind": {
+      "@id": "infiniteaudience:kind",
+      "@type": "xsd:string"
+    },
+    "data_flow": {
+      "@id": "infiniteaudience:data_flow",
+      "@type": "xsd:string"
+    },
+    "purpose": {
+      "@id": "infiniteaudience:purpose",
+      "@type": "xsd:string"
+    },
+    "billing_source": {
+      "@id": "infiniteaudience:billing_source",
+      "@type": "xsd:string"
+    },
+    "customer_boundary": {
+      "@id": "infiniteaudience:customer_boundary",
+      "@type": "xsd:string"
+    },
+    "counts": {
+      "@id": "infiniteaudience:counts",
+      "@type": "@id"
+    },
+    "boundary_at": {
+      "@id": "infiniteaudience:boundary_at",
+      "@type": "xsd:dateTime"
+    },
+    "failure_code": {
+      "@id": "infiniteaudience:failure_code",
+      "@type": "xsd:string"
+    },
+    "failure_message": {
+      "@id": "infiniteaudience:failure_message",
+      "@type": "xsd:string"
+    },
+    "created_at": {
+      "@id": "infiniteaudience:created_at",
+      "@type": "xsd:dateTime"
+    },
+    "updated_at": {
+      "@id": "infiniteaudience:updated_at",
+      "@type": "xsd:dateTime"
+    },
+    "completed_at": {
+      "@id": "infiniteaudience:completed_at",
+      "@type": "xsd:dateTime"
+    },
+    "IntegrationRunListResponse": "infiniteaudience:IntegrationRunListResponse",
+    "runs": {
+      "@id": "infiniteaudience:runs",
+      "@container": "@list"
+    },
+    "has_more": {
+      "@id": "infiniteaudience:has_more",
+      "@type": "xsd:boolean"
+    },
+    "next_cursor": {
+      "@id": "infiniteaudience:next_cursor",
+      "@type": "xsd:string"
+    },
+    "IntegrationMatchCollection": "infiniteaudience:IntegrationMatchCollection",
+    "collection_id": {
+      "@id": "infiniteaudience:collection_id",
+      "@type": "xsd:string"
+    },
+    "name": {
+      "@id": "infiniteaudience:name",
+      "@type": "xsd:string"
+    },
+    "retention_days": {
+      "@id": "infiniteaudience:retention_days",
+      "@type": "xsd:integer"
+    },
+    "unique_identity_count": {
+      "@id": "infiniteaudience:unique_identity_count",
+      "@type": "xsd:integer"
+    },
+    "count_refreshed_at": {
+      "@id": "infiniteaudience:count_refreshed_at",
+      "@type": "xsd:dateTime"
+    },
+    "last_captured_at": {
+      "@id": "infiniteaudience:last_captured_at",
+      "@type": "xsd:dateTime"
+    },
+    "IntegrationCollectionFilter": "infiniteaudience:IntegrationCollectionFilter",
+    "providers": {
+      "@id": "infiniteaudience:providers",
+      "@container": "@list"
+    },
+    "connection_ids": {
+      "@id": "infiniteaudience:connection_ids",
+      "@container": "@list"
+    },
+    "integration_run_ids": {
+      "@id": "infiniteaudience:integration_run_ids",
+      "@container": "@list"
+    },
+    "source_kinds": {
+      "@id": "infiniteaudience:source_kinds",
+      "@container": "@list"
+    },
+    "boundary_at_from": {
+      "@id": "infiniteaudience:boundary_at_from",
+      "@type": "xsd:dateTime"
+    },
+    "boundary_at_to": {
+      "@id": "infiniteaudience:boundary_at_to",
+      "@type": "xsd:dateTime"
+    },
+    "IntegrationMaterializationPreview": "infiniteaudience:IntegrationMaterializationPreview",
+    "source_observations": {
+      "@id": "infiniteaudience:source_observations",
+      "@type": "xsd:integer"
+    },
+    "unique_identities": {
+      "@id": "infiniteaudience:unique_identities",
+      "@type": "xsd:integer"
+    },
+    "duplicate_observations": {
+      "@id": "infiniteaudience:duplicate_observations",
+      "@type": "xsd:integer"
+    },
+    "expired_identities": {
+      "@id": "infiniteaudience:expired_identities",
+      "@type": "xsd:integer"
+    },
+    "suppressed_identities": {
+      "@id": "infiniteaudience:suppressed_identities",
+      "@type": "xsd:integer"
+    },
+    "already_present": {
+      "@id": "infiniteaudience:already_present",
+      "@type": "xsd:integer"
+    },
+    "net_additions": {
+      "@id": "infiniteaudience:net_additions",
+      "@type": "xsd:integer"
+    },
+    "IntegrationMaterializationPreviewRequest": "infiniteaudience:IntegrationMaterializationPreviewRequest",
+    "filters": {
+      "@id": "infiniteaudience:filters",
+      "@type": "@id"
+    },
+    "target_segment_id": {
+      "@id": "infiniteaudience:target_segment_id",
+      "@type": "xsd:string"
+    },
+    "IntegrationMaterializationPreviewResponse": "infiniteaudience:IntegrationMaterializationPreviewResponse",
+    "cutoff_at": {
+      "@id": "infiniteaudience:cutoff_at",
+      "@type": "xsd:dateTime"
+    },
+    "preview": {
+      "@id": "infiniteaudience:preview",
+      "@type": "@id"
+    },
+    "IntegrationMaterializationRequest": "infiniteaudience:IntegrationMaterializationRequest",
+    "mode": {
+      "@id": "infiniteaudience:mode",
+      "@type": "xsd:string"
+    },
+    "segment_name": {
+      "@id": "infiniteaudience:segment_name",
+      "@type": "xsd:string"
+    },
+    "IntegrationMaterialization": "infiniteaudience:IntegrationMaterialization",
+    "materialization_id": {
+      "@id": "infiniteaudience:materialization_id",
+      "@type": "xsd:string"
+    },
+    "source_cutoff_at": {
+      "@id": "infiniteaudience:source_cutoff_at",
+      "@type": "xsd:dateTime"
+    },
+    "target_segment_name": {
+      "@id": "infiniteaudience:target_segment_name",
+      "@type": "xsd:string"
+    },
+    "target_segment_version": {
+      "@id": "infiniteaudience:target_segment_version",
+      "@type": "xsd:integer"
+    },
+    "identity_count": {
+      "@id": "infiniteaudience:identity_count",
+      "@type": "xsd:integer"
+    },
+    "match_levels": {
+      "@id": "infiniteaudience:match_levels",
+      "@container": "@list"
+    },
+    "BillingReadinessProjection": "infiniteaudience:BillingReadinessProjection",
+    "requires_card": {
+      "@id": "infiniteaudience:requires_card",
+      "@type": "xsd:boolean"
+    },
+    "has_default_card": {
+      "@id": "infiniteaudience:has_default_card",
+      "@type": "xsd:boolean"
+    },
+    "collection_method_ok": {
+      "@id": "infiniteaudience:collection_method_ok",
+      "@type": "xsd:boolean"
+    },
+    "payment_collection_ready": {
+      "@id": "infiniteaudience:payment_collection_ready",
+      "@type": "xsd:boolean"
+    },
+    "BillingUsageRateProjection": "infiniteaudience:BillingUsageRateProjection",
+    "match": {
+      "@id": "infiniteaudience:match"
+    },
+    "audience_delivery": {
+      "@id": "infiniteaudience:audience_delivery"
+    },
+    "destination": {
+      "@id": "infiniteaudience:destination"
+    },
+    "enrichment_field": {
+      "@id": "infiniteaudience:enrichment_field"
+    },
+    "BillingContractProjection": "infiniteaudience:BillingContractProjection",
+    "tier": {
+      "@id": "infiniteaudience:tier",
+      "@type": "xsd:string"
+    },
+    "cadence": {
+      "@id": "infiniteaudience:cadence",
+      "@type": "xsd:string"
+    },
+    "commitment_term_months": {
+      "@id": "infiniteaudience:commitment_term_months",
+      "@type": "xsd:integer"
+    },
+    "commitment_amount_cents": {
+      "@id": "infiniteaudience:commitment_amount_cents",
+      "@type": "xsd:integer"
+    },
+    "usage_discount_bps": {
+      "@id": "infiniteaudience:usage_discount_bps",
+      "@type": "xsd:integer"
+    },
+    "contract_start_at": {
+      "@id": "infiniteaudience:contract_start_at",
+      "@type": "xsd:dateTime"
+    },
+    "contract_end_at": {
+      "@id": "infiniteaudience:contract_end_at",
+      "@type": "xsd:dateTime"
+    },
+    "current_period_start_at": {
+      "@id": "infiniteaudience:current_period_start_at",
+      "@type": "xsd:dateTime"
+    },
+    "current_period_end_at": {
+      "@id": "infiniteaudience:current_period_end_at",
+      "@type": "xsd:dateTime"
+    },
+    "pending_change_at": {
+      "@id": "infiniteaudience:pending_change_at",
+      "@type": "xsd:dateTime"
+    },
+    "scheduled_change": {
+      "@id": "infiniteaudience:scheduled_change"
+    },
+    "usage_rates": {
+      "@id": "infiniteaudience:usage_rates"
+    },
+    "BillingScheduledContractChange": "infiniteaudience:BillingScheduledContractChange",
+    "request_id": {
+      "@id": "infiniteaudience:request_id",
+      "@type": "xsd:string"
+    },
+    "effective_at": {
+      "@id": "infiniteaudience:effective_at",
+      "@type": "xsd:dateTime"
+    },
+    "previous_contract_end_at": {
+      "@id": "infiniteaudience:previous_contract_end_at",
+      "@type": "xsd:dateTime"
+    },
+    "successor_contract_id": {
+      "@id": "infiniteaudience:successor_contract_id",
+      "@type": "xsd:string"
+    },
+    "terms": {
+      "@id": "infiniteaudience:terms"
+    },
+    "error_code": {
+      "@id": "infiniteaudience:error_code",
+      "@type": "xsd:string"
+    },
+    "BillingMoneyProjection": "infiniteaudience:BillingMoneyProjection",
+    "available_balance_cents": {
+      "@id": "infiniteaudience:available_balance_cents",
+      "@type": "xsd:integer"
+    },
+    "committed_balance_cents": {
+      "@id": "infiniteaudience:committed_balance_cents",
+      "@type": "xsd:integer"
+    },
+    "promotional_balance_cents": {
+      "@id": "infiniteaudience:promotional_balance_cents",
+      "@type": "xsd:integer"
+    },
+    "current_period_spend_cents": {
+      "@id": "infiniteaudience:current_period_spend_cents",
+      "@type": "xsd:integer"
+    },
+    "current_invoice_total_cents": {
+      "@id": "infiniteaudience:current_invoice_total_cents",
+      "@type": "xsd:integer"
+    },
+    "next_credit_expiry_at": {
+      "@id": "infiniteaudience:next_credit_expiry_at",
+      "@type": "xsd:dateTime"
+    },
+    "active_reserved_cents": {
+      "@id": "infiniteaudience:active_reserved_cents",
+      "@type": "xsd:integer"
+    },
+    "accepted_pending_cents": {
+      "@id": "infiniteaudience:accepted_pending_cents",
+      "@type": "xsd:integer"
+    },
+    "effective_available_cents": {
+      "@id": "infiniteaudience:effective_available_cents",
+      "@type": "xsd:integer"
+    },
+    "BillingSnapshot": "infiniteaudience:BillingSnapshot",
+    "billing_account_id": {
+      "@id": "infiniteaudience:billing_account_id",
+      "@type": "xsd:string"
+    },
+    "owner_type": {
+      "@id": "infiniteaudience:owner_type",
+      "@type": "xsd:string"
+    },
+    "owner_id": {
+      "@id": "infiniteaudience:owner_id",
+      "@type": "xsd:string"
+    },
+    "source": {
+      "@id": "infiniteaudience:source",
+      "@type": "xsd:string"
+    },
+    "consumer_org_id": {
+      "@id": "infiniteaudience:consumer_org_id",
+      "@type": "xsd:string"
+    },
+    "billing_authority": {
+      "@id": "infiniteaudience:billing_authority",
+      "@type": "xsd:string"
+    },
+    "agency_id": {
+      "@id": "infiniteaudience:agency_id",
+      "@type": "xsd:string"
+    },
+    "consumer_postpay_ceiling_cents": {
+      "@id": "infiniteaudience:consumer_postpay_ceiling_cents",
+      "@type": "xsd:integer"
+    },
+    "consumer_money": {
+      "@id": "infiniteaudience:consumer_money"
+    },
+    "billing_model": {
+      "@id": "infiniteaudience:billing_model",
+      "@type": "xsd:string"
+    },
+    "collection_method": {
+      "@id": "infiniteaudience:collection_method",
+      "@type": "xsd:string"
+    },
+    "contract": {
+      "@id": "infiniteaudience:contract",
+      "@type": "@id"
+    },
+    "money": {
+      "@id": "infiniteaudience:money",
+      "@type": "@id"
+    },
+    "payment_method_ready": {
+      "@id": "infiniteaudience:payment_method_ready",
+      "@type": "xsd:boolean"
+    },
+    "auto_recharge": {
+      "@id": "infiniteaudience:auto_recharge",
+      "@type": "@id"
+    },
+    "latest_invoice": {
+      "@id": "infiniteaudience:latest_invoice"
+    },
+    "collection": {
+      "@id": "infiniteaudience:collection",
+      "@type": "@id"
+    },
+    "projection": {
+      "@id": "infiniteaudience:projection"
+    },
+    "BillingCollectionProjection": "infiniteaudience:BillingCollectionProjection",
+    "stripe_invoice_id": {
+      "@id": "infiniteaudience:stripe_invoice_id",
+      "@type": "xsd:string"
+    },
+    "failure_started_at": {
+      "@id": "infiniteaudience:failure_started_at",
+      "@type": "xsd:dateTime"
+    },
+    "grace_period_ends_at": {
+      "@id": "infiniteaudience:grace_period_ends_at",
+      "@type": "xsd:dateTime"
+    },
+    "BillingAutoRechargeProjection": "infiniteaudience:BillingAutoRechargeProjection",
+    "configured": {
+      "@id": "infiniteaudience:configured",
+      "@type": "xsd:boolean"
+    },
+    "threshold_cents": {
+      "@id": "infiniteaudience:threshold_cents",
+      "@type": "xsd:integer"
+    },
+    "recharge_to_cents": {
+      "@id": "infiniteaudience:recharge_to_cents",
+      "@type": "xsd:integer"
+    },
+    "configuration_request_id": {
+      "@id": "infiniteaudience:configuration_request_id",
+      "@type": "xsd:string"
+    },
+    "payment_status": {
+      "@id": "infiniteaudience:payment_status",
+      "@type": "xsd:string"
+    },
+    "last_payment_attempt_id": {
+      "@id": "infiniteaudience:last_payment_attempt_id",
+      "@type": "xsd:string"
+    },
+    "stripe_payment_intent_id": {
+      "@id": "infiniteaudience:stripe_payment_intent_id",
+      "@type": "xsd:string"
+    },
+    "last_error_code": {
+      "@id": "infiniteaudience:last_error_code",
+      "@type": "xsd:string"
+    },
+    "pending_change": {
+      "@id": "infiniteaudience:pending_change"
+    },
+    "AutoRechargeUpdateRequest": "infiniteaudience:AutoRechargeUpdateRequest",
+    "AccountAutoRechargeResponse": "infiniteaudience:AccountAutoRechargeResponse",
+    "action_url": {
+      "@id": "infiniteaudience:action_url",
+      "@type": "@id"
+    },
+    "OrgLicenseSummary": "infiniteaudience:OrgLicenseSummary",
+    "as_of": {
+      "@id": "infiniteaudience:as_of",
+      "@type": "xsd:dateTime"
+    },
+    "projection_lag_possible": {
+      "@id": "infiniteaudience:projection_lag_possible",
+      "@type": "xsd:boolean"
+    },
+    "active_identities": {
+      "@id": "infiniteaudience:active_identities",
+      "@type": "xsd:integer"
+    },
+    "lapsed_identities": {
+      "@id": "infiniteaudience:lapsed_identities",
+      "@type": "xsd:integer"
+    },
+    "purchased_terms_last_12_months": {
+      "@id": "infiniteaudience:purchased_terms_last_12_months",
+      "@type": "xsd:integer"
+    },
+    "expiring_active_identities_next_30_days": {
+      "@id": "infiniteaudience:expiring_active_identities_next_30_days",
+      "@type": "xsd:integer"
+    },
+    "purchases_by_month": {
+      "@id": "infiniteaudience:purchases_by_month",
+      "@container": "@list"
+    },
+    "expiries_by_month": {
+      "@id": "infiniteaudience:expiries_by_month",
+      "@container": "@list"
+    },
+    "LicenseAlertSettings": "infiniteaudience:LicenseAlertSettings",
+    "threshold_percent": {
+      "@id": "infiniteaudience:threshold_percent",
+      "@type": "xsd:integer"
+    },
+    "NativeBillingSetupResponse": "infiniteaudience:NativeBillingSetupResponse",
+    "billing_mode": {
+      "@id": "infiniteaudience:billing_mode",
+      "@type": "xsd:string"
+    },
+    "billing": {
+      "@id": "infiniteaudience:billing"
+    },
+    "operational": {
+      "@id": "infiniteaudience:operational"
+    },
+    "NativeAccountBillingResponse": "infiniteaudience:NativeAccountBillingResponse",
+    "parent_org": {
+      "@id": "infiniteaudience:parent_org"
+    },
+    "billing_readiness": {
+      "@id": "infiniteaudience:billing_readiness",
+      "@type": "@id"
+    },
+    "latest_payment": {
+      "@id": "infiniteaudience:latest_payment"
+    },
+    "BillingCreditDeliveryStatus": "infiniteaudience:BillingCreditDeliveryStatus",
+    "AccountPaymentReceipt": "infiniteaudience:AccountPaymentReceipt",
+    "payment_attempt_id": {
+      "@id": "infiniteaudience:payment_attempt_id",
+      "@type": "xsd:string"
+    },
+    "amount_cents": {
+      "@id": "infiniteaudience:amount_cents",
+      "@type": "xsd:integer"
+    },
+    "bonus_cents": {
+      "@id": "infiniteaudience:bonus_cents",
+      "@type": "xsd:integer"
+    },
+    "principal_credit_status": {
+      "@id": "infiniteaudience:principal_credit_status",
+      "@type": "@id"
+    },
+    "bonus_credit_status": {
+      "@id": "infiniteaudience:bonus_credit_status",
+      "@type": "@id"
+    },
+    "paid_at": {
+      "@id": "infiniteaudience:paid_at",
+      "@type": "xsd:dateTime"
+    },
+    "credit_error_code": {
+      "@id": "infiniteaudience:credit_error_code",
+      "@type": "xsd:string"
+    },
+    "BillingCreditBalance": "infiniteaudience:BillingCreditBalance",
+    "product_id": {
+      "@id": "infiniteaudience:product_id",
+      "@type": "xsd:string"
+    },
+    "product_name": {
+      "@id": "infiniteaudience:product_name",
+      "@type": "xsd:string"
+    },
+    "remaining_cents": {
+      "@id": "infiniteaudience:remaining_cents",
+      "@type": "xsd:integer"
+    },
+    "applicable_product_ids": {
+      "@id": "infiniteaudience:applicable_product_ids",
+      "@container": "@list"
+    },
+    "applicable_product_tags": {
+      "@id": "infiniteaudience:applicable_product_tags",
+      "@container": "@list"
+    },
+    "access_schedule": {
+      "@id": "infiniteaudience:access_schedule",
+      "@container": "@list"
+    },
+    "next_expiry_at": {
+      "@id": "infiniteaudience:next_expiry_at",
+      "@type": "xsd:dateTime"
+    },
+    "AccountCreditsResponse": "infiniteaudience:AccountCreditsResponse",
+    "balances": {
+      "@id": "infiniteaudience:balances",
+      "@container": "@list"
+    },
+    "BillingInvoice": "infiniteaudience:BillingInvoice",
+    "type": {
+      "@id": "infiniteaudience:type",
+      "@type": "xsd:string"
+    },
+    "total_cents": {
+      "@id": "infiniteaudience:total_cents",
+      "@type": "xsd:integer"
+    },
+    "period_start_at": {
+      "@id": "infiniteaudience:period_start_at",
+      "@type": "xsd:dateTime"
+    },
+    "period_end_at": {
+      "@id": "infiniteaudience:period_end_at",
+      "@type": "xsd:dateTime"
+    },
+    "issued_at": {
+      "@id": "infiniteaudience:issued_at",
+      "@type": "xsd:dateTime"
+    },
+    "line_items": {
+      "@id": "infiniteaudience:line_items",
+      "@container": "@list"
+    },
+    "AccountInvoicesResponse": "infiniteaudience:AccountInvoicesResponse",
+    "authority": {
+      "@id": "infiniteaudience:authority",
+      "@type": "xsd:string"
+    },
+    "invoices": {
+      "@id": "infiniteaudience:invoices",
+      "@container": "@list"
+    },
+    "EnrichmentRelease": "infiniteaudience:EnrichmentRelease",
+    "major": {
+      "@id": "infiniteaudience:major",
+      "@type": "xsd:integer"
+    },
+    "minor": {
+      "@id": "infiniteaudience:minor",
+      "@type": "xsd:integer"
+    },
+    "MatchRun": "infiniteaudience:MatchRun",
+    "input_record_count": {
+      "@id": "infiniteaudience:input_record_count",
+      "@type": "xsd:integer"
+    },
+    "match_count": {
+      "@id": "infiniteaudience:match_count",
+      "@type": "xsd:integer"
+    },
+    "match_rate": {
+      "@id": "infiniteaudience:match_rate",
+      "@type": "xsd:decimal"
+    },
+    "amount_charged": {
+      "@id": "infiniteaudience:amount_charged",
+      "@type": "xsd:decimal"
+    },
+    "field_list": {
+      "@id": "infiniteaudience:field_list",
+      "@container": "@list"
+    },
+    "MatchRunList": "infiniteaudience:MatchRunList",
+    "FileMatchJob": "infiniteaudience:FileMatchJob",
+    "match_id": {
+      "@id": "infiniteaudience:match_id",
+      "@type": "xsd:string"
+    },
+    "matching_status": {
+      "@id": "infiniteaudience:matching_status",
+      "@type": "xsd:string"
+    },
+    "file_format": {
+      "@id": "infiniteaudience:file_format",
+      "@type": "xsd:string"
+    },
+    "compression": {
+      "@id": "infiniteaudience:compression",
+      "@type": "xsd:string"
+    },
+    "column_mappings": {
+      "@id": "infiniteaudience:column_mappings"
+    },
+    "mapping_warnings": {
+      "@id": "infiniteaudience:mapping_warnings",
+      "@container": "@list"
+    },
+    "error_message": {
+      "@id": "infiniteaudience:error_message",
+      "@type": "xsd:string"
+    },
+    "segment_id": {
+      "@id": "infiniteaudience:segment_id",
+      "@type": "xsd:string"
+    },
+    "audience_id": {
+      "@id": "infiniteaudience:audience_id",
+      "@type": "xsd:string"
+    },
+    "audience_status": {
+      "@id": "infiniteaudience:audience_status",
+      "@type": "xsd:string"
+    },
+    "source_job_id": {
+      "@id": "infiniteaudience:source_job_id",
+      "@type": "xsd:string"
+    },
+    "integration_run_id": {
+      "@id": "infiniteaudience:integration_run_id",
+      "@type": "xsd:string"
+    },
+    "MappingWarning": "infiniteaudience:MappingWarning",
+    "source_column": {
+      "@id": "infiniteaudience:source_column",
+      "@type": "xsd:string"
+    },
+    "code": {
+      "@id": "infiniteaudience:code",
+      "@type": "xsd:string"
+    },
+    "warning": {
+      "@id": "infiniteaudience:warning",
+      "@type": "xsd:string"
+    },
+    "FileMatchJobList": "infiniteaudience:FileMatchJobList",
+    "jobs": {
+      "@id": "infiniteaudience:jobs",
+      "@container": "@list"
+    },
+    "ErrorResponse": "infiniteaudience:ErrorResponse",
+    "message": {
+      "@id": "infiniteaudience:message",
+      "@type": "xsd:string"
+    },
+    "next_step": {
+      "@id": "infiniteaudience:next_step",
+      "@type": "xsd:string"
+    },
+    "issues": {
+      "@id": "infiniteaudience:issues",
+      "@container": "@list"
+    },
+    "FilterValidationIssue": "infiniteaudience:FilterValidationIssue",
+    "path": {
+      "@id": "infiniteaudience:path",
+      "@type": "xsd:string"
+    },
+    "suggestions": {
+      "@id": "infiniteaudience:suggestions",
+      "@container": "@list"
+    },
+    "OAuthErrorResponse": "infiniteaudience:OAuthErrorResponse",
+    "error_description": {
+      "@id": "infiniteaudience:error_description",
+      "@type": "xsd:string"
+    },
+    "OAuthDeviceAuthorizationRequest": "infiniteaudience:OAuthDeviceAuthorizationRequest",
+    "client_id": {
+      "@id": "infiniteaudience:client_id",
+      "@type": "xsd:string"
+    },
+    "client_secret": {
+      "@id": "infiniteaudience:client_secret",
+      "@type": "xsd:string"
+    },
+    "resource": {
+      "@id": "infiniteaudience:resource",
+      "@type": "@id"
+    },
+    "OAuthDeviceAuthorizationResponse": "infiniteaudience:OAuthDeviceAuthorizationResponse",
+    "device_code": {
+      "@id": "infiniteaudience:device_code",
+      "@type": "xsd:string"
+    },
+    "user_code": {
+      "@id": "infiniteaudience:user_code",
+      "@type": "xsd:string"
+    },
+    "verification_uri": {
+      "@id": "infiniteaudience:verification_uri",
+      "@type": "@id"
+    },
+    "verification_uri_complete": {
+      "@id": "infiniteaudience:verification_uri_complete",
+      "@type": "@id"
+    },
+    "expires_in": {
+      "@id": "infiniteaudience:expires_in",
+      "@type": "xsd:integer"
+    },
+    "interval": {
+      "@id": "infiniteaudience:interval",
+      "@type": "xsd:integer"
+    },
+    "OAuthTokenResponse": "infiniteaudience:OAuthTokenResponse",
+    "access_token": {
+      "@id": "infiniteaudience:access_token",
+      "@type": "xsd:string"
+    },
+    "id_token": {
+      "@id": "infiniteaudience:id_token",
+      "@type": "xsd:string"
+    },
+    "token_type": {
+      "@id": "infiniteaudience:token_type",
+      "@type": "xsd:string"
+    },
+    "refresh_token": {
+      "@id": "infiniteaudience:refresh_token",
+      "@type": "xsd:string"
+    },
+    "OAuthRevokeRequest": "infiniteaudience:OAuthRevokeRequest",
+    "token": {
+      "@id": "infiniteaudience:token",
+      "@type": "xsd:string"
+    },
+    "token_type_hint": {
+      "@id": "infiniteaudience:token_type_hint",
+      "@type": "xsd:string"
+    },
+    "OidcDiscoveryMetadata": "infiniteaudience:OidcDiscoveryMetadata",
+    "issuer": {
+      "@id": "infiniteaudience:issuer",
+      "@type": "@id"
+    },
+    "authorization_endpoint": {
+      "@id": "infiniteaudience:authorization_endpoint",
+      "@type": "@id"
+    },
+    "token_endpoint": {
+      "@id": "infiniteaudience:token_endpoint",
+      "@type": "@id"
+    },
+    "registration_endpoint": {
+      "@id": "infiniteaudience:registration_endpoint",
+      "@type": "@id"
+    },
+    "revocation_endpoint": {
+      "@id": "infiniteaudience:revocation_endpoint",
+      "@type": "@id"
+    },
+    "userinfo_endpoint": {
+      "@id": "infiniteaudience:userinfo_endpoint",
+      "@type": "@id"
+    },
+    "jwks_uri": {
+      "@id": "infiniteaudience:jwks_uri",
+      "@type": "@id"
+    },
+    "response_types_supported": {
+      "@id": "infiniteaudience:response_types_supported",
+      "@container": "@list"
+    },
+    "subject_types_supported": {
+      "@id": "infiniteaudience:subject_types_supported",
+      "@container": "@list"
+    },
+    "id_token_signing_alg_values_supported": {
+      "@id": "infiniteaudience:id_token_signing_alg_values_supported",
+      "@container": "@list"
+    },
+    "scopes_supported": {
+      "@id": "infiniteaudience:scopes_supported",
+      "@container": "@list"
+    },
+    "claims_supported": {
+      "@id": "infiniteaudience:claims_supported",
+      "@container": "@list"
+    },
+    "token_endpoint_auth_methods_supported": {
+      "@id": "infiniteaudience:token_endpoint_auth_methods_supported",
+      "@container": "@list"
+    },
+    "grant_types_supported": {
+      "@id": "infiniteaudience:grant_types_supported",
+      "@container": "@list"
+    },
+    "code_challenge_methods_supported": {
+      "@id": "infiniteaudience:code_challenge_methods_supported",
+      "@container": "@list"
+    },
+    "authorization_response_iss_parameter_supported": {
+      "@id": "infiniteaudience:authorization_response_iss_parameter_supported",
+      "@type": "xsd:boolean"
+    },
+    "OidcJwks": "infiniteaudience:OidcJwks",
+    "keys": {
+      "@id": "infiniteaudience:keys",
+      "@container": "@list"
+    },
+    "OidcUserInfo": "infiniteaudience:OidcUserInfo",
+    "sub": {
+      "@id": "infiniteaudience:sub",
+      "@type": "xsd:string"
+    },
+    "email": {
+      "@id": "infiniteaudience:email",
+      "@type": "xsd:string"
+    },
+    "email_verified": {
+      "@id": "infiniteaudience:email_verified",
+      "@type": "xsd:boolean"
+    },
+    "OAuthServerMetadata": "infiniteaudience:OAuthServerMetadata",
+    "device_authorization_endpoint": {
+      "@id": "infiniteaudience:device_authorization_endpoint",
+      "@type": "@id"
+    },
+    "client_id_metadata_document_supported": {
+      "@id": "infiniteaudience:client_id_metadata_document_supported",
+      "@type": "xsd:boolean"
+    },
+    "resource_indicators_supported": {
+      "@id": "infiniteaudience:resource_indicators_supported",
+      "@type": "xsd:boolean"
+    },
+    "OAuthClientRegistrationRequest": "infiniteaudience:OAuthClientRegistrationRequest",
+    "client_name": {
+      "@id": "infiniteaudience:client_name",
+      "@type": "xsd:string"
+    },
+    "redirect_uris": {
+      "@id": "infiniteaudience:redirect_uris",
+      "@container": "@list"
+    },
+    "token_endpoint_auth_method": {
+      "@id": "infiniteaudience:token_endpoint_auth_method",
+      "@type": "xsd:string"
+    },
+    "grant_types": {
+      "@id": "infiniteaudience:grant_types",
+      "@container": "@list"
+    },
+    "response_types": {
+      "@id": "infiniteaudience:response_types",
+      "@container": "@list"
+    },
+    "OAuthClientRegistrationResponse": "infiniteaudience:OAuthClientRegistrationResponse",
+    "client_id_issued_at": {
+      "@id": "infiniteaudience:client_id_issued_at",
+      "@type": "xsd:integer"
+    },
+    "OAuthProtectedResourceMetadata": "infiniteaudience:OAuthProtectedResourceMetadata",
+    "authorization_servers": {
+      "@id": "infiniteaudience:authorization_servers",
+      "@container": "@list"
+    },
+    "bearer_methods_supported": {
+      "@id": "infiniteaudience:bearer_methods_supported",
+      "@container": "@list"
+    },
+    "resource_documentation": {
+      "@id": "infiniteaudience:resource_documentation",
+      "@type": "@id"
+    },
+    "resource_policy_uri": {
+      "@id": "infiniteaudience:resource_policy_uri",
+      "@type": "@id"
+    },
+    "resource_tos_uri": {
+      "@id": "infiniteaudience:resource_tos_uri",
+      "@type": "@id"
+    },
+    "NotifiableEventType": "infiniteaudience:NotifiableEventType",
+    "WebhookSubscription": "infiniteaudience:WebhookSubscription",
+    "target_url": {
+      "@id": "infiniteaudience:target_url",
+      "@type": "@id"
+    },
+    "events": {
+      "@id": "infiniteaudience:events",
+      "@container": "@list"
+    },
+    "created_by": {
+      "@id": "infiniteaudience:created_by",
+      "@type": "xsd:string"
+    },
+    "last_delivery_at": {
+      "@id": "infiniteaudience:last_delivery_at",
+      "@type": "xsd:dateTime"
+    },
+    "consecutive_failure_count": {
+      "@id": "infiniteaudience:consecutive_failure_count",
+      "@type": "xsd:integer"
+    },
+    "WebhookSubscriptionCreated": "infiniteaudience:WebhookSubscriptionCreated",
+    "secret": {
+      "@id": "infiniteaudience:secret",
+      "@type": "xsd:string"
+    },
+    "IntegrationCollectionProvenance": "infiniteaudience:IntegrationCollectionProvenance",
+    "connection_count": {
+      "@id": "infiniteaudience:connection_count",
+      "@type": "xsd:integer"
+    },
+    "materialized_at": {
+      "@id": "infiniteaudience:materialized_at",
+      "@type": "xsd:dateTime"
+    },
+    "ExpandedSegment": "infiniteaudience:ExpandedSegment",
+    "record_count": {
+      "@id": "infiniteaudience:record_count",
+      "@type": "xsd:integer"
+    },
+    "subtype": {
+      "@id": "infiniteaudience:subtype",
+      "@type": "xsd:string"
+    },
+    "filter_groups": {
+      "@id": "infiniteaudience:filter_groups",
+      "@container": "@list"
+    },
+    "current_version": {
+      "@id": "infiniteaudience:current_version",
+      "@type": "xsd:integer"
+    },
+    "record_limit": {
+      "@id": "infiniteaudience:record_limit",
+      "@type": "xsd:integer"
+    },
+    "AudienceObject": "infiniteaudience:AudienceObject",
+    "quote_id": {
+      "@id": "infiniteaudience:quote_id",
+      "@type": "xsd:string"
+    },
+    "quote_total_cents": {
+      "@id": "infiniteaudience:quote_total_cents",
+      "@type": "xsd:integer"
+    },
+    "parent_audience_id": {
+      "@id": "infiniteaudience:parent_audience_id",
+      "@type": "xsd:string"
+    },
+    "forked_from_snapshot_version": {
+      "@id": "infiniteaudience:forked_from_snapshot_version",
+      "@type": "xsd:integer"
+    },
+    "matched_record_count": {
+      "@id": "infiniteaudience:matched_record_count",
+      "@type": "xsd:integer"
+    },
+    "version_created_at": {
+      "@id": "infiniteaudience:version_created_at",
+      "@type": "xsd:string"
+    },
+    "visibility": {
+      "@id": "infiniteaudience:visibility",
+      "@type": "xsd:string"
+    },
+    "segment_refs": {
+      "@id": "infiniteaudience:segment_refs",
+      "@container": "@list"
+    },
+    "segment_ids": {
+      "@id": "infiniteaudience:segment_ids",
+      "@container": "@list"
+    },
+    "excluded_segment_ids": {
+      "@id": "infiniteaudience:excluded_segment_ids",
+      "@container": "@list"
+    },
+    "segments": {
+      "@id": "infiniteaudience:segments",
+      "@container": "@list"
+    },
+    "excluded_segments": {
+      "@id": "infiniteaudience:excluded_segments",
+      "@container": "@list"
+    },
+    "set_logic": {
+      "@id": "infiniteaudience:set_logic",
+      "@type": "xsd:string"
+    },
+    "campaign_id": {
+      "@id": "infiniteaudience:campaign_id",
+      "@type": "xsd:string"
+    },
+    "DeliveryObject": "infiniteaudience:DeliveryObject",
+    "delivery_id": {
+      "@id": "infiniteaudience:delivery_id",
+      "@type": "xsd:string"
+    },
+    "audience_version": {
+      "@id": "infiniteaudience:audience_version",
+      "@type": "xsd:integer"
+    },
+    "template_id": {
+      "@id": "infiniteaudience:template_id",
+      "@type": "xsd:string"
+    },
+    "cost": {
+      "@id": "infiniteaudience:cost",
+      "@type": "xsd:decimal"
+    },
+    "estimated_cost": {
+      "@id": "infiniteaudience:estimated_cost",
+      "@type": "xsd:decimal"
+    },
+    "already_delivered": {
+      "@id": "infiniteaudience:already_delivered",
+      "@type": "xsd:boolean"
+    },
+    "output_format": {
+      "@id": "infiniteaudience:output_format",
+      "@type": "xsd:string"
+    },
+    "output_compression": {
+      "@id": "infiniteaudience:output_compression",
+      "@type": "xsd:string"
+    },
+    "output_bytes": {
+      "@id": "infiniteaudience:output_bytes",
+      "@type": "xsd:integer"
+    },
+    "download_urls": {
+      "@id": "infiniteaudience:download_urls",
+      "@container": "@list"
+    },
+    "output_record_count": {
+      "@id": "infiniteaudience:output_record_count",
+      "@type": "xsd:integer"
+    },
+    "failure_reason": {
+      "@id": "infiniteaudience:failure_reason",
+      "@type": "xsd:string"
+    },
+    "matched_segment_id": {
+      "@id": "infiniteaudience:matched_segment_id",
+      "@type": "xsd:string"
+    },
+    "AudienceRefreshResult": "infiniteaudience:AudienceRefreshResult",
+    "refreshed": {
+      "@id": "infiniteaudience:refreshed",
+      "@type": "xsd:boolean"
+    },
+    "upload_url": {
+      "@id": "infiniteaudience:upload_url",
+      "@type": "xsd:string"
+    },
+    "upload_urls": {
+      "@id": "infiniteaudience:upload_urls",
+      "@container": "@list"
+    },
+    "upload_expires_at": {
+      "@id": "infiniteaudience:upload_expires_at",
+      "@type": "xsd:dateTime"
+    },
+    "workflow_run_id": {
+      "@id": "infiniteaudience:workflow_run_id",
+      "@type": "xsd:string"
+    },
+    "Filter": "infiniteaudience:Filter",
+    "field": {
+      "@id": "infiniteaudience:field",
+      "@type": "xsd:string"
+    },
+    "op": {
+      "@id": "infiniteaudience:op",
+      "@type": "xsd:string"
+    },
+    "text_comparison": {
+      "@id": "infiniteaudience:text_comparison",
+      "@type": "xsd:string"
+    },
+    "trim_whitespace": {
+      "@id": "infiniteaudience:trim_whitespace",
+      "@type": "xsd:boolean"
+    },
+    "value": {
+      "@id": "infiniteaudience:value"
+    },
+    "FilterGroup": "infiniteaudience:FilterGroup",
+    "combinator": {
+      "@id": "infiniteaudience:combinator",
+      "@type": "xsd:string"
+    },
+    "DiscoveryInput": "infiniteaudience:DiscoveryInput",
+    "DistributionBucket": "infiniteaudience:DistributionBucket",
+    "count": {
+      "@id": "infiniteaudience:count",
+      "@type": "xsd:integer"
+    },
+    "BulkCreateSegmentsResult": "infiniteaudience:BulkCreateSegmentsResult",
+    "created": {
+      "@id": "infiniteaudience:created",
+      "@type": "xsd:integer"
+    },
+    "errors": {
+      "@id": "infiniteaudience:errors",
+      "@container": "@list"
+    },
+    "SegmentObject": "infiniteaudience:SegmentObject",
+    "integration_collection_provenance": {
+      "@id": "infiniteaudience:integration_collection_provenance"
+    },
+    "shard_count": {
+      "@id": "infiniteaudience:shard_count",
+      "@type": "xsd:integer"
+    },
+    "mapping_confirmed": {
+      "@id": "infiniteaudience:mapping_confirmed",
+      "@type": "xsd:boolean"
+    },
+    "source_data_segment_id": {
+      "@id": "infiniteaudience:source_data_segment_id",
+      "@type": "xsd:string"
+    },
+    "seed_description": {
+      "@id": "infiniteaudience:seed_description",
+      "@type": "xsd:string"
+    },
+    "seed_segment_id": {
+      "@id": "infiniteaudience:seed_segment_id",
+      "@type": "xsd:string"
+    },
+    "positive_class_segment_id": {
+      "@id": "infiniteaudience:positive_class_segment_id",
+      "@type": "xsd:string"
+    },
+    "parent_segment_id": {
+      "@id": "infiniteaudience:parent_segment_id",
+      "@type": "xsd:string"
+    },
+    "derived_from": {
+      "@id": "infiniteaudience:derived_from",
+      "@type": "xsd:string"
+    },
+    "parent_segment_version": {
+      "@id": "infiniteaudience:parent_segment_version",
+      "@type": "xsd:integer"
+    },
+    "origin_campaign_id": {
+      "@id": "infiniteaudience:origin_campaign_id",
+      "@type": "xsd:string"
+    },
+    "usage": {
+      "@id": "infiniteaudience:usage"
+    },
+    "Campaign": "infiniteaudience:Campaign",
+    "audiences": {
+      "@id": "infiniteaudience:audiences",
+      "@container": "@list"
+    },
+    "NotificationPreferences": "infiniteaudience:NotificationPreferences",
+    "segment.ready": {
+      "@id": "infiniteaudience:segment.ready",
+      "@type": "xsd:boolean"
+    },
+    "segment.failed": {
+      "@id": "infiniteaudience:segment.failed",
+      "@type": "xsd:boolean"
+    },
+    "delivery.completed": {
+      "@id": "infiniteaudience:delivery.completed",
+      "@type": "xsd:boolean"
+    },
+    "delivery.failed": {
+      "@id": "infiniteaudience:delivery.failed",
+      "@type": "xsd:boolean"
+    },
+    "license.expiry.upcoming": {
+      "@id": "infiniteaudience:license.expiry.upcoming",
+      "@type": "xsd:boolean"
+    },
+    "enrichment.release.available": {
+      "@id": "infiniteaudience:enrichment.release.available",
+      "@type": "xsd:boolean"
+    },
+    "NotificationPreferencesResponse": "infiniteaudience:NotificationPreferencesResponse",
+    "notification_preferences": {
+      "@id": "infiniteaudience:notification_preferences"
+    },
+    "SegmentWebhookReadyPayload": "infiniteaudience:SegmentWebhookReadyPayload",
+    "api_version": {
+      "@id": "infiniteaudience:api_version",
+      "@type": "xsd:string"
+    },
+    "subject": {
+      "@id": "infiniteaudience:subject"
+    },
+    "data": {
+      "@id": "infiniteaudience:data"
+    },
+    "links": {
+      "@id": "infiniteaudience:links"
+    },
+    "SegmentWebhookFailedPayload": "infiniteaudience:SegmentWebhookFailedPayload",
+    "DeliveryWebhookCompletedPayload": "infiniteaudience:DeliveryWebhookCompletedPayload",
+    "DeliveryWebhookFailedPayload": "infiniteaudience:DeliveryWebhookFailedPayload"
+  },
+  "@type": "schema:Dataset",
+  "schema:name": "Infinite Audience API JSON-LD context",
+  "schema:description": "A JSON-LD @context for the objects Infinite Audience's own API contract declares: one class per component schema, one property per declared field, typed from the contract. Derived by script (derive-json-ld.py, 2026-10-09) from openapi/infiniteaudience-ai-openapi.yml.",
+  "dcterms:created": "2026-10-09",
+  "dcterms:source": [
+    "openapi/infiniteaudience-ai-openapi.yml"
+  ]
+}

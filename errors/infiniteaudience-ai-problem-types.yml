@@ -1,0 +1,103 @@
+generated: '2026-10-09'
+method: derived
+generator: derive-problem-types.py
+source:
+- openapi/infiniteaudience-ai-openapi.yml
+format: custom
+envelope:
+  media_type: application/json
+  schema: ErrorResponse
+coverage:
+  operations: 131
+  statuses_declared: 12
+problems:
+- status: 400
+  title: Bad Request
+  description: Invalid request — malformed body, missing required attribute, or failed validation. See `error` and
+    `message` for details.
+  operations: 79
+  media_types:
+  - application/json
+  schema: ErrorResponse
+- status: 401
+  title: Unauthorized
+  description: Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but
+    rejected, `code` distinguishes `TOKEN_EXP
+  operations: 119
+  media_types:
+  - application/json
+  schema: ErrorResponse
+- status: 402
+  title: Payment Required
+  description: The request cannot proceed on billing grounds. `BILLING_INSUFFICIENT_BALANCE` applies only to prepay
+    accounts and includes `required`, `avai
+  operations: 3
+  media_types:
+  - application/json
+  schema: null
+- status: 403
+  title: Forbidden
+  description: Token is valid but lacks the required scope for this endpoint. Check the endpoint description for
+    the required scope (`discovery`, `purchase
+  operations: 113
+  media_types:
+  - application/json
+  schema: ErrorResponse
+- status: 404
+  title: Not Found
+  description: Resource not found or not accessible to the calling org.
+  operations: 55
+  media_types:
+  - application/json
+  schema: ErrorResponse
+- status: 405
+  title: Method Not Allowed
+  description: MCP JSON-RPC protocol error (including authentication or unsupported method)
+  operations: 2
+  media_types:
+  - application/json
+  schema: McpJsonRpcError
+- status: 409
+  title: Conflict
+  description: Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+  operations: 31
+  media_types:
+  - application/json
+  schema: ErrorResponse
+- status: 422
+  title: Unprocessable Content
+  description: The result is below the minimum population that can be returned while preserving privacy.
+  operations: 14
+  media_types:
+  - application/json
+  schema: ErrorResponse
+- status: 429
+  title: Too Many Requests
+  description: 'Request throttled. Two distinct conditions return 429: **Rate limit** — too many requests per minute
+    for your tier (`error: rate_limit_excee'
+  operations: 3
+  media_types:
+  - application/json
+  schema: ErrorResponse
+- status: 500
+  title: Internal Server Error
+  description: RFC 6749-shaped OAuth protocol error — `error` is a fixed machine-readable code and `error_description`
+    is a human-readable detail. Delibera
+  operations: 5
+  media_types:
+  - application/json
+  schema: OAuthErrorResponse
+- status: 502
+  title: Bad Gateway
+  description: An upstream billing provider rejected or could not complete the operation.
+  operations: 26
+  media_types:
+  - application/json
+  schema: ErrorResponse
+- status: 503
+  title: Service Unavailable
+  description: A required billing provider partnership is temporarily unavailable.
+  operations: 16
+  media_types:
+  - application/json
+  schema: ErrorResponse

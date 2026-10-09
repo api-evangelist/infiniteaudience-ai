@@ -1,0 +1,709 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai Campaigns API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged Campaigns across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: Campaigns
+  description: Named workspaces that group related audiences and deliveries under a single context
+paths:
+  /v1/campaigns:
+    post:
+      summary: Create a campaign
+      operationId: createCampaign
+      description: 'Creates a new campaign workspace. A **Campaign** is a named container that groups related audiences and deliveries under a single context — useful for organising a body of work such as a quarterly prospecting initiative or a product-launch outreach.
+
+
+        **Campaign association is optional.** Audiences, file-match jobs, and deliveries all work independently without a campaign. Use campaigns when you want to track related work together in the first-party campaign workspace and activity views.
+
+
+        After creation, associate audiences with the campaign by:
+
+        - Passing `campaign_id` to `POST /v1/audiences` or `POST /v1/match/file` at creation time (auto-links on creation).
+
+        - Calling `POST /v1/campaigns/{id}/audiences/{audience_id}` to link an existing audience.
+
+
+        Requires ''creator'' scope.'
+      tags:
+      - Campaigns
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                  description: 'Display name for the campaign.
+
+                    '
+                description:
+                  type: string
+                  maxLength: 1000
+                  description: Optional campaign brief, intended market, goals, and constraints.
+            examples:
+              basic:
+                summary: Create a campaign
+                value:
+                  name: Q3 2026 Prospecting
+      responses:
+        '201':
+          description: 'Campaign created.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    get:
+      summary: List campaigns
+      operationId: listCampaigns
+      description: Returns all campaigns for the org, ordered by most recently updated. Filter by status to scope to active or archived campaigns. Requires 'discovery' scope.
+      tags:
+      - Campaigns
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - active
+          - archived
+        description: 'Filter by campaign status. Omit to return all campaigns.
+
+          '
+      responses:
+        '200':
+          description: 'Campaign list.
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  campaigns:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Campaign'
+                  total:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/campaigns/{id}:
+    get:
+      summary: Get a campaign
+      operationId: getCampaign
+      description: 'Returns full campaign details including an expanded `audiences` array with resolved segment names and record counts for each linked audience.
+
+        Requires ''discovery'' scope.'
+      tags:
+      - Campaigns
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Campaign ID returned by POST /v1/campaigns.
+
+          '
+      responses:
+        '200':
+          description: 'Campaign with expanded audience list.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Update a campaign
+      operationId: updateCampaign
+      description: 'Rename a campaign, revise its brief, or change its status. Supported status values: `archived` (soft-delete) and `active` (restore from archived).
+
+        Requires ''creator'' scope.'
+      tags:
+      - Campaigns
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 120
+                  description: 'New display name.
+
+                    '
+                description:
+                  type: string
+                  maxLength: 1000
+                  description: Campaign brief; send an empty string to clear it.
+                status:
+                  type: string
+                  enum:
+                  - archived
+                  - active
+                  description: '`archived` — soft-deletes the campaign (excluded from list by default). `active` — restores a previously archived campaign.
+
+                    '
+      responses:
+        '200':
+          description: 'Updated campaign.
+
+            '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Archive a campaign
+      operationId: archiveCampaign
+      description: 'Soft-archives the campaign by setting its status to `archived`. The campaign is not deleted and can be retrieved by listing with `?status=archived`. Idempotent — archiving an already-archived campaign returns 204.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Campaigns
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: 'Campaign archived.
+
+            '
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+  /v1/campaigns/{id}/audiences/{audience_id}:
+    post:
+      summary: Link an audience to a campaign
+      operationId: linkAudienceToCampaign
+      description: 'Associates an existing audience with a campaign. An audience can belong to at most one campaign at a time (exclusive ownership). Returns `409` if the audience is already linked to a **different** campaign — unlink it first. Idempotent: linking an already-linked audience to the **same** campaign returns `204` without error.
+
+
+        For new audiences, it is simpler to pass `campaign_id` directly to `POST /v1/audiences` or `POST /v1/match/file` to auto-link at creation time.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Campaigns
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Campaign ID.
+
+          '
+      - name: audience_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Audience ID to link.
+
+          '
+      responses:
+        '204':
+          description: 'Audience linked (or was already linked to this campaign).
+
+            '
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: 'Audience is already linked to a different campaign.
+
+            '
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - type: object
+                  required:
+                  - error
+                  - code
+                  - message
+                  - current_campaign_id
+                  properties:
+                    code:
+                      type: string
+                      enum:
+                      - AUDIENCE_ALREADY_LINKED
+                    current_campaign_id:
+                      type: string
+                      description: 'The campaign the audience belongs to now. An audience belongs to at most one campaign; unlink it there first.
+
+                        '
+    delete:
+      summary: Unlink an audience from a campaign
+      operationId: unlinkAudienceFromCampaign
+      description: 'Removes the audience from the campaign''s audience list. The audience itself is **not** deleted and can be linked to a different campaign or used independently afterward. Idempotent.
+
+        Requires ''creator'' scope.'
+      tags:
+      - Campaigns
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Campaign ID.
+
+          '
+      - name: audience_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: 'Audience ID to unlink.
+
+          '
+      responses:
+        '204':
+          description: 'Audience unlinked.
+
+            '
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    servers:
+    - url: https://api.infiniteaudience.ai
+      description: Production API Server
+components:
+  schemas:
+    ExpandedSegment:
+      type: object
+      description: Constituent segment summary and saved filter definition. Audiences may combine multiple segment subtypes; there is no primary segment or audience subtype.
+      required:
+      - id
+      - name
+      - record_count
+      - subtype
+      - input_record_count
+      - match_count
+      properties:
+        id:
+          type: string
+          description: Segment document ID.
+        name:
+          type: string
+          description: Segment display name.
+        record_count:
+          type:
+          - integer
+          - 'null'
+          description: Cached record count of the segment. Null if never counted.
+        subtype:
+          type: string
+          enum:
+          - filter
+          - matched
+          - similarity
+          - propensity
+          description: Subtype of the constituent segment.
+        input_record_count:
+          type:
+          - integer
+          - 'null'
+          description: matched subtype only. Count of records in the uploaded identity file. Null otherwise.
+        match_count:
+          type:
+          - integer
+          - 'null'
+          description: matched subtype only. Count of records successfully matched. Null otherwise.
+        filter_groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterGroup'
+        current_version:
+          type: integer
+        record_limit:
+          type:
+          - integer
+          - 'null'
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    Campaign:
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - status
+      - audiences
+      - created_at
+      - updated_at
+      description: 'A named workspace grouping related audiences and deliveries. There is no audience_ids[] field — audiences[] (below) is the only audience-linkage field the handler ever returns.
+
+        '
+      properties:
+        id:
+          type: string
+          description: Unique campaign identifier.
+        name:
+          type: string
+          description: Display name of the campaign.
+        description:
+          type: string
+          maxLength: 1000
+          description: User-authored campaign brief, intended market, goals, and constraints.
+        status:
+          type: string
+          enum:
+          - active
+          - archived
+          description: Lifecycle state of the campaign.
+        audiences:
+          type: array
+          description: 'Audiences linked to this campaign — expanded on GET /v1/campaigns/{id}; empty array on list responses.
+
+            '
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              status:
+                type: string
+                enum:
+                - active
+                - archived
+                - expired
+              record_count:
+                type:
+                - integer
+                - 'null'
+              segment_ids:
+                type: array
+                items:
+                  type: string
+                description: IDs of include-role segments in this audience.
+              excluded_segment_ids:
+                type: array
+                items:
+                  type: string
+                description: IDs of exclude-role segments in this audience.
+              segments:
+                type: array
+                description: Constituent segments; audiences can combine multiple subtypes.
+                items:
+                  $ref: '#/components/schemas/ExpandedSegment'
+              excluded_segments:
+                type: array
+                description: Expanded summaries of the exclude-role segments, same semantics as `segments`.
+                items:
+                  $ref: '#/components/schemas/ExpandedSegment'
+              set_logic:
+                type: string
+                enum:
+                - union
+                - intersection
+              snapshot_version:
+                type: integer
+              parent_audience_id:
+                type:
+                - string
+                - 'null'
+              linked_at:
+                type:
+                - string
+                - 'null'
+                format: date-time
+                description: When this audience was linked to the campaign.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    FilterGroup:
+      type: object
+      description: "A group of Filter conditions. All `filters` within a single group are **always ANDed together** — there is no per-group intra-operator. The `combinator` attribute is an **inter-group** operator: it controls how this group is joined to the immediately preceding group in the array. The `combinator` on the first group (index 0) is always ignored.\n\nExample — `(city = \"NYC\" AND state = \"NY\") OR (state = \"CA\")`:\n```json [\n  { \"id\": \"g1\", \"filters\": [{\"field\":\"city\",\"op\":\"=\",\"value\":\"NYC\"},\n                            {\"field\":\"state\",\"op\":\"=\",\"value\":\"NY\"}],\n    \"combinator\": \"AND\" },\n  { \"id\": \"g2\", \"filters\": [{\"field\":\"state\",\"op\":\"=\",\"value\":\"CA\"}],\n    \"combinator\": \"OR\" }\n] ```\nGroup g1's `combinator` is irrelevant (it is the first group). Group g2's `combinator: \"OR\"` means the result is `(g1) OR (g2)`.\n"
+      required:
+      - id
+      - filters
+      - combinator
+      properties:
+        id:
+          type: string
+          description: 'Stable identifier (UUID or NanoID). Used to track groups across edits.
+
+            '
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+          description: 'One or more filter conditions. All conditions in this array are combined with AND. Provide at least one filter per group.
+
+            '
+        combinator:
+          type: string
+          enum:
+          - AND
+          - OR
+          description: '**Inter-group operator.** Joins this group to the previous group in the array. `AND` narrows the result; `OR` broadens it. Ignored on the first group (index 0) — that group has no predecessor to join.
+
+            '
+    Filter:
+      type: object
+      description: A single filter condition for audience discovery or job execution
+      required:
+      - field
+      - op
+      properties:
+        field:
+          type: string
+          description: Canonical catalog field_name (e.g. age or state). ZIP5 also accepts zip, zip_code, or postal_code as input aliases; saved responses use zip5.
+        op:
+          type: string
+          enum:
+          - '='
+          - '!='
+          - <
+          - <=
+          - '>'
+          - '>='
+          - IN
+          - NOT IN
+          - BETWEEN
+          - LIKE
+          - ARRAY_CONTAINS
+          - ARRAY_CONTAINS_ANY
+          - IS NULL
+          - IS NOT NULL
+          description: Comparison operator
+        text_comparison:
+          type: string
+          enum:
+          - exact
+          - case_insensitive
+          description: 'Optional STRING comparison mode for =, !=, IN, NOT IN, and LIKE, or ARRAY<STRING> membership mode for ARRAY_CONTAINS and ARRAY_CONTAINS_ANY. Defaults to exact. Case-insensitive mode applies Unicode case folding to both the stored value and the supplied value.
+
+            '
+        trim_whitespace:
+          type: boolean
+          description: 'Optionally trim leading and trailing whitespace on both sides of a STRING or ARRAY<STRING> comparison. Defaults to false; independent of text_comparison.
+
+            '
+        value:
+          oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: array
+            items:
+              oneOf:
+              - type: string
+              - type: number
+          description: 'The value to match against. For state, a published two-letter code or full State name is accepted and normalized to the code. Scalar types (`string`, `number`, `boolean`) are used for single-value operators (`=`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `ARRAY_CONTAINS`). Pass an **array** for `IN`, `NOT IN`, and `ARRAY_CONTAINS_ANY` — pass the array directly with no comma-encoding. `BETWEEN` takes a two-element array `[low, high]`. Omit entirely for `IS NULL` / `IS NOT NULL` checks.
+
+            '
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  responses:
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml

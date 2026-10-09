@@ -1,0 +1,51 @@
+generated: '2026-10-09'
+method: probed
+generator: harvest-agent-card.py
+source: https://api.infiniteaudience.ai/.well-known/agent-card.json
+card:
+  file: a2a/infiniteaudience-ai-agent-card.json
+  name: Infinite Audience
+  version: 1.6.1
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: api.infiniteaudience.ai
+x-evidence:
+  fetched: '2026-10-09'
+  url: https://api.infiniteaudience.ai/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json; charset=utf-8
+  body_bytes: 14976
+  body_parses_as: json object
+conformance:
+  spec: A2A 1.0.0
+  grade: conformant
+  protocol_version: '1.0'
+  transport: JSONRPC
+  card_shape: 1.0 (supportedInterfaces[])
+  hard_checks:
+    capabilities_is_object: true
+    protocol_version_present: true
+    skills_is_array: true
+  optional_fields:
+    transport_declared: true
+    defaultInputModes: true
+    defaultOutputModes: true
+  deviations: &id001 []
+cards:
+- file: a2a/infiniteaudience-ai-agent-card.json
+  primary: true
+  host: api.infiniteaudience.ai
+  url: https://api.infiniteaudience.ai/.well-known/agent-card.json
+  http_status: 200
+  name: Infinite Audience
+  grade: conformant
+  deviations: *id001
+- file: a2a/infiniteaudience-ai-mcp-agent-card.json
+  primary: false
+  host: mcp.infiniteaudience.ai
+  url: https://mcp.infiniteaudience.ai/.well-known/agent-card.json
+  http_status: 200
+  name: Infinite Audience
+  grade: conformant
+  deviations: []

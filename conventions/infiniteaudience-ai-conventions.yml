@@ -1,0 +1,56 @@
+name: Infinite Audience Conventions
+generated: '2026-10-09'
+method: derived
+source: openapi/infiniteaudience-ai-openapi.yml; https://docs.infiniteaudience.ai/guides/webhooks/
+authentication:
+  style: Bearer token from POST /v1/auth/token (API key exchange) or OAuth 2.0 access
+    token
+  see: authentication/infiniteaudience-ai-authentication.yml
+idempotency:
+  coverage: partial
+  header: Idempotency-Key
+  scope:
+  - matchMicroBatch
+  - createIntegrationMatchMaterialization
+  - createFileMatch
+  note: Idempotency-Key parameter declared on 3 of 77 write operations in the contract;
+    docs also describe an idempotent credit top-up.
+pagination:
+  style: cursor
+  params:
+  - cursor
+  response_fields:
+  - next_cursor
+  source: https://docs.infiniteaudience.ai/agents/mcp/
+rate_limit_signaling:
+  status: 429
+  note: 429 responses declared in the contract; no published numeric limits found.
+webhooks:
+  signature_headers:
+  - X-IA-Timestamp
+  - X-IA-Signature
+  algorithm: HMAC-SHA256(secret, "{timestamp}.{raw_body}") prefixed v1=
+  retries: retries timeouts, 408, 429, and 5xx responses up to 10 total attempts;
+    410 Gone ends delivery for that endpoint
+  source: https://docs.infiniteaudience.ai/guides/webhooks/
+reversibility:
+  status: documented
+  operations:
+  - revokeAutomaticPurchasePermission
+  - revokeMonthlyRenewalPermission
+  - revokeWebhookSubscription
+  - archiveCampaign
+  - unlinkAudienceFromCampaign
+  - deleteSegment
+  - bulkArchiveSegments
+  - bulkDeleteSegments
+  - cancelSegmentMappings
+  - deleteAudience
+  - cancelAudienceMappings
+  - deleteConnection
+  - bulkArchiveAudiences
+  - cancelAccountContract
+  - revertAccountContractCancellation
+  - revokeSettingsApiKey
+  note: Archive/delete/revoke/cancel/revert operations exist in the contract; no reversal
+    windows are stated in the docs read.

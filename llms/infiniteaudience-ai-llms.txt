@@ -1,0 +1,117 @@
+# Infinite Audience — LLM & AI Agent Discovery File
+# https://infiniteaudience.ai/llms.txt
+# Format: https://llmstxt.org/
+# Last updated: 2026
+
+## About
+
+> Infinite Audience is an enterprise AI platform for modern B2C marketing. It combines a 217M+ person identity graph with autonomous AI agents to resolve, enrich, score, and activate audiences — in real time.
+
+Infinite Audience is the first MadTech platform built AI-forward: every workflow is powered by AI agents rather than manual rule builders. Marketers define outcomes; the platform figures out how to reach them.
+
+---
+
+## Company
+
+- **Name:** Infinite Audience
+- **Website:** https://infiniteaudience.ai
+- **Status:** Early Access (invite-only beta)
+- **Headquarters:** United States
+- **Founded:** 2024
+
+---
+
+## Core Product
+
+### Identity Graph
+- 217M+ US consumer profiles (1.06B+ node identifiers)
+- 500+ behavioral, demographic, and psychographic attributes across 14 categories
+- Real-time identity resolution (email → device → household → persona)
+- Cross-channel linkage: email, mobile ID, IP, postal, social handles
+
+### AI Agents
+- **Audience Builder Agent** — natural language to audience definition. Interprets marketer intent and queries the identity graph automatically.
+- **Enrichment Agent** — scores and appends attributes to 1st-party data uploads
+- **Propensity Agent** — generates purchase propensity, churn risk, and LTV scores
+- **Activation Agent** — routes finished audiences to ad platforms, CDPs, or data clean rooms
+
+### Platform Capabilities
+- Audience segmentation using compound filter groups (AND/OR logic)
+- CSV upload + real-time enrichment pipeline
+- Audience export to GCS, S3, SFTP, or direct platform push
+- Order management system for audience packages (CPM-based pricing)
+- Organization hierarchy: Platform → Parent Org (Agency) → Org (Brand/Advertiser)
+- Firebase Auth + role-based access control (platform admin, org owner, member)
+- Real-time query engine against BigQuery identity graph (sub-second for most queries)
+- MCP (Model Context Protocol) native integration for tool-calling agents
+
+---
+
+## Use Cases
+
+1. **Audience discovery** — find net-new prospects who match your best customer profile
+2. **List enrichment** — append 500+ attributes to your existing CRM or email list
+3. **Propensity scoring** — prioritize your outreach with purchase likelihood scores
+4. **Audience activation** — push finished segments directly to Meta, Google, The Trade Desk, or your CDP
+5. **AI-driven segmentation** — describe your ideal audience in plain English; the AI builds the query
+6. **Identity resolution** — stitch fragmented first-party data into unified person records
+
+---
+
+## Pricing
+
+Infinite Audience uses a CPM (cost per thousand records) model. Pricing is tiered by:
+- Record volume
+- Attribute depth (basic vs. premium enrichment)
+- Activation channel
+
+Contact sales for custom enterprise pricing: https://infiniteaudience.ai/contact
+
+---
+
+## Technical Details
+
+- **API:** REST (OpenAPI 3.1 spec available at /openapi-public.yaml)
+- **Auth:** OAuth 2.0 / Firebase Auth (JWT)
+- **Data residency:** US (GCP us-central1)
+- **Compliance:** SOC 2 Type II (in progress), CCPA-ready
+- **Integration:** MCP tool server available for agent-to-agent (A2A) workflows
+
+---
+
+## Full Documentation
+
+- [Full Content Database](/llms-full.txt): Comprehensive product details, comparisons, use cases, and full attribute catalog for LLM consumption.
+
+---
+
+## Sitemap
+
+- Homepage: https://infiniteaudience.ai
+- Identity Graph Explorer: https://infiniteaudience.ai/graph
+- Graph - Data Dictionary: https://infiniteaudience.ai/graph/data-dictionary
+- Machine Learning Capabilities: https://infiniteaudience.ai/ml
+- Identity Resolution Overview: https://infiniteaudience.ai/resolution
+- Contact / Early Access: https://infiniteaudience.ai/contact
+- Surfaces - AI Agents: https://infiniteaudience.ai/surfaces/agents
+- Surfaces - Model Context Protocol (MCP): https://infiniteaudience.ai/surfaces/mcp
+- Surfaces - REST API: https://infiniteaudience.ai/surfaces/api
+- Surfaces - Data Marketplaces: https://infiniteaudience.ai/surfaces/marketplaces
+- Surfaces - Data Clean Rooms: https://infiniteaudience.ai/surfaces/clean-rooms
+- Surfaces - Audience Activation: https://infiniteaudience.ai/surfaces/activation
+- About Us: https://infiniteaudience.ai/about
+- Faq: https://infiniteaudience.ai/faq
+- Cinematic Universe Demo: https://infiniteaudience.ai/cinematic-universe
+- Audiences: https://infiniteaudience.ai/audiences
+- News: https://infiniteaudience.ai/news
+- News - Introducing Trending Audiences: https://infiniteaudience.ai/news/introducing-trending-audiences
+- News - Infinite Audience Graph V1 2 2 0: https://infiniteaudience.ai/news/infinite-audience-graph-v1-2-2-0
+- News - Introducing The Infinite Audience Graph: https://infiniteaudience.ai/news/introducing-the-infinite-audience-graph
+
+---
+
+## Contact
+
+- **Sales inquiries:** https://infiniteaudience.ai/contact
+- **Partnership inquiries:** contact@infiniteaudience.ai
+- **Press:** press@infiniteaudience.ai

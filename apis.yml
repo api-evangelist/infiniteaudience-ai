@@ -1,31 +1,577 @@
 aid: infiniteaudience-ai
-name: Infinite Audience (NO FAIT)
-description: 'Infinite Audience (NO FAIT) is a company surfaced via the API Evangelist harvest backlog
-  (source: new-submission) and added to the network as a stub for full-pipeline profiling.'
+name: Infinite Audience
+image: https://infiniteaudience.ai/assets/infinite-audience-logo.png
+description: Infinite Audience, built by NO FAIT, is a customer-intelligence platform
+  for identity resolution, consumer data enrichment, audience building and activation.
+  Its REST API (api.infiniteaudience.ai) covers discovery counts, segments, audiences,
+  campaigns, deliveries, file and micro-batch matching, webhooks and billing, and
+  it also exposes a remote OAuth-protected MCP server and an A2A agent.
 url: https://raw.githubusercontent.com/api-evangelist/infiniteaudience-ai/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:new-submission
-x-tier: stub
-x-tier-reason: harvest
+x-tier: profiled
+x-tier-reason: enrichment pass 2026-10-09 (local-v5; was harvest)
 specificationVersion: '0.20'
 created: '2026-10-09'
 modified: '2026-10-09'
 tags:
 - Company
-apis: []
+- Identity Resolution
+- Data Enrichment
+- Audiences
+- Marketing
+- MCP
+- A2A
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Plans
+  url: plans/infiniteaudience-ai-plans-pricing.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: AgenticAccess
+  url: agentic-access/infiniteaudience-ai-agentic-access.yml
+- type: Spectral
+  url: rules/infiniteaudience-ai-rules.yml
+- type: JSONLD
+  url: json-ld/infiniteaudience-ai-context.jsonld
+- type: Vocabulary
+  url: vocabulary/infiniteaudience-ai-vocabulary.yml
+- type: Webhooks
+  url: asyncapi/infiniteaudience-ai-webhooks.yml
+- type: DataModel
+  url: data-model/infiniteaudience-ai-data-model.yml
+- type: Idempotency
+  url: conventions/infiniteaudience-ai-conventions.yml
+- type: Conventions
+  url: conventions/infiniteaudience-ai-conventions.yml
+- type: ErrorCatalog
+  url: errors/infiniteaudience-ai-problem-types.yml
+- type: Conformance
+  url: conformance/infiniteaudience-ai-conformance.yml
+- type: LLMsTxt
+  url: llms/infiniteaudience-ai-llms.txt
+- type: AgentCard
+  url: a2a/infiniteaudience-ai-a2a.yml
+- type: ToolCrosswalk
+  url: mcp/infiniteaudience-ai-tool-crosswalk.yml
+- type: MCPServer
+  url: mcp/infiniteaudience-ai-mcp.yml
+- type: WellKnown
+  url: well-known/infiniteaudience-ai-well-known.yml
+- type: Hosts
+  url: hosts/infiniteaudience-ai-hosts.yml
+- type: Vendors
+  url: vendors/infiniteaudience-ai-vendors.yml
+- type: SDKs
+  url: packages/infiniteaudience-ai-packages.yml
+- type: Packages
+  url: packages/infiniteaudience-ai-packages.yml
+- type: GettingStarted
+  url: https://dev.infiniteaudience.ai/surfaces/activation
+- type: Authentication
+  url: authentication/infiniteaudience-ai-authentication.yml
+- type: DomainSecurity
+  url: security/infiniteaudience-ai-domain-security.yml
 - type: Website
   url: https://infiniteaudience.ai
 - type: Documentation
   url: https://docs.infiniteaudience.ai/agents/a2a/
-x-submission-notes: 'A2A agent; customer-data enrichment, identity resolution, audience activation | Kin
-  approved listing 2026-10-09 (case-by-case: Real A2A agent, but its product is identity resolution /
-  consumer data enrichment (data-broker territory) and the named )'
-x-submission-probe: root 200; agent-card.json 200 JSON; /openapi-public.yaml 404 (named spec missing);
-  invented path 404
+- type: DeveloperPortal
+  url: https://dev.infiniteaudience.ai/
+- type: Documentation
+  url: https://docs.infiniteaudience.ai/
+- type: GitHubOrganization
+  url: https://github.com/no-fait
+- type: Newsroom
+  url: https://infiniteaudience.ai/news
+- type: StatusPage
+  url: https://status.infiniteaudience.ai/
+- type: APIReference
+  url: https://docs.infiniteaudience.ai/api/
+apis:
+- aid: infiniteaudience-ai:infinite-audience-mcp
+  name: Infinite Audience MCP Server
+  description: >-
+    Remote, OAuth-protected Model Context Protocol server for exploring signals, building segments and
+    running approved workflows from an assistant.
+  humanURL: https://docs.infiniteaudience.ai/agents/mcp/
+  baseURL: https://mcp.infiniteaudience.ai/mcp
+  tags:
+  - MCP
+  properties:
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/agents/mcp/
+- aid: infiniteaudience-ai:infiniteaudience-ai-a2a-api
+  name: Infinite Audience A2A API
+  description: Agent-to-Agent task protocol
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - A2A
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-a2a-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-account-api
+  name: Infinite Audience Account API
+  description: Balance, top-up, and subscription management
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Account
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-account-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-audiences-api
+  name: Infinite Audience Audiences API
+  description: Build, store, and manage named audience definitions
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Audiences
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-audiences-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-auth-api
+  name: Infinite Audience Auth API
+  description: Token exchange
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Auth
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-auth-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-campaigns-api
+  name: Infinite Audience Campaigns API
+  description: Named workspaces that group related audiences and deliveries under a single context
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Campaigns
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-campaigns-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-deliveries-api
+  name: Infinite Audience Deliveries API
+  description: Org-wide delivery history and status
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Deliveries
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-deliveries-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-discovery-api
+  name: Infinite Audience Discovery API
+  description: Audience count and lookup (exploration)
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Discovery
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-discovery-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-enrichment-api
+  name: Infinite Audience Enrichment API
+  description: >-
+    Attribute catalog, propensity models, synchronous micro-batch matching, and async file-based identity
+    resolution
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Enrichment
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-enrichment-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-integrations-api
+  name: Infinite Audience Integrations API
+  description: The Integrations API from Infinite Audience — 3 operation(s) for integrations.
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Integrations
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-integrations-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-mcp-api
+  name: Infinite Audience MCP API
+  description: Model Context Protocol session management
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - MCP
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-mcp-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-oauth-api
+  name: Infinite Audience OAuth API
+  description: >-
+    OAuth 2.0 authorization server for confidential integrations and delegated REST, MCP, and A2A clients.
+    Authenticate on behalf of one of your customers via the standard authorization-code flow with PKCE
+    or the A2A device authorization flow, then use the resulting resource-bound access token.
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - OAuth
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-oauth-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-partnerships-api
+  name: Infinite Audience Partnerships API
+  description: Retained activity and reusable results produced through connected partners
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Partnerships
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-partnerships-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-segments-api
+  name: Infinite Audience Segments API
+  description: Save and manage reusable filter definitions
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Segments
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-segments-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-settings-api
+  name: Infinite Audience Settings API
+  description: Self-service API keys and org configuration
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Settings
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-settings-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-triggers-api
+  name: Infinite Audience Triggers API
+  description: >-
+    Durable, per-event-filtered webhook-trigger subscriptions (e.g. one per Zap) — distinct from the single
+    implicit URL configured under the Webhooks tag / `/v1/settings/webhook`. Delivery is retried with
+    exponential backoff and dead-lettered after repeated failures. An OAuth-authenticated caller manages
+    only the subscriptions created by its own connection; an API-key/session caller with 'account' scope
+    manages every subscription in the org.
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Triggers
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-triggers-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-webhooks-api
+  name: Infinite Audience Webhooks API
+  description: >-
+    **Outbound webhook notifications** — the platform POSTs to your endpoint when async operations finish.
+
+
+    **Events fired:**
+
+    | Event | Trigger | |---|---| | `segment.ready` | Async segment build succeeded (matched, similarity,
+    propensity) | | `segment.failed` | Async segment build failed | | `delivery.completed` | File export/download
+    ready | | `delivery.failed` | File export/download failed |
+
+    `integration.enrichment.blocked` fires when a run is refused on billing grounds — the account's budget
+    ceiling or balance would be exceeded — and is delivered org-wide like the events above.
+
+    OAuth partnerships may additionally subscribe their own grant to `integration.enrichment.prepared`,
+    `integration.enrichment.failed`, `integration.file.ready`, and `integration.file.failed`. Those callbacks
+    are delivered only to the owning grant's subscription and never to the org-wide webhook.
+
+
+    **URL precedence** — per-request `webhook_url` > org-configured URL (Settings) > no dispatch. If an
+    individual API request includes `webhook_url`, that URL is used for that call only; the org-level
+    URL is not called. Omitting `webhook_url` on a request falls back to the org URL.
+
+
+    **Payload shape** — every dispatch (org-configured URL, per-request `webhook_url`, and durable subscriptions
+    alike) sends the same canonical envelope: `{id, type, created_at, api_version, org_id, subject, data,
+    links}`. `type` is the event name (e.g. `segment.ready`); `subject` identifies what the event is about
+    (`{kind, id, name}`); `data` carries `status` plus event-specific fields — see each event below for
+    its exact shape.
+
+
+    **Signing** — every outbound dispatch is signed. The signing secret is platform-generated — you never
+    supply one — and shown to you exactly once: in the response of `PUT /v1/settings/webhook` (the first
+    time a webhook is configured) or `POST /v1/settings/webhook/secret` (rotate), or in the response of
+    `POST /v1/webhook-subscriptions` for a durable subscription. Verifying is optional; every dispatch
+    includes: ``` X-IA-Timestamp: <unix-seconds> X-IA-Signature: v1=<hmac-hex> ``` computed as `HMAC-SHA256(secret,
+    "{timestamp}.{raw-request-body}")`. To verify: reject if `timestamp` is more than 300 seconds old,
+    then recompute the HMAC over the exact raw request body bytes and compare with `crypto.timingSafeEqual`
+    (or equivalent) — never compare against a re-serialized/re-parsed body, since re-serialization is
+    not guaranteed to produce identical bytes.
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Webhooks
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-webhooks-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+- aid: infiniteaudience-ai:infiniteaudience-ai-workflows-api
+  name: Infinite Audience Workflows API
+  description: >-
+    Monitor async audience pipeline progress (similarity and propensity subtypes). Poll GET /v1/workflows/{workflow_run_id}
+    or respond to HITL gates via POST /v1/workflows/{workflow_run_id}/resume.
+  humanURL: https://docs.infiniteaudience.ai/api/
+  baseURL: https://api.infiniteaudience.ai
+  tags:
+  - Workflows
+  properties:
+  - type: OpenAPI
+    url: openapi/infiniteaudience-ai-workflows-api-openapi.yml
+  - type: Documentation
+    url: https://docs.infiniteaudience.ai/
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-segment-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-delivery-object-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-file-match-job-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-audience-refresh-result-schema.json
+  - type: JSONSchema
+    url: json-schema/infiniteaudience-ai-campaign-schema.json
+x-submission-notes: 'A2A agent; customer-data enrichment, identity resolution, audience
+  activation | Kin approved listing 2026-10-09 (case-by-case: Real A2A agent, but
+  its product is identity resolution / consumer data enrichment (data-broker territory)
+  and the named )'
+x-submission-probe: root 200; agent-card.json 200 JSON; /openapi-public.yaml 404 (named
+  spec missing); invented path 404
 x-submitted-by: chris.calenda@nofait.com (apis.io/add, 2026-10-09)
+x-enrichment:
+  date: '2026-10-09'
+  status: enriched
+  artifacts_added: 20
+  pass: local-v5

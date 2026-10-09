@@ -1,0 +1,1 @@
+{"resource":"https://api.infiniteaudience.ai","authorization_servers":["https://api.infiniteaudience.ai"],"bearer_methods_supported":["header"],"scopes_supported":["discovery","creator"],"resource_documentation":"https://docs.infiniteaudience.ai","resource_policy_uri":"https://nofait.ai/privacy","resource_tos_uri":"https://nofait.ai/terms"}

@@ -1,0 +1,21 @@
+name: Infinite Audience Packages
+generated: '2026-10-09'
+method: searched
+source: https://docs.infiniteaudience.ai/developers/sdks/
+packages:
+- name: '@infiniteaudience/sdk'
+  registry: npm
+  url: https://www.npmjs.com/package/@infiniteaudience/sdk
+  language: JavaScript
+  official: true
+  version: 0.1.6
+  published: '2026-10-07'
+  note: prerelease per docs
+- name: infiniteaudience
+  registry: pypi
+  url: https://pypi.org/project/infiniteaudience/
+  language: Python
+  official: true
+  version: 0.1.6
+  published: '2026-10-07'
+  note: prerelease per docs; repository github.com/no-fait/platform

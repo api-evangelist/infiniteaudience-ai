@@ -1,0 +1,341 @@
+openapi: 3.2.0
+info:
+  title: Infiniteaudience Ai A2A API
+  version: 1.0.0
+  license:
+    name: Proprietary — All Rights Reserved
+    url: https://nofait.ai/terms
+  termsOfService: https://nofait.ai/terms
+  description: 'Operations tagged A2A across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://api.infiniteaudience.ai
+  description: Production API Server
+security:
+- bearerAuth: []
+tags:
+- name: a2a
+  description: Agent-to-Agent task protocol
+paths:
+  /.well-known/agent-card.json:
+    servers:
+    - url: https://a2a.infiniteaudience.ai
+    get:
+      summary: Public A2A Agent Card
+      operationId: a2aAgentCard
+      tags:
+      - a2a
+      security: []
+      description: 'Returns the A2A 1.0 card by default. Send A2A-Version: 0.3 to request the 0.3-shaped card. The card advertises JSON-RPC interfaces, public skills, OAuth options, and only the capabilities actually supported. The 1.0 card also includes the Agent Galaxy listing slug.'
+      parameters:
+      - in: header
+        name: A2A-Version
+        required: false
+        schema:
+          type: string
+          enum:
+          - '1.0'
+          - '0.3'
+      responses:
+        '200':
+          description: A2A Agent Card.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - name
+                - description
+                - version
+                - skills
+                properties:
+                  name:
+                    type: string
+                  agentGalaxySlug:
+                    type: string
+                    example: infinite-audience
+                  description:
+                    type: string
+                  version:
+                    type: string
+                  supportedInterfaces:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - url
+                      - protocolBinding
+                      - protocolVersion
+                      properties:
+                        url:
+                          type: string
+                          format: uri
+                        protocolBinding:
+                          type: string
+                        protocolVersion:
+                          type: string
+                  capabilities:
+                    type: object
+                    properties:
+                      streaming:
+                        type: boolean
+                      pushNotifications:
+                        type: boolean
+                  skills:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - name
+                      - description
+                      - tags
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        tags:
+                          type: array
+                          items:
+                            type: string
+  /.well-known/agent.json:
+    servers:
+    - url: https://a2a.infiniteaudience.ai
+    get:
+      summary: Legacy A2A Agent Card discovery alias
+      operationId: a2aAgentCardLegacyAlias
+      tags:
+      - a2a
+      security: []
+      description: Compatibility alias for 0.3 clients. Prefer /.well-known/agent-card.json.
+      responses:
+        '200':
+          $ref: '#/paths/~1.well-known~1agent-card.json/get/responses/200'
+  /a2a:
+    servers:
+    - url: https://a2a.infiniteaudience.ai
+    post:
+      summary: Send a standard A2A JSON-RPC request
+      operationId: a2aJsonRpc
+      tags:
+      - a2a
+      security:
+      - bearerAuth: []
+      description: A2A 1.0 JSON-RPC accepts SendMessage, SendStreamingMessage, GetTask, CancelTask, and SubscribeToTask. A2A 0.3 accepts message/send, message/stream, tasks/get, tasks/cancel, and tasks/resubscribe. Streaming methods return server-sent events. For SendMessage, send an advertised skill id as params.metadata.skill; an omitted skill is restricted to general discovery. Requires 'discovery' scope for unhinted requests and discovery skills, 'creator' scope for matching, audience mutation and delivery skills, or 'account' scope for read-only account-info. Task reads and cancellation are restricted to the owning organization. Credit-purchase, portal and organization-administration skills are unavailable on public A2A.
+      parameters:
+      - in: header
+        name: A2A-Version
+        required: false
+        schema:
+          type: string
+          enum:
+          - '1.0'
+          - '0.3'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - jsonrpc
+              - id
+              - method
+              - params
+              properties:
+                jsonrpc:
+                  type: string
+                  const: '2.0'
+                id:
+                  oneOf:
+                  - type: string
+                  - type: integer
+                method:
+                  type: string
+                params:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    message:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        messageId:
+                          type: string
+                        role:
+                          type: string
+                        parts:
+                          type: array
+                          items:
+                            type: object
+                            additionalProperties: true
+                    metadata:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        skill:
+                          type: string
+                        campaign_id:
+                          type: string
+                    configuration:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        returnImmediately:
+                          type: boolean
+                    id:
+                      type: string
+      responses:
+        '200':
+          description: JSON-RPC result/error envelope or SSE stream.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - jsonrpc
+                - id
+                properties:
+                  jsonrpc:
+                    type: string
+                    const: '2.0'
+                  id:
+                    oneOf:
+                    - type: string
+                    - type: integer
+                    - type: 'null'
+                  result:
+                    type: object
+                    additionalProperties: true
+                  error:
+                    type: object
+                    additionalProperties: true
+            text/event-stream:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/ScopeRequired'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+  responses:
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+  securitySchemes:
+    oidcBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: OAuth access token
+      description: Person-bound MCP OAuth bearer with the openid scope for UserInfo.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
+
+        '
+x-refined-from:
+- infiniteaudience-ai-openapi.json
+- infiniteaudience-ai-openapi.yml
