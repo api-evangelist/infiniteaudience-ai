@@ -1,0 +1,31 @@
+aid: infiniteaudience-ai
+name: Infinite Audience (NO FAIT)
+description: 'Infinite Audience (NO FAIT) is a company surfaced via the API Evangelist harvest backlog
+  (source: new-submission) and added to the network as a stub for full-pipeline profiling.'
+url: https://raw.githubusercontent.com/api-evangelist/infiniteaudience-ai/refs/heads/main/apis.yml
+x-type: company
+x-source: harvest:new-submission
+x-tier: stub
+x-tier-reason: harvest
+specificationVersion: '0.20'
+created: '2026-10-09'
+modified: '2026-10-09'
+tags:
+- Company
+apis: []
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com
+- FN: APIs.json
+  email: info@apis.io
+common:
+- type: Website
+  url: https://infiniteaudience.ai
+- type: Documentation
+  url: https://docs.infiniteaudience.ai/agents/a2a/
+x-submission-notes: 'A2A agent; customer-data enrichment, identity resolution, audience activation | Kin
+  approved listing 2026-10-09 (case-by-case: Real A2A agent, but its product is identity resolution /
+  consumer data enrichment (data-broker territory) and the named )'
+x-submission-probe: root 200; agent-card.json 200 JSON; /openapi-public.yaml 404 (named spec missing);
+  invented path 404
+x-submitted-by: chris.calenda@nofait.com (apis.io/add, 2026-10-09)
