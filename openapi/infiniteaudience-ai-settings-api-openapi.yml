@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Settings API
+  title: Infinite Audience Settings API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Settings across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -130,9 +130,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/settings/api-keys/{id}:
     delete:
       summary: Revoke a self-service API key
@@ -159,9 +156,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/settings/webhook:
     get:
       summary: Get the org's webhook configuration
@@ -255,9 +249,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/settings/webhook/secret:
     post:
       summary: Rotate the org's webhook signing secret
@@ -286,9 +277,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/settings/notifications:
     get:
       summary: Get the caller's own notification preferences
@@ -352,9 +340,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/settings/delivery-destinations:
     get:
       summary: Get delivery destinations
@@ -425,9 +410,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/settings/billing-preferences:
     get:
       summary: Get billing preferences
@@ -538,9 +520,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/settings/timezone:
     get:
       summary: Get display timezone
@@ -615,10 +594,62 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
+  responses:
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
   schemas:
     ErrorResponse:
       type: object
@@ -649,26 +680,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FilterValidationIssue'
-    NotificationPreferences:
-      type: object
-      required: []
-      description: 'Per-event-type email opt-in flags for segment, delivery, and monthly licence expiry events. Connection-bound partnership callbacks are automation-only and are not personal email preferences. Absent/false = opt-out (default) — no email until the user explicitly opts in.
-
-        '
-      properties:
-        segment.ready:
-          type: boolean
-        segment.failed:
-          type: boolean
-        delivery.completed:
-          type: boolean
-        delivery.failed:
-          type: boolean
-        license.expiry.upcoming:
-          type: boolean
-        enrichment.release.available:
-          type: boolean
-      additionalProperties: false
     DeliveryConfig:
       type: object
       description: 'Configured delivery destination. The `type` attribute selects the channel; partner destinations require additional identifying attributes.
@@ -710,33 +721,26 @@ components:
           narrative_dataset_id:
             type: string
             description: Narrative.io dataset ID that identifies the target dataset.
-    NotificationPreferencesResponse:
+    NotificationPreferences:
       type: object
-      required:
-      - notification_preferences
+      required: []
+      description: 'Per-event-type email opt-in flags for segment, delivery, and monthly licence expiry events. Connection-bound partnership callbacks are automation-only and are not personal email preferences. Absent/false = opt-out (default) — no email until the user explicitly opts in.
+
+        '
       properties:
-        notification_preferences:
-          type: object
-          required:
-          - segment.ready
-          - segment.failed
-          - delivery.completed
-          - delivery.failed
-          - license.expiry.upcoming
-          - enrichment.release.available
-          properties:
-            segment.ready:
-              type: boolean
-            segment.failed:
-              type: boolean
-            delivery.completed:
-              type: boolean
-            delivery.failed:
-              type: boolean
-            license.expiry.upcoming:
-              type: boolean
-            enrichment.release.available:
-              type: boolean
+        segment.ready:
+          type: boolean
+        segment.failed:
+          type: boolean
+        delivery.completed:
+          type: boolean
+        delivery.failed:
+          type: boolean
+        license.expiry.upcoming:
+          type: boolean
+        enrichment.release.available:
+          type: boolean
+      additionalProperties: false
     FilterValidationIssue:
       type: object
       required:
@@ -764,61 +768,33 @@ components:
           type: array
           items:
             type: string
-  responses:
-    NotFound:
-      description: Resource not found or not accessible to the calling org.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            not_found:
-              value:
-                error: Audience not found
-    Unauthorized:
-      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              value:
-                error: 'Unauthorized: Missing or invalid Authorization header'
-            token_expired:
-              value:
-                error: Unauthorized
-                code: TOKEN_EXPIRED
-                message: Your session has expired. Please sign in again.
-    BadRequest:
-      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            validation_error:
-              value:
-                error: Bad Request
-                code: MISSING_SEGMENTS
-                message: segment_ids is required for filter audiences.
-    ScopeRequired:
-      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_scope:
-              value:
-                error: SCOPE_REQUIRED
-                message: This endpoint requires the creator scope.
+    NotificationPreferencesResponse:
+      type: object
+      required:
+      - notification_preferences
+      properties:
+        notification_preferences:
+          type: object
+          required:
+          - segment.ready
+          - segment.failed
+          - delivery.completed
+          - delivery.failed
+          - license.expiry.upcoming
+          - enrichment.release.available
+          properties:
+            segment.ready:
+              type: boolean
+            segment.failed:
+              type: boolean
+            delivery.completed:
+              type: boolean
+            delivery.failed:
+              type: boolean
+            license.expiry.upcoming:
+              type: boolean
+            enrichment.release.available:
+              type: boolean
   securitySchemes:
     oidcBearer:
       type: http
@@ -831,6 +807,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Discovery API
+  title: Infinite Audience Discovery API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Discovery across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -134,9 +134,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/discovery/count:
     post:
       summary: Count records matching criteria
@@ -311,9 +308,6 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '502':
           $ref: '#/components/responses/QueryExecutionError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/discovery/lookup:
     post:
       summary: Return masked sample rows matching criteria
@@ -421,9 +415,6 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '502':
           $ref: '#/components/responses/QueryExecutionError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/discovery/crosstab:
     post:
       summary: Cross-tabulate two dimensions across a population
@@ -606,9 +597,6 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '502':
           $ref: '#/components/responses/QueryExecutionError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/discovery/overlap:
     post:
       summary: Calculate record overlap between two criteria sets
@@ -767,102 +755,7 @@ paths:
           $ref: '#/components/responses/AggregationFloorNotMet'
         '502':
           $ref: '#/components/responses/QueryExecutionError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
-  responses:
-    QueryExecutionError:
-      description: 'The underlying analytics query failed, or (`AGGREGATION_FLOOR_NOT_MET`) a non-discovery route encountered a result below the privacy floor. `message` is always a friendly, client-safe description — the raw backend error is never returned.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            aggregation_floor_not_met:
-              value:
-                error: Bad Gateway
-                code: AGGREGATION_FLOOR_NOT_MET
-                message: For privacy reasons, a minimum of 50 records is required to view this information.
-            table_missing:
-              value:
-                error: Bad Gateway
-                code: BQ_TABLE_MISSING
-                message: This data is missing — it may have expired or the original upload never finished processing. Try re-uploading, or contact support if this persists.
-    AggregationFloorNotMet:
-      description: The result is below the minimum population that can be returned while preserving privacy.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            error: Privacy threshold not met
-            code: AGGREGATION_FLOOR_NOT_MET
-            message: For privacy reasons, a minimum of 50 records is required to view this information.
-    Unauthorized:
-      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              value:
-                error: 'Unauthorized: Missing or invalid Authorization header'
-            token_expired:
-              value:
-                error: Unauthorized
-                code: TOKEN_EXPIRED
-                message: Your session has expired. Please sign in again.
-    RateLimited:
-      description: 'Request throttled. Two distinct conditions return 429: **Rate limit** — too many requests per minute for your tier (`error: rate_limit_exceeded`); retry after `retry_after_seconds`. **Compute ceiling** — org-level query-scan budget exhausted (`error: compute_limit_exceeded`); resets hourly or on plan upgrade.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            rate_limit:
-              value:
-                error: rate_limit_exceeded
-                message: Rate limit of 100 requests/minute exceeded for tier 'pilot'.
-                retry_after_seconds: 45
-            compute_limit:
-              value:
-                error: compute_limit_exceeded
-                message: Org compute ceiling exceeded. Upgrade your plan or wait for the hourly reset.
-    BadRequest:
-      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            validation_error:
-              value:
-                error: Bad Request
-                code: MISSING_SEGMENTS
-                message: segment_ids is required for filter audiences.
-    ScopeRequired:
-      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_scope:
-              value:
-                error: SCOPE_REQUIRED
-                message: This endpoint requires the creator scope.
   schemas:
     ErrorResponse:
       type: object
@@ -893,34 +786,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FilterValidationIssue'
-    FilterGroup:
-      type: object
-      description: "A group of Filter conditions. All `filters` within a single group are **always ANDed together** — there is no per-group intra-operator. The `combinator` attribute is an **inter-group** operator: it controls how this group is joined to the immediately preceding group in the array. The `combinator` on the first group (index 0) is always ignored.\n\nExample — `(city = \"NYC\" AND state = \"NY\") OR (state = \"CA\")`:\n```json [\n  { \"id\": \"g1\", \"filters\": [{\"field\":\"city\",\"op\":\"=\",\"value\":\"NYC\"},\n                            {\"field\":\"state\",\"op\":\"=\",\"value\":\"NY\"}],\n    \"combinator\": \"AND\" },\n  { \"id\": \"g2\", \"filters\": [{\"field\":\"state\",\"op\":\"=\",\"value\":\"CA\"}],\n    \"combinator\": \"OR\" }\n] ```\nGroup g1's `combinator` is irrelevant (it is the first group). Group g2's `combinator: \"OR\"` means the result is `(g1) OR (g2)`.\n"
-      required:
-      - id
-      - filters
-      - combinator
-      properties:
-        id:
-          type: string
-          description: 'Stable identifier (UUID or NanoID). Used to track groups across edits.
-
-            '
-        filters:
-          type: array
-          items:
-            $ref: '#/components/schemas/Filter'
-          description: 'One or more filter conditions. All conditions in this array are combined with AND. Provide at least one filter per group.
-
-            '
-        combinator:
-          type: string
-          enum:
-          - AND
-          - OR
-          description: '**Inter-group operator.** Joins this group to the previous group in the array. `AND` narrows the result; `OR` broadens it. Ignored on the first group (index 0) — that group has no predecessor to join.
-
-            '
     Filter:
       type: object
       description: A single filter condition for audience discovery or job execution
@@ -975,17 +840,6 @@ components:
           description: 'The value to match against. For state, a published two-letter code or full State name is accepted and normalized to the code. Scalar types (`string`, `number`, `boolean`) are used for single-value operators (`=`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `ARRAY_CONTAINS`). Pass an **array** for `IN`, `NOT IN`, and `ARRAY_CONTAINS_ANY` — pass the array directly with no comma-encoding. `BETWEEN` takes a two-element array `[low, high]`. Omit entirely for `IS NULL` / `IS NOT NULL` checks.
 
             '
-    DistributionBucket:
-      type: object
-      description: One bucket of a categorical distribution.
-      required:
-      - label
-      - count
-      properties:
-        label:
-          type: string
-        count:
-          type: integer
     DiscoveryInput:
       type: object
       description: 'One side of a discovery operation — provide exactly one of `filters`, `filter_groups`, `segment_id`, `audience_id`, or `segment_ids` + `set_logic`. Providing more than one returns 400 `AMBIGUOUS_INPUT`; providing none returns 400 `NO_INPUT_SPECIFIED`.
@@ -1021,6 +875,45 @@ components:
           description: 'How to combine segment_ids: union = match ANY segment (OR); intersection = match EVERY segment (AND).
 
             '
+    DistributionBucket:
+      type: object
+      description: One bucket of a categorical distribution.
+      required:
+      - label
+      - count
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+    FilterGroup:
+      type: object
+      description: "A group of Filter conditions. All `filters` within a single group are **always ANDed together** — there is no per-group intra-operator. The `combinator` attribute is an **inter-group** operator: it controls how this group is joined to the immediately preceding group in the array. The `combinator` on the first group (index 0) is always ignored.\n\nExample — `(city = \"NYC\" AND state = \"NY\") OR (state = \"CA\")`:\n```json [\n  { \"id\": \"g1\", \"filters\": [{\"field\":\"city\",\"op\":\"=\",\"value\":\"NYC\"},\n                            {\"field\":\"state\",\"op\":\"=\",\"value\":\"NY\"}],\n    \"combinator\": \"AND\" },\n  { \"id\": \"g2\", \"filters\": [{\"field\":\"state\",\"op\":\"=\",\"value\":\"CA\"}],\n    \"combinator\": \"OR\" }\n] ```\nGroup g1's `combinator` is irrelevant (it is the first group). Group g2's `combinator: \"OR\"` means the result is `(g1) OR (g2)`.\n"
+      required:
+      - id
+      - filters
+      - combinator
+      properties:
+        id:
+          type: string
+          description: 'Stable identifier (UUID or NanoID). Used to track groups across edits.
+
+            '
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+          description: 'One or more filter conditions. All conditions in this array are combined with AND. Provide at least one filter per group.
+
+            '
+        combinator:
+          type: string
+          enum:
+          - AND
+          - OR
+          description: '**Inter-group operator.** Joins this group to the previous group in the array. `AND` narrows the result; `OR` broadens it. Ignored on the first group (index 0) — that group has no predecessor to join.
+
+            '
     FilterValidationIssue:
       type: object
       required:
@@ -1048,6 +941,98 @@ components:
           type: array
           items:
             type: string
+  responses:
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    RateLimited:
+      description: 'Request throttled. Two distinct conditions return 429: **Rate limit** — too many requests per minute for your tier (`error: rate_limit_exceeded`); retry after `retry_after_seconds`. **Compute ceiling** — org-level query-scan budget exhausted (`error: compute_limit_exceeded`); resets hourly or on plan upgrade.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            rate_limit:
+              value:
+                error: rate_limit_exceeded
+                message: Rate limit of 100 requests/minute exceeded for tier 'pilot'.
+                retry_after_seconds: 45
+            compute_limit:
+              value:
+                error: compute_limit_exceeded
+                message: Org compute ceiling exceeded. Upgrade your plan or wait for the hourly reset.
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    QueryExecutionError:
+      description: 'The underlying analytics query failed, or (`AGGREGATION_FLOOR_NOT_MET`) a non-discovery route encountered a result below the privacy floor. `message` is always a friendly, client-safe description — the raw backend error is never returned.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            aggregation_floor_not_met:
+              value:
+                error: Bad Gateway
+                code: AGGREGATION_FLOOR_NOT_MET
+                message: For privacy reasons, a minimum of 50 records is required to view this information.
+            table_missing:
+              value:
+                error: Bad Gateway
+                code: BQ_TABLE_MISSING
+                message: This data is missing — it may have expired or the original upload never finished processing. Try re-uploading, or contact support if this persists.
+    AggregationFloorNotMet:
+      description: The result is below the minimum population that can be returned while preserving privacy.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: Privacy threshold not met
+            code: AGGREGATION_FLOOR_NOT_MET
+            message: For privacy reasons, a minimum of 50 records is required to view this information.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
   securitySchemes:
     oidcBearer:
       type: http
@@ -1060,6 +1045,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

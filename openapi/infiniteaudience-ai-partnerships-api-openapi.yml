@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Partnerships API
+  title: Infinite Audience Partnerships API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Partnerships across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -80,9 +80,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/integration-runs/{runId}:
     get:
       summary: Get retained partnership activity
@@ -112,9 +109,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/integration-match-collections:
     get:
       summary: List saved integration match collections
@@ -142,9 +136,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/integration-match-collections/{collectionId}/materializations/preview:
     post:
       summary: Preview a saved-match segment materialization
@@ -183,9 +174,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/integration-match-collections/{collectionId}/materializations:
     post:
       summary: Build or extend a segment from saved integration matches
@@ -243,9 +231,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/integration-match-materializations/{materializationId}:
     get:
       summary: Get a saved-match segment materialization
@@ -275,138 +260,8 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
   schemas:
-    ErrorResponse:
-      type: object
-      required:
-      - error
-      additionalProperties: true
-      properties:
-        error:
-          type: string
-          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
-
-            '
-        message:
-          type: string
-          description: Human-readable explanation of the error.
-        code:
-          type: string
-          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
-
-            '
-        request_id:
-          type: string
-          description: Opaque support/debug identifier when available.
-        next_step:
-          type: string
-          description: Public action for correcting the request or retrying later.
-        issues:
-          type: array
-          items:
-            $ref: '#/components/schemas/FilterValidationIssue'
-    EnrichmentRelease:
-      type: object
-      required:
-      - major
-      - minor
-      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
-      properties:
-        major:
-          type: integer
-          minimum: 1
-        minor:
-          type: integer
-          minimum: 0
-    IntegrationMaterializationPreview:
-      type: object
-      required:
-      - source_observations
-      - unique_identities
-      - duplicate_observations
-      - expired_identities
-      - suppressed_identities
-      - already_present
-      - net_additions
-      properties:
-        source_observations:
-          type: integer
-          minimum: 0
-        unique_identities:
-          type: integer
-          minimum: 0
-        duplicate_observations:
-          type: integer
-          minimum: 0
-        expired_identities:
-          type: integer
-          minimum: 0
-        suppressed_identities:
-          type: integer
-          minimum: 0
-        already_present:
-          type: integer
-          minimum: 0
-        net_additions:
-          type: integer
-          minimum: 0
-    IntegrationCollectionFilter:
-      type: object
-      required: []
-      additionalProperties: false
-      properties:
-        providers:
-          type: array
-          maxItems: 20
-          items:
-            type: string
-        connection_ids:
-          type: array
-          maxItems: 100
-          items:
-            type: string
-        integration_run_ids:
-          type: array
-          maxItems: 100
-          items:
-            type: string
-        source_kinds:
-          type: array
-          maxItems: 3
-          items:
-            type: string
-            enum:
-            - recurring
-            - batch
-            - file
-        boundary_at_from:
-          type: string
-          format: date-time
-        boundary_at_to:
-          type: string
-          format: date-time
-    IntegrationRunListResponse:
-      type: object
-      additionalProperties: false
-      required:
-      - runs
-      - has_more
-      - next_cursor
-      properties:
-        runs:
-          type: array
-          items:
-            $ref: '#/components/schemas/IntegrationRun'
-        has_more:
-          type: boolean
-        next_cursor:
-          type:
-          - string
-          - 'null'
     IntegrationMaterialization:
       type: object
       required:
@@ -498,25 +353,55 @@ components:
           - string
           - 'null'
           format: date-time
-    IntegrationMaterializationRequest:
+    ErrorResponse:
       type: object
       required:
-      - mode
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    IntegrationMaterializationPreviewResponse:
+      type: object
+      required:
+      - cutoff_at
+      - preview
+      properties:
+        cutoff_at:
+          type: string
+          format: date-time
+        preview:
+          $ref: '#/components/schemas/IntegrationMaterializationPreview'
+    IntegrationMaterializationPreviewRequest:
+      type: object
+      required: []
       additionalProperties: false
       properties:
-        mode:
-          type: string
-          enum:
-          - new_segment
-          - add_to_segment
-        segment_name:
-          type: string
-          minLength: 1
-          maxLength: 120
-        target_segment_id:
-          type: string
         filters:
           $ref: '#/components/schemas/IntegrationCollectionFilter'
+        target_segment_id:
+          type: string
     IntegrationMatchCollection:
       type: object
       required:
@@ -569,86 +454,6 @@ components:
         updated_at:
           type: string
           format: date-time
-    IntegrationMaterializationPreviewRequest:
-      type: object
-      required: []
-      additionalProperties: false
-      properties:
-        filters:
-          $ref: '#/components/schemas/IntegrationCollectionFilter'
-        target_segment_id:
-          type: string
-    IntegrationMaterializationPreviewResponse:
-      type: object
-      required:
-      - cutoff_at
-      - preview
-      properties:
-        cutoff_at:
-          type: string
-          format: date-time
-        preview:
-          $ref: '#/components/schemas/IntegrationMaterializationPreview'
-    IntegrationRunCounts:
-      type: object
-      additionalProperties: false
-      required:
-      - input
-      - matched
-      - delivered
-      - applied
-      - unchanged
-      - skipped
-      - failed
-      properties:
-        input:
-          type: integer
-          minimum: 0
-        matched:
-          type: integer
-          minimum: 0
-        delivered:
-          type: integer
-          minimum: 0
-        applied:
-          type: integer
-          minimum: 0
-        unchanged:
-          type: integer
-          minimum: 0
-        skipped:
-          type: integer
-          minimum: 0
-        failed:
-          type: integer
-          minimum: 0
-    FilterValidationIssue:
-      type: object
-      required:
-      - path
-      - code
-      - message
-      properties:
-        path:
-          type: string
-          description: JSON path to the invalid filter field or value.
-        code:
-          type: string
-          enum:
-          - INVALID_FILTER_SHAPE
-          - UNKNOWN_FILTER_FIELD
-          - FIELD_NOT_FILTERABLE
-          - UNSUPPORTED_FILTER_OPERATOR
-          - UNSUPPORTED_TEXT_COMPARISON
-          - INVALID_FILTER_VALUE
-          - INVALID_ENUM_VALUE
-          - AMBIGUOUS_ENUM_VALUE
-        message:
-          type: string
-        suggestions:
-          type: array
-          items:
-            type: string
     IntegrationRun:
       type: object
       additionalProperties: false
@@ -760,6 +565,183 @@ components:
           - string
           - 'null'
           format: date-time
+    IntegrationRunListResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - runs
+      - has_more
+      - next_cursor
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntegrationRun'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
+    IntegrationMaterializationPreview:
+      type: object
+      required:
+      - source_observations
+      - unique_identities
+      - duplicate_observations
+      - expired_identities
+      - suppressed_identities
+      - already_present
+      - net_additions
+      properties:
+        source_observations:
+          type: integer
+          minimum: 0
+        unique_identities:
+          type: integer
+          minimum: 0
+        duplicate_observations:
+          type: integer
+          minimum: 0
+        expired_identities:
+          type: integer
+          minimum: 0
+        suppressed_identities:
+          type: integer
+          minimum: 0
+        already_present:
+          type: integer
+          minimum: 0
+        net_additions:
+          type: integer
+          minimum: 0
+    IntegrationRunCounts:
+      type: object
+      additionalProperties: false
+      required:
+      - input
+      - matched
+      - delivered
+      - applied
+      - unchanged
+      - skipped
+      - failed
+      properties:
+        input:
+          type: integer
+          minimum: 0
+        matched:
+          type: integer
+          minimum: 0
+        delivered:
+          type: integer
+          minimum: 0
+        applied:
+          type: integer
+          minimum: 0
+        unchanged:
+          type: integer
+          minimum: 0
+        skipped:
+          type: integer
+          minimum: 0
+        failed:
+          type: integer
+          minimum: 0
+    IntegrationCollectionFilter:
+      type: object
+      required: []
+      additionalProperties: false
+      properties:
+        providers:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+        connection_ids:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+        integration_run_ids:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+        source_kinds:
+          type: array
+          maxItems: 3
+          items:
+            type: string
+            enum:
+            - recurring
+            - batch
+            - file
+        boundary_at_from:
+          type: string
+          format: date-time
+        boundary_at_to:
+          type: string
+          format: date-time
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+    IntegrationMaterializationRequest:
+      type: object
+      required:
+      - mode
+      additionalProperties: false
+      properties:
+        mode:
+          type: string
+          enum:
+          - new_segment
+          - add_to_segment
+        segment_name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        target_segment_id:
+          type: string
+        filters:
+          $ref: '#/components/schemas/IntegrationCollectionFilter'
+    EnrichmentRelease:
+      type: object
+      required:
+      - major
+      - minor
+      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
+      properties:
+        major:
+          type: integer
+          minimum: 1
+        minor:
+          type: integer
+          minimum: 0
   responses:
     NotFound:
       description: Resource not found or not accessible to the calling org.
@@ -771,6 +753,27 @@ components:
             not_found:
               value:
                 error: Audience not found
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    Conflict:
+      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     Unauthorized:
       description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
 
@@ -802,27 +805,6 @@ components:
                 error: Bad Request
                 code: MISSING_SEGMENTS
                 message: segment_ids is required for filter audiences.
-    Conflict:
-      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ScopeRequired:
-      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_scope:
-              value:
-                error: SCOPE_REQUIRED
-                message: This endpoint requires the creator scope.
   securitySchemes:
     oidcBearer:
       type: http
@@ -835,6 +817,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

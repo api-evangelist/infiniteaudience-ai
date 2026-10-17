@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Triggers API
+  title: Infinite Audience Triggers API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Triggers across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -89,9 +89,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/webhook-subscriptions/{id}:
     delete:
       summary: Revoke a webhook-trigger subscription
@@ -116,10 +113,62 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
+  responses:
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
   schemas:
     ErrorResponse:
       type: object
@@ -166,40 +215,6 @@ components:
       - integration.enrichment.blocked
       - integration.file.ready
       - integration.file.failed
-    WebhookSubscriptionCreated:
-      type: object
-      description: 'Response to POST /v1/webhook-subscriptions. `secret` is returned exactly once, in plaintext — it is never retrievable again after this response.
-
-        '
-      required:
-      - id
-      - target_url
-      - events
-      - secret
-      - status
-      - created_at
-      properties:
-        id:
-          type: string
-        target_url:
-          type: string
-          format: uri
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/NotifiableEventType'
-        secret:
-          type: string
-          description: 'Plaintext HMAC-SHA256 signing secret. Store it now — every subsequent read only returns it masked. Used to compute `X-IA-Signature` on every delivery to this subscription — see the Webhooks tag''s Signing section for the exact scheme.
-
-            '
-        status:
-          type: string
-          enum:
-          - active
-        created_at:
-          type: string
-          format: date-time
     WebhookSubscription:
       type: object
       description: 'A durable event-trigger subscription (e.g. a Zap that is turned on). Delivery is retried with exponential backoff; see the Triggers tag for the ownership model.
@@ -274,61 +289,40 @@ components:
           type: array
           items:
             type: string
-  responses:
-    NotFound:
-      description: Resource not found or not accessible to the calling org.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            not_found:
-              value:
-                error: Audience not found
-    Unauthorized:
-      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+    WebhookSubscriptionCreated:
+      type: object
+      description: 'Response to POST /v1/webhook-subscriptions. `secret` is returned exactly once, in plaintext — it is never retrievable again after this response.
 
         '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              value:
-                error: 'Unauthorized: Missing or invalid Authorization header'
-            token_expired:
-              value:
-                error: Unauthorized
-                code: TOKEN_EXPIRED
-                message: Your session has expired. Please sign in again.
-    BadRequest:
-      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+      required:
+      - id
+      - target_url
+      - events
+      - secret
+      - status
+      - created_at
+      properties:
+        id:
+          type: string
+        target_url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotifiableEventType'
+        secret:
+          type: string
+          description: 'Plaintext HMAC-SHA256 signing secret. Store it now — every subsequent read only returns it masked. Used to compute `X-IA-Signature` on every delivery to this subscription — see the Webhooks tag''s Signing section for the exact scheme.
 
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            validation_error:
-              value:
-                error: Bad Request
-                code: MISSING_SEGMENTS
-                message: segment_ids is required for filter audiences.
-    ScopeRequired:
-      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_scope:
-              value:
-                error: SCOPE_REQUIRED
-                message: This endpoint requires the creator scope.
+            '
+        status:
+          type: string
+          enum:
+          - active
+        created_at:
+          type: string
+          format: date-time
   securitySchemes:
     oidcBearer:
       type: http
@@ -341,6 +335,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

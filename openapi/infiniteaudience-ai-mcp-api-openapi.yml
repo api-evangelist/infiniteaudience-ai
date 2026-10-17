@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai MCP API
+  title: Infinite Audience MCP API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged MCP across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -231,12 +231,6 @@ components:
           items:
             type: string
   responses:
-    McpProtocolError:
-      description: MCP JSON-RPC protocol error (including authentication or unsupported method)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/McpJsonRpcError'
     ScopeRequired:
       description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
 
@@ -250,6 +244,12 @@ components:
               value:
                 error: SCOPE_REQUIRED
                 message: This endpoint requires the creator scope.
+    McpProtocolError:
+      description: MCP JSON-RPC protocol error (including authentication or unsupported method)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/McpJsonRpcError'
   securitySchemes:
     oidcBearer:
       type: http
@@ -262,6 +262,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

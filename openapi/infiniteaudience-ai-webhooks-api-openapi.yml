@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Webhooks API
+  title: Infinite Audience Webhooks API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Webhooks across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -49,9 +49,6 @@ webhooks:
       responses:
         '200':
           description: Your endpoint acknowledged the event.
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   segment.failed:
     post:
       operationId: webhookSegmentFailed
@@ -82,9 +79,6 @@ webhooks:
       responses:
         '200':
           description: Your endpoint acknowledged the event.
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   delivery.completed:
     post:
       operationId: webhookDeliveryCompleted
@@ -122,9 +116,6 @@ webhooks:
       responses:
         '200':
           description: Your endpoint acknowledged the event.
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   delivery.failed:
     post:
       operationId: webhookDeliveryFailed
@@ -156,120 +147,8 @@ webhooks:
       responses:
         '200':
           description: Your endpoint acknowledged the event.
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
   schemas:
-    SegmentWebhookReadyPayload:
-      type: object
-      description: 'Canonical envelope posted to your webhook when an async segment (matched file upload, similarity, or propensity) completes successfully.
-
-        '
-      required:
-      - id
-      - type
-      - created_at
-      - api_version
-      - org_id
-      - subject
-      - data
-      - links
-      properties:
-        id:
-          type: string
-          description: Unique per event firing — stable across retries of the same delivery.
-          example: evt_1a2b3c4d5e6f7a8b9c0d1e2f
-        type:
-          type: string
-          enum:
-          - segment.ready
-        created_at:
-          type: string
-          format: date-time
-        api_version:
-          type: string
-          example: '2026-08-06'
-        org_id:
-          type: string
-        subject:
-          type: object
-          description: Identifies the segment this event is about.
-          required:
-          - kind
-          - id
-          - name
-          properties:
-            kind:
-              type: string
-              enum:
-              - segment
-            id:
-              type: string
-            name:
-              type:
-              - string
-              - 'null'
-        data:
-          type: object
-          required:
-          - status
-          description: '`status` is always present; the remaining fields vary by segment subtype and creation path — treat any field not listed here as additive.
-
-            '
-          properties:
-            status:
-              type: string
-              enum:
-              - completed
-            audience_id:
-              type:
-              - string
-              - 'null'
-              description: 'If create_audience was true when the segment was created, the ID of the auto-created audience wrapper. Null otherwise.
-
-                '
-            match_count:
-              type:
-              - integer
-              - 'null'
-              description: Present for matched subtype only.
-            record_count:
-              type:
-              - integer
-              - 'null'
-            mapping_warnings:
-              type: array
-              description: 'Matched subtype only, and only when there are warnings — the same entries as `mapping_warnings` on `GET /v1/match/file/{matchId}`.
-
-                '
-              items:
-                $ref: '#/components/schemas/MappingWarning'
-          additionalProperties: true
-        links:
-          type: object
-          additionalProperties: true
-          description: Reserved for future related-resource links. Currently always empty.
-    MappingWarning:
-      type: object
-      required:
-      - source_column
-      - code
-      - warning
-      properties:
-        source_column:
-          type: string
-          description: The uploaded file's column the warning is about.
-        code:
-          type: string
-          enum:
-          - analysis
-          - nested_addresses
-          description: '`analysis` is the automatic column analysis''s warning on a low-confidence mapping; `nested_addresses` is the platform''s check of the `addresses` column.
-
-            '
-        warning:
-          type: string
     DeliveryWebhookFailedPayload:
       type: object
       description: 'Canonical envelope posted to your webhook when a delivery export fails.
@@ -419,6 +298,115 @@ components:
           type: object
           additionalProperties: true
           description: Reserved for future related-resource links. Currently always empty.
+    MappingWarning:
+      type: object
+      required:
+      - source_column
+      - code
+      - warning
+      properties:
+        source_column:
+          type: string
+          description: The uploaded file's column the warning is about.
+        code:
+          type: string
+          enum:
+          - analysis
+          - nested_addresses
+          description: '`analysis` is the automatic column analysis''s warning on a low-confidence mapping; `nested_addresses` is the platform''s check of the `addresses` column.
+
+            '
+        warning:
+          type: string
+    SegmentWebhookReadyPayload:
+      type: object
+      description: 'Canonical envelope posted to your webhook when an async segment (matched file upload, similarity, or propensity) completes successfully.
+
+        '
+      required:
+      - id
+      - type
+      - created_at
+      - api_version
+      - org_id
+      - subject
+      - data
+      - links
+      properties:
+        id:
+          type: string
+          description: Unique per event firing — stable across retries of the same delivery.
+          example: evt_1a2b3c4d5e6f7a8b9c0d1e2f
+        type:
+          type: string
+          enum:
+          - segment.ready
+        created_at:
+          type: string
+          format: date-time
+        api_version:
+          type: string
+          example: '2026-08-06'
+        org_id:
+          type: string
+        subject:
+          type: object
+          description: Identifies the segment this event is about.
+          required:
+          - kind
+          - id
+          - name
+          properties:
+            kind:
+              type: string
+              enum:
+              - segment
+            id:
+              type: string
+            name:
+              type:
+              - string
+              - 'null'
+        data:
+          type: object
+          required:
+          - status
+          description: '`status` is always present; the remaining fields vary by segment subtype and creation path — treat any field not listed here as additive.
+
+            '
+          properties:
+            status:
+              type: string
+              enum:
+              - completed
+            audience_id:
+              type:
+              - string
+              - 'null'
+              description: 'If create_audience was true when the segment was created, the ID of the auto-created audience wrapper. Null otherwise.
+
+                '
+            match_count:
+              type:
+              - integer
+              - 'null'
+              description: Present for matched subtype only.
+            record_count:
+              type:
+              - integer
+              - 'null'
+            mapping_warnings:
+              type: array
+              description: 'Matched subtype only, and only when there are warnings — the same entries as `mapping_warnings` on `GET /v1/match/file/{matchId}`.
+
+                '
+              items:
+                $ref: '#/components/schemas/MappingWarning'
+          additionalProperties: true
+        links:
+          type: object
+          additionalProperties: true
+          description: Reserved for future related-resource links. Currently always empty.
     DeliveryWebhookCompletedPayload:
       type: object
       description: 'Canonical envelope posted to your webhook when a delivery export finishes and download URLs (or an equivalent destination confirmation) are available.
@@ -520,6 +508,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

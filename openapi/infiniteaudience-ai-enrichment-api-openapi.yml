@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Enrichment API
+  title: Infinite Audience Enrichment API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Enrichment across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -149,9 +149,6 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/InternalServerError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/catalog/fields:
     get:
       summary: Attribute catalog with pricing
@@ -373,9 +370,6 @@ paths:
         description: Defaults to false in compact mode and true otherwise. Set false to discover fields without billing setup.
         schema:
           type: boolean
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/data-release:
     get:
       summary: Current data release version
@@ -425,9 +419,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/match:
     post:
       summary: Micro-batch synchronous match
@@ -883,9 +874,6 @@ paths:
             '
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/match/file:
     post:
       summary: Start an async file-based identity resolution job
@@ -1206,9 +1194,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/match/runs:
     get:
       summary: List micro-batch match runs
@@ -1252,9 +1237,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/match/runs/{runId}:
     get:
       summary: Get a micro-batch match run
@@ -1285,9 +1267,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/match/file/{matchId}:
     get:
       summary: Get a file match job
@@ -1327,41 +1306,151 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
   schemas:
-    MatchAddress:
+    ErrorResponse:
       type: object
+      required:
+      - error
       additionalProperties: true
-      required: []
-      description: 'One additional address, tried as an extra match permutation alongside the record''s primary address. Only the keys listed here are read. Any other key (for example `street`, `line1`, or `postal`) is ignored and contributes nothing to matching, so rename such fields before sending. Include `address_1` in every entry. Send the ZIP code as `zip`. `zip5`, `postal_code`, and `zip_code` are accepted as aliases; when an entry carries more than one, the first non-empty value in the order `zip`, `zip5`, `postal_code`, `zip_code` is used.
-
-        '
       properties:
-        address_1:
+        error:
           type: string
-          description: Street address line 1.
-        address_2:
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
           type: string
-          description: Street address line 2 (apt, suite, etc.).
-        city:
+          description: Human-readable explanation of the error.
+        code:
           type: string
-        state:
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
           type: string
-        zip:
+          description: Opaque support/debug identifier when available.
+        next_step:
           type: string
-          description: ZIP code. Preferred key.
-        zip5:
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    MappingWarning:
+      type: object
+      required:
+      - source_column
+      - code
+      - warning
+      properties:
+        source_column:
           type: string
-          description: Alias for `zip`.
-        postal_code:
+          description: The uploaded file's column the warning is about.
+        code:
           type: string
-          description: Alias for `zip`.
-        zip_code:
+          enum:
+          - analysis
+          - nested_addresses
+          description: '`analysis` is the automatic column analysis''s warning on a low-confidence mapping; `nested_addresses` is the platform''s check of the `addresses` column.
+
+            '
+        warning:
           type: string
-          description: Alias for `zip`.
+    PublicCatalogField:
+      type: object
+      required:
+      - field_name
+      - aliases
+      - label
+      - data_type
+      - description
+      - product_usage
+      - filterable
+      - groupable
+      - operators
+      - text_comparison_modes
+      - default_text_comparison
+      - trim_whitespace_supported
+      - enum_values
+      - value_labels
+      - coverage_rate
+      - coverage_basis
+      - values_total
+      - values_next_cursor
+      properties:
+        field_name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+          description: Accepted input names for this field; saved definitions use field_name.
+        label:
+          type: string
+        data_type:
+          type: string
+        description:
+          type: string
+        product_usage:
+          type: array
+          items:
+            type: string
+        groupable:
+          type: boolean
+          description: Whether this field can be used for group_by or a crosstab dimension. Filtering support alone does not imply grouping support.
+        filterable:
+          type: boolean
+        operators:
+          type: array
+          items:
+            type: string
+        text_comparison_modes:
+          type: array
+          items:
+            type: string
+            enum:
+            - exact
+            - case_insensitive
+        default_text_comparison:
+          type:
+          - string
+          - 'null'
+          enum:
+          - exact
+          - null
+        trim_whitespace_supported:
+          type: boolean
+        enum_values:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        value_labels:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+        coverage_rate:
+          type:
+          - number
+          - 'null'
+          description: Non-null availability, not true-flag prevalence. Null when non-empty array coverage is unavailable.
+        coverage_basis:
+          type: string
+          enum:
+          - non_null
+          - unavailable
+        coverage_note:
+          type: string
+        values_total:
+          type: integer
+        values_next_cursor:
+          type:
+          - integer
+          - 'null'
     MatchRun:
       type: object
       description: A single micro-batch match run record. `amount_charged` is a conservative pending-usage estimate, not a finalized invoice amount.
@@ -1417,55 +1506,36 @@ components:
           type:
           - string
           - 'null'
-    ErrorResponse:
+    MatchAddress:
       type: object
-      required:
-      - error
       additionalProperties: true
+      required: []
+      description: 'One additional address, tried as an extra match permutation alongside the record''s primary address. Only the keys listed here are read. Any other key (for example `street`, `line1`, or `postal`) is ignored and contributes nothing to matching, so rename such fields before sending. Include `address_1` in every entry. Send the ZIP code as `zip`. `zip5`, `postal_code`, and `zip_code` are accepted as aliases; when an entry carries more than one, the first non-empty value in the order `zip`, `zip5`, `postal_code`, `zip_code` is used.
+
+        '
       properties:
-        error:
+        address_1:
           type: string
-          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
-
-            '
-        message:
+          description: Street address line 1.
+        address_2:
           type: string
-          description: Human-readable explanation of the error.
-        code:
+          description: Street address line 2 (apt, suite, etc.).
+        city:
           type: string
-          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
-
-            '
-        request_id:
+        state:
           type: string
-          description: Opaque support/debug identifier when available.
-        next_step:
+        zip:
           type: string
-          description: Public action for correcting the request or retrying later.
-        issues:
-          type: array
-          items:
-            $ref: '#/components/schemas/FilterValidationIssue'
-    MappingWarning:
-      type: object
-      required:
-      - source_column
-      - code
-      - warning
-      properties:
-        source_column:
+          description: ZIP code. Preferred key.
+        zip5:
           type: string
-          description: The uploaded file's column the warning is about.
-        code:
+          description: Alias for `zip`.
+        postal_code:
           type: string
-          enum:
-          - analysis
-          - nested_addresses
-          description: '`analysis` is the automatic column analysis''s warning on a low-confidence mapping; `nested_addresses` is the platform''s check of the `addresses` column.
-
-            '
-        warning:
+          description: Alias for `zip`.
+        zip_code:
           type: string
+          description: Alias for `zip`.
     MatchRunList:
       type: object
       required:
@@ -1484,6 +1554,33 @@ components:
           - string
           - 'null'
           description: Pass as cursor for the next page; null at the end.
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
     EnrichmentRelease:
       type: object
       required:
@@ -1497,6 +1594,24 @@ components:
         minor:
           type: integer
           minimum: 0
+    FileMatchJobList:
+      type: object
+      required:
+      - jobs
+      - has_more
+      - next_cursor
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileMatchJob'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
+          description: Pass as cursor for the next page; null at the end.
     FileMatchJob:
       type: object
       description: A file-based match job (matched-subtype segment)
@@ -1633,148 +1748,15 @@ components:
           type:
           - string
           - 'null'
-    PublicCatalogField:
-      type: object
-      required:
-      - field_name
-      - aliases
-      - label
-      - data_type
-      - description
-      - product_usage
-      - filterable
-      - groupable
-      - operators
-      - text_comparison_modes
-      - default_text_comparison
-      - trim_whitespace_supported
-      - enum_values
-      - value_labels
-      - coverage_rate
-      - coverage_basis
-      - values_total
-      - values_next_cursor
-      properties:
-        field_name:
-          type: string
-        aliases:
-          type: array
-          items:
-            type: string
-          description: Accepted input names for this field; saved definitions use field_name.
-        label:
-          type: string
-        data_type:
-          type: string
-        description:
-          type: string
-        product_usage:
-          type: array
-          items:
-            type: string
-        groupable:
-          type: boolean
-          description: Whether this field can be used for group_by or a crosstab dimension. Filtering support alone does not imply grouping support.
-        filterable:
-          type: boolean
-        operators:
-          type: array
-          items:
-            type: string
-        text_comparison_modes:
-          type: array
-          items:
-            type: string
-            enum:
-            - exact
-            - case_insensitive
-        default_text_comparison:
-          type:
-          - string
-          - 'null'
-          enum:
-          - exact
-          - null
-        trim_whitespace_supported:
-          type: boolean
-        enum_values:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        value_labels:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: string
-        coverage_rate:
-          type:
-          - number
-          - 'null'
-          description: Non-null availability, not true-flag prevalence. Null when non-empty array coverage is unavailable.
-        coverage_basis:
-          type: string
-          enum:
-          - non_null
-          - unavailable
-        coverage_note:
-          type: string
-        values_total:
-          type: integer
-        values_next_cursor:
-          type:
-          - integer
-          - 'null'
-    FileMatchJobList:
-      type: object
-      required:
-      - jobs
-      - has_more
-      - next_cursor
-      properties:
-        jobs:
-          type: array
-          items:
-            $ref: '#/components/schemas/FileMatchJob'
-        has_more:
-          type: boolean
-        next_cursor:
-          type:
-          - string
-          - 'null'
-          description: Pass as cursor for the next page; null at the end.
-    FilterValidationIssue:
-      type: object
-      required:
-      - path
-      - code
-      - message
-      properties:
-        path:
-          type: string
-          description: JSON path to the invalid filter field or value.
-        code:
-          type: string
-          enum:
-          - INVALID_FILTER_SHAPE
-          - UNKNOWN_FILTER_FIELD
-          - FIELD_NOT_FILTERABLE
-          - UNSUPPORTED_FILTER_OPERATOR
-          - UNSUPPORTED_TEXT_COMPARISON
-          - INVALID_FILTER_VALUE
-          - INVALID_ENUM_VALUE
-          - AMBIGUOUS_ENUM_VALUE
-        message:
-          type: string
-        suggestions:
-          type: array
-          items:
-            type: string
   responses:
-    Unauthorized:
-      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+    BadGateway:
+      description: An upstream billing provider rejected or could not complete the operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
 
         '
       content:
@@ -1782,20 +1764,11 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           examples:
-            missing_token:
+            validation_error:
               value:
-                error: 'Unauthorized: Missing or invalid Authorization header'
-            token_expired:
-              value:
-                error: Unauthorized
-                code: TOKEN_EXPIRED
-                message: Your session has expired. Please sign in again.
-    ServiceUnavailable:
-      description: A required billing provider partnership is temporarily unavailable.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
     MicroMatchBadRequest:
       description: 'Invalid micro-batch request. DUPLICATE_ROW_ID means two records share an effective row_id, including collisions with automatically assigned positional IDs. INVALID_ROW_ID means a supplied ID is null, non-string, empty, or whitespace-only. Row-ID validation rejects the whole request before idempotency writes, billing reservations, or matching.
 
@@ -1815,8 +1788,24 @@ components:
                 error: Bad Request
                 code: INVALID_ROW_ID
                 message: row_id at record 1 must be a non-empty string containing a non-whitespace character.
-    BadRequest:
-      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
 
         '
       content:
@@ -1824,11 +1813,22 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           examples:
-            validation_error:
+            missing_token:
               value:
-                error: Bad Request
-                code: MISSING_SEGMENTS
-                message: segment_ids is required for filter audiences.
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    Conflict:
+      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     PaymentRequired:
       description: 'The request cannot proceed on billing grounds. `BILLING_INSUFFICIENT_BALANCE` applies only to prepay accounts and includes `required`, `available`, and `shortfall` in USD. `BILLING_POSTPAY_CEILING_EXCEEDED` applies to an account ceiling; `BILLING_CONSUMER_POSTPAY_CEILING_EXCEEDED` applies to an agency child''s routed ceiling. Both ceiling responses include projected `accrued` and configured `ceiling` in USD.
 
@@ -1872,10 +1872,21 @@ components:
                 message: Postpay ceiling would be exceeded
                 accrued: 105
                 ceiling: 100
-    Conflict:
-      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
 
         '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    InternalServerError:
+      description: Unexpected server failure.
       content:
         application/json:
           schema:
@@ -1899,41 +1910,6 @@ components:
                 error: Audience not ready
                 code: AUDIENCE_PENDING
                 message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
-    BadGateway:
-      description: An upstream billing provider rejected or could not complete the operation.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ScopeRequired:
-      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_scope:
-              value:
-                error: SCOPE_REQUIRED
-                message: This endpoint requires the creator scope.
-    NotFound:
-      description: Resource not found or not accessible to the calling org.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            not_found:
-              value:
-                error: Audience not found
-    InternalServerError:
-      description: Unexpected server failure.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   securitySchemes:
     oidcBearer:
       type: http
@@ -1946,6 +1922,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

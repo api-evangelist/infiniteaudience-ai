@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Auth API
+  title: Infinite Audience Auth API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Auth across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -63,50 +63,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
-  responses:
-    Forbidden:
-      description: 'The authenticated organisation is suspended or otherwise forbidden from performing this operation.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              value:
-                error: 'Unauthorized: Missing or invalid Authorization header'
-            token_expired:
-              value:
-                error: Unauthorized
-                code: TOKEN_EXPIRED
-                message: Your session has expired. Please sign in again.
-    BadRequest:
-      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            validation_error:
-              value:
-                error: Bad Request
-                code: MISSING_SEGMENTS
-                message: segment_ids is required for filter audiences.
   schemas:
     ErrorResponse:
       type: object
@@ -164,6 +121,46 @@ components:
           type: array
           items:
             type: string
+  responses:
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    Forbidden:
+      description: 'The authenticated organisation is suspended or otherwise forbidden from performing this operation.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
   securitySchemes:
     oidcBearer:
       type: http
@@ -176,6 +173,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Deliveries API
+  title: Infinite Audience Deliveries API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Deliveries across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -310,9 +310,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/deliveries/bulk:
     post:
       summary: Bulk deliver multiple audiences
@@ -486,9 +483,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/audiences/{id}/deliveries:
     get:
       summary: List deliveries for an audience
@@ -656,9 +650,6 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/audiences/{id}/deliveries/{delivery_id}:
     get:
       summary: Get a single delivery
@@ -705,9 +696,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/match/{id}/deliveries:
     description: 'Convenience wrapper around POST /v1/audiences/{id}/deliveries for match jobs. The {id} is the match_id (segment document ID) returned by POST /v1/match/file — the server resolves the audience that wraps the segment and forwards the delivery. Always delivers to the download destination.
 
@@ -911,9 +899,6 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/deliveries:
     get:
       summary: List org-wide deliveries
@@ -993,30 +978,14 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
   responses:
-    UnprocessableEntity:
-      description: 'Request is structurally valid but the resource is in a state that prevents the operation (e.g. expired, pending, or not yet uploaded). See `error` and `code` for the specific reason.
-
-        '
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            audience_expired:
-              value:
-                error: Audience expired
-                code: AUDIENCE_EXPIRED
-                message: This audience version expired. Run a refresh to create a new deliverable version.
-            audience_pending:
-              value:
-                error: Audience not ready
-                code: AUDIENCE_PENDING
-                message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
     NotFound:
       description: Resource not found or not accessible to the calling org.
       content:
@@ -1027,43 +996,6 @@ components:
             not_found:
               value:
                 error: Audience not found
-    Unauthorized:
-      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              value:
-                error: 'Unauthorized: Missing or invalid Authorization header'
-            token_expired:
-              value:
-                error: Unauthorized
-                code: TOKEN_EXPIRED
-                message: Your session has expired. Please sign in again.
-    ServiceUnavailable:
-      description: A required billing provider partnership is temporarily unavailable.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    BadRequest:
-      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            validation_error:
-              value:
-                error: Bad Request
-                code: MISSING_SEGMENTS
-                message: segment_ids is required for filter audiences.
     PaymentRequired:
       description: 'The request cannot proceed on billing grounds. `BILLING_INSUFFICIENT_BALANCE` applies only to prepay accounts and includes `required`, `available`, and `shortfall` in USD. `BILLING_POSTPAY_CEILING_EXCEEDED` applies to an account ceiling; `BILLING_CONSUMER_POSTPAY_CEILING_EXCEEDED` applies to an agency child''s routed ceiling. Both ceiling responses include projected `accrued` and configured `ceiling` in USD.
 
@@ -1120,6 +1052,56 @@ components:
               value:
                 error: SCOPE_REQUIRED
                 message: This endpoint requires the creator scope.
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
+    BadRequest:
+      description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              value:
+                error: Bad Request
+                code: MISSING_SEGMENTS
+                message: segment_ids is required for filter audiences.
+    UnprocessableEntity:
+      description: 'Request is structurally valid but the resource is in a state that prevents the operation (e.g. expired, pending, or not yet uploaded). See `error` and `code` for the specific reason.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            audience_expired:
+              value:
+                error: Audience expired
+                code: AUDIENCE_EXPIRED
+                message: This audience version expired. Run a refresh to create a new deliverable version.
+            audience_pending:
+              value:
+                error: Audience not ready
+                code: AUDIENCE_PENDING
+                message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
   schemas:
     ErrorResponse:
       type: object
@@ -1150,6 +1132,37 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FilterValidationIssue'
+    LicensePricing:
+      type: object
+      required:
+      - status
+      - evaluated_at
+      - already_licensed_count
+      properties:
+        status:
+          type: string
+          enum:
+          - live
+          - cached
+          - unavailable
+          description: 'Whether cost_estimate reflects a freshly-computed license split (live), a recent cached one (cached, still authoritative — only the underlying counts are reused, dollars are always recomputed from current rates), or could not be determined in time (unavailable — cost_estimate equals max_cost_estimate exactly in this case, so no consumer sees a misleading number).
+
+            '
+        evaluated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: 'When the license split backing cost_estimate was computed. For a cached split this is the ORIGINAL computation time, not now — use it to judge staleness. Null when status is unavailable.
+
+            '
+        already_licensed_count:
+          type:
+          - integer
+          - 'null'
+          description: 'How many of this audience''s candidate identities already hold an active license elsewhere and were therefore excluded from cost_estimate''s billable count. Null when status is unavailable.
+
+            '
     DeliveryObject:
       type: object
       required:
@@ -1282,50 +1295,6 @@ components:
           type: string
           pattern: ^ir_[A-Za-z0-9_-]{40}$
           description: Present only for an authorized private partnership workflow.
-    EnrichmentRelease:
-      type: object
-      required:
-      - major
-      - minor
-      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
-      properties:
-        major:
-          type: integer
-          minimum: 1
-        minor:
-          type: integer
-          minimum: 0
-    LicensePricing:
-      type: object
-      required:
-      - status
-      - evaluated_at
-      - already_licensed_count
-      properties:
-        status:
-          type: string
-          enum:
-          - live
-          - cached
-          - unavailable
-          description: 'Whether cost_estimate reflects a freshly-computed license split (live), a recent cached one (cached, still authoritative — only the underlying counts are reused, dollars are always recomputed from current rates), or could not be determined in time (unavailable — cost_estimate equals max_cost_estimate exactly in this case, so no consumer sees a misleading number).
-
-            '
-        evaluated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: 'When the license split backing cost_estimate was computed. For a cached split this is the ORIGINAL computation time, not now — use it to judge staleness. Null when status is unavailable.
-
-            '
-        already_licensed_count:
-          type:
-          - integer
-          - 'null'
-          description: 'How many of this audience''s candidate identities already hold an active license elsewhere and were therefore excluded from cost_estimate''s billable count. Null when status is unavailable.
-
-            '
     CostEstimate:
       type: object
       required:
@@ -1385,6 +1354,19 @@ components:
           type: array
           items:
             type: string
+    EnrichmentRelease:
+      type: object
+      required:
+      - major
+      - minor
+      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
+      properties:
+        major:
+          type: integer
+          minimum: 1
+        minor:
+          type: integer
+          minimum: 0
   securitySchemes:
     oidcBearer:
       type: http
@@ -1397,6 +1379,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

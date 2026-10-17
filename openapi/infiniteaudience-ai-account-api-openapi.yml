@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Account API
+  title: Infinite Audience Account API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Account across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -38,9 +38,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/license-alerts:
     get:
       summary: Get organization licence expiry alert threshold
@@ -92,9 +89,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/billing:
     get:
       summary: Get native billing or setup readiness
@@ -119,9 +113,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/auto-recharge:
     get:
       summary: Get prepaid automatic-recharge state
@@ -179,9 +170,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/credits:
     get:
       summary: List active paid commits and promotional credits
@@ -208,9 +196,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/invoices:
     get:
       summary: List invoices with hosted collection links
@@ -237,9 +222,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/payment-method/setup:
     post:
       summary: Start Stripe payment-method onboarding for the billing account
@@ -325,9 +307,6 @@ paths:
           $ref: '#/components/responses/BadGateway'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/topups:
     post:
       summary: Begin an idempotent credit top-up
@@ -407,9 +386,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/topups/{requestId}:
     get:
       summary: Get durable top-up status
@@ -500,9 +476,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/topups/{requestId}/recheck:
     post:
       summary: Recheck a durable top-up against providers
@@ -593,9 +566,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/payment-method/portal:
     post:
       summary: Open Stripe payment-method and invoice-history settings
@@ -643,9 +613,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/contract/change:
     post:
       summary: Schedule a billing contract change
@@ -713,9 +680,6 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/contract/cancel:
     post:
       summary: Schedule contract cancellation
@@ -769,9 +733,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/contract/cancellation/revert:
     post:
       summary: Revert a scheduled cancellation
@@ -821,9 +782,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '502':
           $ref: '#/components/responses/BadGateway'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/account/usage:
     get:
       summary: Get aggregated usage metrics
@@ -866,92 +824,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
   schemas:
-    BillingReadinessProjection:
-      type: object
-      required:
-      - requires_card
-      - has_default_card
-      - collection_method_ok
-      - payment_collection_ready
-      - status
-      properties:
-        requires_card:
-          type: boolean
-        has_default_card:
-          type: boolean
-        collection_method_ok:
-          type: boolean
-        payment_collection_ready:
-          type: boolean
-        status:
-          type: string
-          enum:
-          - ok
-          - card_missing
-          - collection_method_mismatch
-          - not_applicable
-    AutoRechargeUpdateRequest:
-      type: object
-      additionalProperties: false
-      required:
-      - request_id
-      - enabled
-      - threshold_cents
-      - recharge_to_cents
-      properties:
-        request_id:
-          type: string
-          minLength: 8
-          maxLength: 160
-        enabled:
-          type: boolean
-        threshold_cents:
-          type: integer
-          minimum: 500
-          maximum: 4999000
-        recharge_to_cents:
-          type: integer
-          minimum: 1500
-          maximum: 5000000
-    BillingCollectionProjection:
-      type: object
-      required:
-      - status
-      - stripe_invoice_id
-      - failure_started_at
-      - grace_period_ends_at
-      - updated_at
-      properties:
-        status:
-          type: string
-          enum:
-          - current
-          - past_due
-          - uncollectible
-        stripe_invoice_id:
-          type:
-          - string
-          - 'null'
-        failure_started_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        grace_period_ends_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
     ErrorResponse:
       type: object
       required:
@@ -981,211 +855,98 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FilterValidationIssue'
-    AccountPaymentReceipt:
+    BillingMoneyProjection:
       type: object
       required:
-      - payment_attempt_id
-      - kind
-      - request_id
-      - status
-      - amount_cents
-      - bonus_cents
-      - principal_credit_status
-      - bonus_credit_status
-      - paid_at
-      - updated_at
-      - last_error_code
-      - credit_error_code
+      - available_balance_cents
+      - committed_balance_cents
+      - promotional_balance_cents
+      - current_period_spend_cents
+      - current_invoice_total_cents
+      - next_credit_expiry_at
+      - active_reserved_cents
+      - accepted_pending_cents
+      - effective_available_cents
       properties:
-        payment_attempt_id:
+        available_balance_cents:
+          type:
+          - integer
+          - 'null'
+        committed_balance_cents:
+          type:
+          - integer
+          - 'null'
+        promotional_balance_cents:
+          type:
+          - integer
+          - 'null'
+        current_period_spend_cents:
+          type: integer
+          minimum: 0
+        current_invoice_total_cents:
+          type:
+          - integer
+          - 'null'
+        next_credit_expiry_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        active_reserved_cents:
+          type: integer
+          minimum: 0
+        accepted_pending_cents:
+          type: integer
+          minimum: 0
+        effective_available_cents:
+          type:
+          - integer
+          - 'null'
+    AccountInvoicesResponse:
+      type: object
+      required:
+      - billing_account_id
+      - authority
+      - invoices
+      properties:
+        billing_account_id:
           type: string
-        kind:
+        authority:
           type: string
           enum:
-          - topup
-          - auto_recharge
+          - commercial
+          - mixed
+        invoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingInvoice'
+    AutoRechargeUpdateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - request_id
+      - enabled
+      - threshold_cents
+      - recharge_to_cents
+      properties:
         request_id:
           type: string
-        status:
-          type: string
-          enum:
-          - pending
-          - action_required
-          - paid
-          - failed
-        amount_cents:
+          minLength: 8
+          maxLength: 160
+        enabled:
+          type: boolean
+        threshold_cents:
           type: integer
-          minimum: 0
-        bonus_cents:
+          minimum: 500
+          maximum: 4999000
+        recharge_to_cents:
           type: integer
-          minimum: 0
-        principal_credit_status:
-          $ref: '#/components/schemas/BillingCreditDeliveryStatus'
-        bonus_credit_status:
-          $ref: '#/components/schemas/BillingCreditDeliveryStatus'
-        paid_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        last_error_code:
-          type:
-          - string
-          - 'null'
-        credit_error_code:
-          type:
-          - string
-          - 'null'
-    BillingUsageRateProjection:
-      type: object
-      required:
-      - match
-      - audience_delivery
-      - destination
-      - enrichment_field
-      properties:
-        match:
-          type: object
-          required:
-          - microbatch
-          - file
-          properties:
-            microbatch:
-              type: integer
-              minimum: 0
-            file:
-              type: integer
-              minimum: 0
-        audience_delivery:
-          type: object
-          required:
-          - filter
-          - matched
-          - similarity
-          - propensity
-          properties:
-            filter:
-              type: integer
-              minimum: 0
-            matched:
-              type: integer
-              minimum: 0
-            similarity:
-              type: integer
-              minimum: 0
-            propensity:
-              type: integer
-              minimum: 0
-        destination:
-          type: object
-          additionalProperties:
-            type: integer
-            minimum: 0
-        enrichment_field:
-          type: object
-          additionalProperties:
-            type: integer
-            minimum: 0
-    NativeAccountBillingResponse:
-      type: object
-      required:
-      - billing
-      - billing_mode
-      - parent_org
-      - billing_readiness
-      - operational
-      - projection
-      - latest_payment
-      properties:
-        billing:
-          $ref: '#/components/schemas/BillingSnapshot'
-        billing_mode:
-          type: string
-          enum:
-          - org_billed
-          - parent_billed
-        parent_org:
-          oneOf:
-          - type: object
-            required:
-            - id
-            - name
-            properties:
-              id:
-                type:
-                - string
-                - 'null'
-              name:
-                type:
-                - string
-                - 'null'
-          - type: 'null'
-        billing_readiness:
-          $ref: '#/components/schemas/BillingReadinessProjection'
-        operational:
-          type: object
-          required:
-          - frozen
-          - compute_usage_pct
-          properties:
-            frozen:
-              type: boolean
-            compute_usage_pct:
-              type: number
-              minimum: 0
-        projection:
-          type: object
-          required:
-          - projected_at
-          - provider_version
-          - stale
-          - refresh_error_code
-          properties:
-            projected_at:
-              type:
-              - string
-              - 'null'
-              format: date-time
-            provider_version:
-              type:
-              - string
-              - 'null'
-            stale:
-              type: boolean
-            refresh_error_code:
-              type:
-              - string
-              - 'null'
-        latest_payment:
-          oneOf:
-          - $ref: '#/components/schemas/AccountPaymentReceipt'
-          - type: 'null'
-    NativeBillingSetupResponse:
-      type: object
-      required:
-      - billing_mode
-      - billing
-      - operational
-      description: Native billing has not been configured. Viewing this response creates no account or contract. Shopify stores retain independent billing.
-      properties:
-        billing_mode:
-          type: string
-          const: native_setup_required
-        billing:
-          type: 'null'
-        operational:
-          type: object
-          required:
-          - frozen
-          - compute_usage_pct
-          properties:
-            frozen:
-              type: boolean
-            compute_usage_pct:
-              type: number
+          minimum: 1500
+          maximum: 5000000
+    AccountBillingResponse:
+      oneOf:
+      - $ref: '#/components/schemas/NativeAccountBillingResponse'
+      - $ref: '#/components/schemas/NativeBillingSetupResponse'
     BillingCreditBalance:
       type: object
       required:
@@ -1255,464 +1016,6 @@ components:
           - string
           - 'null'
           format: date-time
-    BillingCreditDeliveryStatus:
-      type: string
-      enum:
-      - awaiting_payment
-      - updating
-      - available
-      - needs_attention
-      - not_applicable
-    OrgLicenseSummary:
-      type: object
-      required:
-      - scope
-      - status
-      - as_of
-      - projection_lag_possible
-      - active_identities
-      - lapsed_identities
-      - purchased_terms_last_12_months
-      - expiring_active_identities_next_30_days
-      - purchases_by_month
-      - expiries_by_month
-      properties:
-        scope:
-          type: string
-          const: organization
-        status:
-          type: string
-          enum:
-          - snapshot
-          - stale
-          - unavailable
-        as_of:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        projection_lag_possible:
-          type: boolean
-          const: true
-        active_identities:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-        lapsed_identities:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-        purchased_terms_last_12_months:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-        expiring_active_identities_next_30_days:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-          description: Currently active identities whose latest licence term expires within 30 days of as_of.
-        purchases_by_month:
-          type: array
-          items:
-            type: object
-            required:
-            - month
-            - terms
-            properties:
-              month:
-                type: string
-                pattern: ^\d{4}-\d{2}$
-              terms:
-                type: integer
-                minimum: 0
-        expiries_by_month:
-          type: array
-          items:
-            type: object
-            required:
-            - month
-            - identities
-            properties:
-              month:
-                type: string
-                pattern: ^\d{4}-\d{2}$
-              identities:
-                type: integer
-                minimum: 0
-    BillingAutoRechargeProjection:
-      type: object
-      required:
-      - configured
-      - enabled
-      - threshold_cents
-      - recharge_to_cents
-      - configuration_request_id
-      - payment_status
-      - last_payment_attempt_id
-      - stripe_invoice_id
-      - stripe_payment_intent_id
-      - last_error_code
-      - updated_at
-      - pending_change
-      properties:
-        configured:
-          type: boolean
-        enabled:
-          type: boolean
-        threshold_cents:
-          type:
-          - integer
-          - 'null'
-          minimum: 500
-        recharge_to_cents:
-          type:
-          - integer
-          - 'null'
-          minimum: 1500
-          maximum: 5000000
-        configuration_request_id:
-          type:
-          - string
-          - 'null'
-        payment_status:
-          type: string
-          enum:
-          - none
-          - pending
-          - action_required
-          - paid
-          - failed
-        last_payment_attempt_id:
-          type:
-          - string
-          - 'null'
-        stripe_invoice_id:
-          type:
-          - string
-          - 'null'
-        stripe_payment_intent_id:
-          type:
-          - string
-          - 'null'
-        last_error_code:
-          type:
-          - string
-          - 'null'
-        updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        pending_change:
-          oneOf:
-          - type: object
-            additionalProperties: true
-            required:
-            - request_id
-            - enabled
-            - threshold_cents
-            - recharge_to_cents
-            - status
-            - last_error_code
-            - created_at
-            - updated_at
-            properties:
-              request_id:
-                type: string
-              enabled:
-                type: boolean
-              threshold_cents:
-                type: integer
-                minimum: 500
-              recharge_to_cents:
-                type: integer
-                minimum: 1500
-                maximum: 5000000
-              status:
-                type: string
-                enum:
-                - provisioning
-                - failed
-              last_error_code:
-                type:
-                - string
-                - 'null'
-              created_at:
-                type: string
-                format: date-time
-              updated_at:
-                type: string
-                format: date-time
-          - type: 'null'
-    BillingScheduledContractChange:
-      type: object
-      required:
-      - kind
-      - request_id
-      - status
-      - effective_at
-      - previous_contract_end_at
-      - successor_contract_id
-      - terms
-      - error_code
-      - created_at
-      - updated_at
-      properties:
-        kind:
-          type: string
-          enum:
-          - replacement
-          - renewal
-          - cancellation
-        request_id:
-          type: string
-        status:
-          type: string
-          enum:
-          - provisioning
-          - scheduled
-          - failed
-        effective_at:
-          type: string
-          format: date-time
-        previous_contract_end_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        successor_contract_id:
-          type:
-          - string
-          - 'null'
-        terms:
-          oneOf:
-          - type: object
-            additionalProperties: false
-            required:
-            - tier
-            - cadence
-            - commitment_term_months
-            - commitment_amount_cents
-            - usage_discount_bps
-            - usage_rates
-            properties:
-              tier:
-                type: string
-                enum:
-                - paygo
-                - pilot
-                - growth
-                - scale
-                - enterprise
-              cadence:
-                type: string
-                enum:
-                - monthly
-                - annual
-              commitment_term_months:
-                type: integer
-                enum:
-                - 0
-                - 12
-                - 24
-                - 36
-              commitment_amount_cents:
-                type: integer
-                minimum: 0
-              usage_discount_bps:
-                type: integer
-                minimum: 0
-                maximum: 10000
-              usage_rates:
-                $ref: '#/components/schemas/BillingUsageRateProjection'
-          - type: 'null'
-        error_code:
-          type:
-          - string
-          - 'null'
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-    BillingMoneyProjection:
-      type: object
-      required:
-      - available_balance_cents
-      - committed_balance_cents
-      - promotional_balance_cents
-      - current_period_spend_cents
-      - current_invoice_total_cents
-      - next_credit_expiry_at
-      - active_reserved_cents
-      - accepted_pending_cents
-      - effective_available_cents
-      properties:
-        available_balance_cents:
-          type:
-          - integer
-          - 'null'
-        committed_balance_cents:
-          type:
-          - integer
-          - 'null'
-        promotional_balance_cents:
-          type:
-          - integer
-          - 'null'
-        current_period_spend_cents:
-          type: integer
-          minimum: 0
-        current_invoice_total_cents:
-          type:
-          - integer
-          - 'null'
-        next_credit_expiry_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        active_reserved_cents:
-          type: integer
-          minimum: 0
-        accepted_pending_cents:
-          type: integer
-          minimum: 0
-        effective_available_cents:
-          type:
-          - integer
-          - 'null'
-    AccountCreditsResponse:
-      type: object
-      required:
-      - billing_account_id
-      - balances
-      properties:
-        billing_account_id:
-          type: string
-        balances:
-          type: array
-          items:
-            $ref: '#/components/schemas/BillingCreditBalance'
-    LicenseAlertSettings:
-      type: object
-      required:
-      - threshold_percent
-      properties:
-        threshold_percent:
-          type: integer
-          enum:
-          - 0
-          - 5
-          - 10
-          - 25
-          description: Percentage of active identities scheduled to expire in the following UTC calendar month that triggers one aggregate monthly alert. Default 10; zero disables alerts.
-    BillingContractProjection:
-      type: object
-      required:
-      - tier
-      - cadence
-      - commitment_term_months
-      - commitment_amount_cents
-      - usage_discount_bps
-      - contract_start_at
-      - contract_end_at
-      - current_period_start_at
-      - current_period_end_at
-      - pending_change_at
-      - scheduled_change
-      - usage_rates
-      properties:
-        tier:
-          type:
-          - string
-          - 'null'
-          enum:
-          - paygo
-          - pilot
-          - growth
-          - scale
-          - enterprise
-          - null
-        cadence:
-          type:
-          - string
-          - 'null'
-          enum:
-          - monthly
-          - annual
-          - null
-        commitment_term_months:
-          type: integer
-          enum:
-          - 0
-          - 12
-          - 24
-          - 36
-        commitment_amount_cents:
-          type: integer
-          minimum: 0
-        usage_discount_bps:
-          type: integer
-          minimum: 0
-          maximum: 10000
-          description: Contract discount applied to usage rates only; commitment charges and minimums are unchanged.
-        contract_start_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        contract_end_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        current_period_start_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        current_period_end_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        pending_change_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        scheduled_change:
-          oneOf:
-          - $ref: '#/components/schemas/BillingScheduledContractChange'
-          - type: 'null'
-        usage_rates:
-          oneOf:
-          - $ref: '#/components/schemas/BillingUsageRateProjection'
-          - type: 'null'
-    AccountInvoicesResponse:
-      type: object
-      required:
-      - billing_account_id
-      - authority
-      - invoices
-      properties:
-        billing_account_id:
-          type: string
-        authority:
-          type: string
-          enum:
-          - commercial
-          - mixed
-        invoices:
-          type: array
-          items:
-            $ref: '#/components/schemas/BillingInvoice'
     BillingInvoice:
       type: object
       required:
@@ -1817,6 +1120,123 @@ components:
                 type:
                 - string
                 - 'null'
+          - type: 'null'
+    BillingCollectionProjection:
+      type: object
+      required:
+      - status
+      - stripe_invoice_id
+      - failure_started_at
+      - grace_period_ends_at
+      - updated_at
+      properties:
+        status:
+          type: string
+          enum:
+          - current
+          - past_due
+          - uncollectible
+        stripe_invoice_id:
+          type:
+          - string
+          - 'null'
+        failure_started_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        grace_period_ends_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    BillingContractProjection:
+      type: object
+      required:
+      - tier
+      - cadence
+      - commitment_term_months
+      - commitment_amount_cents
+      - usage_discount_bps
+      - contract_start_at
+      - contract_end_at
+      - current_period_start_at
+      - current_period_end_at
+      - pending_change_at
+      - scheduled_change
+      - usage_rates
+      properties:
+        tier:
+          type:
+          - string
+          - 'null'
+          enum:
+          - paygo
+          - pilot
+          - growth
+          - scale
+          - enterprise
+          - null
+        cadence:
+          type:
+          - string
+          - 'null'
+          enum:
+          - monthly
+          - annual
+          - null
+        commitment_term_months:
+          type: integer
+          enum:
+          - 0
+          - 12
+          - 24
+          - 36
+        commitment_amount_cents:
+          type: integer
+          minimum: 0
+        usage_discount_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          description: Contract discount applied to usage rates only; commitment charges and minimums are unchanged.
+        contract_start_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        contract_end_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        current_period_start_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        current_period_end_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        pending_change_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        scheduled_change:
+          oneOf:
+          - $ref: '#/components/schemas/BillingScheduledContractChange'
+          - type: 'null'
+        usage_rates:
+          oneOf:
+          - $ref: '#/components/schemas/BillingUsageRateProjection'
           - type: 'null'
     BillingSnapshot:
       type: object
@@ -1968,10 +1388,138 @@ components:
           - string
           - 'null'
           format: uri
-    AccountBillingResponse:
-      oneOf:
-      - $ref: '#/components/schemas/NativeAccountBillingResponse'
-      - $ref: '#/components/schemas/NativeBillingSetupResponse'
+    AccountPaymentReceipt:
+      type: object
+      required:
+      - payment_attempt_id
+      - kind
+      - request_id
+      - status
+      - amount_cents
+      - bonus_cents
+      - principal_credit_status
+      - bonus_credit_status
+      - paid_at
+      - updated_at
+      - last_error_code
+      - credit_error_code
+      properties:
+        payment_attempt_id:
+          type: string
+        kind:
+          type: string
+          enum:
+          - topup
+          - auto_recharge
+        request_id:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending
+          - action_required
+          - paid
+          - failed
+        amount_cents:
+          type: integer
+          minimum: 0
+        bonus_cents:
+          type: integer
+          minimum: 0
+        principal_credit_status:
+          $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+        bonus_credit_status:
+          $ref: '#/components/schemas/BillingCreditDeliveryStatus'
+        paid_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        last_error_code:
+          type:
+          - string
+          - 'null'
+        credit_error_code:
+          type:
+          - string
+          - 'null'
+    NativeAccountBillingResponse:
+      type: object
+      required:
+      - billing
+      - billing_mode
+      - parent_org
+      - billing_readiness
+      - operational
+      - projection
+      - latest_payment
+      properties:
+        billing:
+          $ref: '#/components/schemas/BillingSnapshot'
+        billing_mode:
+          type: string
+          enum:
+          - org_billed
+          - parent_billed
+        parent_org:
+          oneOf:
+          - type: object
+            required:
+            - id
+            - name
+            properties:
+              id:
+                type:
+                - string
+                - 'null'
+              name:
+                type:
+                - string
+                - 'null'
+          - type: 'null'
+        billing_readiness:
+          $ref: '#/components/schemas/BillingReadinessProjection'
+        operational:
+          type: object
+          required:
+          - frozen
+          - compute_usage_pct
+          properties:
+            frozen:
+              type: boolean
+            compute_usage_pct:
+              type: number
+              minimum: 0
+        projection:
+          type: object
+          required:
+          - projected_at
+          - provider_version
+          - stale
+          - refresh_error_code
+          properties:
+            projected_at:
+              type:
+              - string
+              - 'null'
+              format: date-time
+            provider_version:
+              type:
+              - string
+              - 'null'
+            stale:
+              type: boolean
+            refresh_error_code:
+              type:
+              - string
+              - 'null'
+        latest_payment:
+          oneOf:
+          - $ref: '#/components/schemas/AccountPaymentReceipt'
+          - type: 'null'
     FilterValidationIssue:
       type: object
       required:
@@ -1999,26 +1547,416 @@ components:
           type: array
           items:
             type: string
+    AccountCreditsResponse:
+      type: object
+      required:
+      - billing_account_id
+      - balances
+      properties:
+        billing_account_id:
+          type: string
+        balances:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingCreditBalance'
+    NativeBillingSetupResponse:
+      type: object
+      required:
+      - billing_mode
+      - billing
+      - operational
+      description: Native billing has not been configured. Viewing this response creates no account or contract. Shopify stores retain independent billing.
+      properties:
+        billing_mode:
+          type: string
+          const: native_setup_required
+        billing:
+          type: 'null'
+        operational:
+          type: object
+          required:
+          - frozen
+          - compute_usage_pct
+          properties:
+            frozen:
+              type: boolean
+            compute_usage_pct:
+              type: number
+    BillingAutoRechargeProjection:
+      type: object
+      required:
+      - configured
+      - enabled
+      - threshold_cents
+      - recharge_to_cents
+      - configuration_request_id
+      - payment_status
+      - last_payment_attempt_id
+      - stripe_invoice_id
+      - stripe_payment_intent_id
+      - last_error_code
+      - updated_at
+      - pending_change
+      properties:
+        configured:
+          type: boolean
+        enabled:
+          type: boolean
+        threshold_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 500
+        recharge_to_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 1500
+          maximum: 5000000
+        configuration_request_id:
+          type:
+          - string
+          - 'null'
+        payment_status:
+          type: string
+          enum:
+          - none
+          - pending
+          - action_required
+          - paid
+          - failed
+        last_payment_attempt_id:
+          type:
+          - string
+          - 'null'
+        stripe_invoice_id:
+          type:
+          - string
+          - 'null'
+        stripe_payment_intent_id:
+          type:
+          - string
+          - 'null'
+        last_error_code:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        pending_change:
+          oneOf:
+          - type: object
+            additionalProperties: true
+            required:
+            - request_id
+            - enabled
+            - threshold_cents
+            - recharge_to_cents
+            - status
+            - last_error_code
+            - created_at
+            - updated_at
+            properties:
+              request_id:
+                type: string
+              enabled:
+                type: boolean
+              threshold_cents:
+                type: integer
+                minimum: 500
+              recharge_to_cents:
+                type: integer
+                minimum: 1500
+                maximum: 5000000
+              status:
+                type: string
+                enum:
+                - provisioning
+                - failed
+              last_error_code:
+                type:
+                - string
+                - 'null'
+              created_at:
+                type: string
+                format: date-time
+              updated_at:
+                type: string
+                format: date-time
+          - type: 'null'
+    BillingCreditDeliveryStatus:
+      type: string
+      enum:
+      - awaiting_payment
+      - updating
+      - available
+      - needs_attention
+      - not_applicable
+    LicenseAlertSettings:
+      type: object
+      required:
+      - threshold_percent
+      properties:
+        threshold_percent:
+          type: integer
+          enum:
+          - 0
+          - 5
+          - 10
+          - 25
+          description: Percentage of active identities scheduled to expire in the following UTC calendar month that triggers one aggregate monthly alert. Default 10; zero disables alerts.
+    OrgLicenseSummary:
+      type: object
+      required:
+      - scope
+      - status
+      - as_of
+      - projection_lag_possible
+      - active_identities
+      - lapsed_identities
+      - purchased_terms_last_12_months
+      - expiring_active_identities_next_30_days
+      - purchases_by_month
+      - expiries_by_month
+      properties:
+        scope:
+          type: string
+          const: organization
+        status:
+          type: string
+          enum:
+          - snapshot
+          - stale
+          - unavailable
+        as_of:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        projection_lag_possible:
+          type: boolean
+          const: true
+        active_identities:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        lapsed_identities:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        purchased_terms_last_12_months:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        expiring_active_identities_next_30_days:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          description: Currently active identities whose latest licence term expires within 30 days of as_of.
+        purchases_by_month:
+          type: array
+          items:
+            type: object
+            required:
+            - month
+            - terms
+            properties:
+              month:
+                type: string
+                pattern: ^\d{4}-\d{2}$
+              terms:
+                type: integer
+                minimum: 0
+        expiries_by_month:
+          type: array
+          items:
+            type: object
+            required:
+            - month
+            - identities
+            properties:
+              month:
+                type: string
+                pattern: ^\d{4}-\d{2}$
+              identities:
+                type: integer
+                minimum: 0
+    BillingScheduledContractChange:
+      type: object
+      required:
+      - kind
+      - request_id
+      - status
+      - effective_at
+      - previous_contract_end_at
+      - successor_contract_id
+      - terms
+      - error_code
+      - created_at
+      - updated_at
+      properties:
+        kind:
+          type: string
+          enum:
+          - replacement
+          - renewal
+          - cancellation
+        request_id:
+          type: string
+        status:
+          type: string
+          enum:
+          - provisioning
+          - scheduled
+          - failed
+        effective_at:
+          type: string
+          format: date-time
+        previous_contract_end_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        successor_contract_id:
+          type:
+          - string
+          - 'null'
+        terms:
+          oneOf:
+          - type: object
+            additionalProperties: false
+            required:
+            - tier
+            - cadence
+            - commitment_term_months
+            - commitment_amount_cents
+            - usage_discount_bps
+            - usage_rates
+            properties:
+              tier:
+                type: string
+                enum:
+                - paygo
+                - pilot
+                - growth
+                - scale
+                - enterprise
+              cadence:
+                type: string
+                enum:
+                - monthly
+                - annual
+              commitment_term_months:
+                type: integer
+                enum:
+                - 0
+                - 12
+                - 24
+                - 36
+              commitment_amount_cents:
+                type: integer
+                minimum: 0
+              usage_discount_bps:
+                type: integer
+                minimum: 0
+                maximum: 10000
+              usage_rates:
+                $ref: '#/components/schemas/BillingUsageRateProjection'
+          - type: 'null'
+        error_code:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    BillingUsageRateProjection:
+      type: object
+      required:
+      - match
+      - audience_delivery
+      - destination
+      - enrichment_field
+      properties:
+        match:
+          type: object
+          required:
+          - microbatch
+          - file
+          properties:
+            microbatch:
+              type: integer
+              minimum: 0
+            file:
+              type: integer
+              minimum: 0
+        audience_delivery:
+          type: object
+          required:
+          - filter
+          - matched
+          - similarity
+          - propensity
+          properties:
+            filter:
+              type: integer
+              minimum: 0
+            matched:
+              type: integer
+              minimum: 0
+            similarity:
+              type: integer
+              minimum: 0
+            propensity:
+              type: integer
+              minimum: 0
+        destination:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        enrichment_field:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+    BillingReadinessProjection:
+      type: object
+      required:
+      - requires_card
+      - has_default_card
+      - collection_method_ok
+      - payment_collection_ready
+      - status
+      properties:
+        requires_card:
+          type: boolean
+        has_default_card:
+          type: boolean
+        collection_method_ok:
+          type: boolean
+        payment_collection_ready:
+          type: boolean
+        status:
+          type: string
+          enum:
+          - ok
+          - card_missing
+          - collection_method_mismatch
+          - not_applicable
   responses:
-    Unauthorized:
-      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              value:
-                error: 'Unauthorized: Missing or invalid Authorization header'
-            token_expired:
-              value:
-                error: Unauthorized
-                code: TOKEN_EXPIRED
-                message: Your session has expired. Please sign in again.
-    ServiceUnavailable:
-      description: A required billing provider partnership is temporarily unavailable.
+    BadGateway:
+      description: An upstream billing provider rejected or could not complete the operation.
       content:
         application/json:
           schema:
@@ -2037,6 +1975,39 @@ components:
                 error: Bad Request
                 code: MISSING_SEGMENTS
                 message: segment_ids is required for filter audiences.
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
+              value:
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
     Conflict:
       description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
 
@@ -2045,6 +2016,19 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_scope:
+              value:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
     UnprocessableEntity:
       description: 'Request is structurally valid but the resource is in a state that prevents the operation (e.g. expired, pending, or not yet uploaded). See `error` and `code` for the specific reason.
 
@@ -2064,35 +2048,6 @@ components:
                 error: Audience not ready
                 code: AUDIENCE_PENDING
                 message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
-    BadGateway:
-      description: An upstream billing provider rejected or could not complete the operation.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ScopeRequired:
-      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_scope:
-              value:
-                error: SCOPE_REQUIRED
-                message: This endpoint requires the creator scope.
-    NotFound:
-      description: Resource not found or not accessible to the calling org.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            not_found:
-              value:
-                error: Audience not found
   securitySchemes:
     oidcBearer:
       type: http
@@ -2105,6 +2060,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

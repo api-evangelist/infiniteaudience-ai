@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai Segments API
+  title: Infinite Audience Segments API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged Segments across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -529,9 +529,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}:
     get:
       summary: Get a segment by ID
@@ -766,9 +763,6 @@ paths:
                           - string
                           - 'null'
                           description: The campaign the audience belongs to, or null.
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}/count:
     post:
       summary: Recount a segment
@@ -814,9 +808,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '502':
           $ref: '#/components/responses/QueryExecutionError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}/demographics:
     get:
       summary: Get demographic breakdown for a segment
@@ -934,9 +925,6 @@ paths:
           $ref: '#/components/responses/AggregationFloorNotMet'
         '502':
           $ref: '#/components/responses/QueryExecutionError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}/audiences:
     get:
       summary: List audiences referencing a segment
@@ -1016,9 +1004,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}/duplicate:
     post:
       summary: Duplicate a segment with lineage tracking
@@ -1152,9 +1137,6 @@ paths:
                 error: Conflict
                 code: SOURCE_MATCH_UNAVAILABLE
                 message: The source segment's match data is unavailable (status 'expired'). Only matched segments with completed match data can be duplicated.
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/bulk:
     patch:
       summary: Bulk update segments
@@ -1299,9 +1281,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/bulk-delete:
     delete:
       summary: Bulk hard-delete segments
@@ -1388,9 +1367,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/ScopeRequired'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}/refresh:
     post:
       summary: Refresh a segment against the latest data
@@ -1611,9 +1587,6 @@ paths:
                     - MISSING_POSITIVE_CLASS_ID
                   message:
                     type: string
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}/mappings:
     post:
       summary: Confirm column mapping overrides for a matched segment
@@ -1703,9 +1676,6 @@ paths:
                     - ANALYSIS_FAILED
                   message:
                     type: string
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}/mappings/cancel:
     post:
       summary: Abort a staged (hitl:true) matched-segment upload without confirming
@@ -1742,9 +1712,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/{id}/upload-failed:
     post:
       summary: Report that a matched segment's client-side re-upload failed
@@ -1832,9 +1799,6 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '404':
           $ref: '#/components/responses/NotFound'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/segments/bulk-create:
     post:
       summary: Bulk create segments
@@ -1938,13 +1902,20 @@ paths:
           $ref: '#/components/responses/ScopeRequired'
         '502':
           description: Field Catalog temporarily unreachable — no items were validated or created (code FILTER_CATALOG_UNAVAILABLE).
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
   responses:
-    UnprocessableEntity:
-      description: 'Request is structurally valid but the resource is in a state that prevents the operation (e.g. expired, pending, or not yet uploaded). See `error` and `code` for the specific reason.
+    NotFound:
+      description: Resource not found or not accessible to the calling org.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            not_found:
+              value:
+                error: Audience not found
+    ScopeRequired:
+      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
 
         '
       content:
@@ -1952,16 +1923,35 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           examples:
-            audience_expired:
+            missing_scope:
               value:
-                error: Audience expired
-                code: AUDIENCE_EXPIRED
-                message: This audience version expired. Run a refresh to create a new deliverable version.
-            audience_pending:
+                error: SCOPE_REQUIRED
+                message: This endpoint requires the creator scope.
+    Conflict:
+      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
+
+        '
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_token:
               value:
-                error: Audience not ready
-                code: AUDIENCE_PENDING
-                message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
+                error: 'Unauthorized: Missing or invalid Authorization header'
+            token_expired:
+              value:
+                error: Unauthorized
+                code: TOKEN_EXPIRED
+                message: Your session has expired. Please sign in again.
     QueryExecutionError:
       description: 'The underlying analytics query failed, or (`AGGREGATION_FLOOR_NOT_MET`) a non-discovery route encountered a result below the privacy floor. `message` is always a friendly, client-safe description — the raw backend error is never returned.
 
@@ -1981,6 +1971,12 @@ components:
                 error: Bad Gateway
                 code: BQ_TABLE_MISSING
                 message: This data is missing — it may have expired or the original upload never finished processing. Try re-uploading, or contact support if this persists.
+    BadGateway:
+      description: An upstream billing provider rejected or could not complete the operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     AggregationFloorNotMet:
       description: The result is below the minimum population that can be returned while preserving privacy.
       content:
@@ -1991,33 +1987,6 @@ components:
             error: Privacy threshold not met
             code: AGGREGATION_FLOOR_NOT_MET
             message: For privacy reasons, a minimum of 50 records is required to view this information.
-    NotFound:
-      description: Resource not found or not accessible to the calling org.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            not_found:
-              value:
-                error: Audience not found
-    Unauthorized:
-      description: 'Missing or invalid Bearer token. Obtain one via POST /v1/auth/token. When a token was supplied but rejected, `code` distinguishes `TOKEN_EXPIRED` (the token''s lifetime has passed — request a new one via POST /v1/auth/token and retry) from `TOKEN_INVALID` (malformed or revoked — re-authenticate).
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            missing_token:
-              value:
-                error: 'Unauthorized: Missing or invalid Authorization header'
-            token_expired:
-              value:
-                error: Unauthorized
-                code: TOKEN_EXPIRED
-                message: Your session has expired. Please sign in again.
     BadRequest:
       description: 'Invalid request — malformed body, missing required attribute, or failed validation. See `error` and `message` for details.
 
@@ -2032,22 +2001,8 @@ components:
                 error: Bad Request
                 code: MISSING_SEGMENTS
                 message: segment_ids is required for filter audiences.
-    BadGateway:
-      description: An upstream billing provider rejected or could not complete the operation.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Conflict:
-      description: 'Resource state conflicts with the request. For upload analysis this includes FILE_NOT_YET_UPLOADED.
-
-        '
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ScopeRequired:
-      description: 'Token is valid but lacks the required scope for this endpoint. Check the endpoint description for the required scope (`discovery`, `purchase`, or `account`).
+    UnprocessableEntity:
+      description: 'Request is structurally valid but the resource is in a state that prevents the operation (e.g. expired, pending, or not yet uploaded). See `error` and `code` for the specific reason.
 
         '
       content:
@@ -2055,10 +2010,16 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           examples:
-            missing_scope:
+            audience_expired:
               value:
-                error: SCOPE_REQUIRED
-                message: This endpoint requires the creator scope.
+                error: Audience expired
+                code: AUDIENCE_EXPIRED
+                message: This audience version expired. Run a refresh to create a new deliverable version.
+            audience_pending:
+              value:
+                error: Audience not ready
+                code: AUDIENCE_PENDING
+                message: This audience is still being processed. Poll GET /v1/audiences/{id} until status is active.
   schemas:
     ErrorResponse:
       type: object
@@ -2089,150 +2050,35 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FilterValidationIssue'
-    FilterGroup:
-      type: object
-      description: "A group of Filter conditions. All `filters` within a single group are **always ANDed together** — there is no per-group intra-operator. The `combinator` attribute is an **inter-group** operator: it controls how this group is joined to the immediately preceding group in the array. The `combinator` on the first group (index 0) is always ignored.\n\nExample — `(city = \"NYC\" AND state = \"NY\") OR (state = \"CA\")`:\n```json [\n  { \"id\": \"g1\", \"filters\": [{\"field\":\"city\",\"op\":\"=\",\"value\":\"NYC\"},\n                            {\"field\":\"state\",\"op\":\"=\",\"value\":\"NY\"}],\n    \"combinator\": \"AND\" },\n  { \"id\": \"g2\", \"filters\": [{\"field\":\"state\",\"op\":\"=\",\"value\":\"CA\"}],\n    \"combinator\": \"OR\" }\n] ```\nGroup g1's `combinator` is irrelevant (it is the first group). Group g2's `combinator: \"OR\"` means the result is `(g1) OR (g2)`.\n"
-      required:
-      - id
-      - filters
-      - combinator
-      properties:
-        id:
-          type: string
-          description: 'Stable identifier (UUID or NanoID). Used to track groups across edits.
-
-            '
-        filters:
-          type: array
-          items:
-            $ref: '#/components/schemas/Filter'
-          description: 'One or more filter conditions. All conditions in this array are combined with AND. Provide at least one filter per group.
-
-            '
-        combinator:
-          type: string
-          enum:
-          - AND
-          - OR
-          description: '**Inter-group operator.** Joins this group to the previous group in the array. `AND` narrows the result; `OR` broadens it. Ignored on the first group (index 0) — that group has no predecessor to join.
-
-            '
-    Filter:
-      type: object
-      description: A single filter condition for audience discovery or job execution
-      required:
-      - field
-      - op
-      properties:
-        field:
-          type: string
-          description: Canonical catalog field_name (e.g. age or state). ZIP5 also accepts zip, zip_code, or postal_code as input aliases; saved responses use zip5.
-        op:
-          type: string
-          enum:
-          - '='
-          - '!='
-          - <
-          - <=
-          - '>'
-          - '>='
-          - IN
-          - NOT IN
-          - BETWEEN
-          - LIKE
-          - ARRAY_CONTAINS
-          - ARRAY_CONTAINS_ANY
-          - IS NULL
-          - IS NOT NULL
-          description: Comparison operator
-        text_comparison:
-          type: string
-          enum:
-          - exact
-          - case_insensitive
-          description: 'Optional STRING comparison mode for =, !=, IN, NOT IN, and LIKE, or ARRAY<STRING> membership mode for ARRAY_CONTAINS and ARRAY_CONTAINS_ANY. Defaults to exact. Case-insensitive mode applies Unicode case folding to both the stored value and the supplied value.
-
-            '
-        trim_whitespace:
-          type: boolean
-          description: 'Optionally trim leading and trailing whitespace on both sides of a STRING or ARRAY<STRING> comparison. Defaults to false; independent of text_comparison.
-
-            '
-        value:
-          oneOf:
-          - type: string
-          - type: number
-          - type: boolean
-          - type: array
-            items:
-              oneOf:
-              - type: string
-              - type: number
-          description: 'The value to match against. For state, a published two-letter code or full State name is accepted and normalized to the code. Scalar types (`string`, `number`, `boolean`) are used for single-value operators (`=`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `ARRAY_CONTAINS`). Pass an **array** for `IN`, `NOT IN`, and `ARRAY_CONTAINS_ANY` — pass the array directly with no comma-encoding. `BETWEEN` takes a two-element array `[low, high]`. Omit entirely for `IS NULL` / `IS NOT NULL` checks.
-
-            '
-    EnrichmentRelease:
-      type: object
-      required:
-      - major
-      - minor
-      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
-      properties:
-        major:
-          type: integer
-          minimum: 1
-        minor:
-          type: integer
-          minimum: 0
-    BulkCreateSegmentsResult:
-      type: object
-      description: 'Result of POST /v1/segments/bulk-create. Returned with 201 when at least one segment was created, and with 400 (same shape) when every item failed.
+    SegmentRefreshResult:
+      description: 'Response of `POST /v1/segments/{id}/refresh` — the full updated segment document plus refresh metadata. For the matched subtype the response additionally carries upload_url / upload_expires_at (24 h presign) — or upload_urls (an array, one per shard) when shard_count > 1 was requested, in which case upload_url is absent; for similarity/propensity the segment''s workflow_run_id points at the newly launched run.
 
         '
-      required:
-      - created
-      - failed
-      - segments
-      - errors
-      properties:
-        created:
-          type: integer
-          description: Number of segments successfully created.
-        failed:
-          type: integer
-          description: Number of input items that could not be created.
-        segments:
-          type: array
-          description: Full segment documents for each successfully created segment.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/SegmentObject'
-            - type: object
-              properties:
-                audience_id:
-                  type: string
-                  description: 'Auto-created audience wrapper ID. Present only when the input item set create_audience: true.
+      allOf:
+      - $ref: '#/components/schemas/SegmentObject'
+      - type: object
+        required:
+        - refreshed
+        - affected_audiences
+        - next_step
+        properties:
+          refreshed:
+            type: boolean
+            description: 'true when the segment was re-derived; false when the filter no-op path returned the current object unchanged (already active, count already null, TTL already fresh — pass force: true to bump anyway).
 
-                    '
-        errors:
-          type: array
-          description: Per-item failures. Empty when all items succeeded.
-          items:
-            type: object
-            required:
-            - index
-            - name
-            - error
-            properties:
-              index:
-                type: integer
-                description: Zero-based position of the failed item in the input `segments` array.
-              name:
-                type: string
-                description: The `name` from the failed input item.
-              error:
-                type: string
-                description: Human-readable reason the segment could not be created.
+              '
+          affected_audiences:
+            type: array
+            items:
+              type: string
+            description: 'IDs of non-deleted audiences that reference this segment. They are NOT auto-refreshed — their status, record_count, and expiry may now be stale. Recount or refresh them as needed, or use POST /v1/audiences/{id}/refresh for a whole-composition refresh.
+
+              '
+          next_step:
+            type: string
+            description: 'Human-readable hint for the calling agent on how to proceed (recount, upload to upload_url, or wait for the workflow).
+
+              '
     SegmentObject:
       type: object
       required:
@@ -2476,6 +2322,137 @@ components:
         updated_at:
           type: string
           format: date-time
+    Filter:
+      type: object
+      description: A single filter condition for audience discovery or job execution
+      required:
+      - field
+      - op
+      properties:
+        field:
+          type: string
+          description: Canonical catalog field_name (e.g. age or state). ZIP5 also accepts zip, zip_code, or postal_code as input aliases; saved responses use zip5.
+        op:
+          type: string
+          enum:
+          - '='
+          - '!='
+          - <
+          - <=
+          - '>'
+          - '>='
+          - IN
+          - NOT IN
+          - BETWEEN
+          - LIKE
+          - ARRAY_CONTAINS
+          - ARRAY_CONTAINS_ANY
+          - IS NULL
+          - IS NOT NULL
+          description: Comparison operator
+        text_comparison:
+          type: string
+          enum:
+          - exact
+          - case_insensitive
+          description: 'Optional STRING comparison mode for =, !=, IN, NOT IN, and LIKE, or ARRAY<STRING> membership mode for ARRAY_CONTAINS and ARRAY_CONTAINS_ANY. Defaults to exact. Case-insensitive mode applies Unicode case folding to both the stored value and the supplied value.
+
+            '
+        trim_whitespace:
+          type: boolean
+          description: 'Optionally trim leading and trailing whitespace on both sides of a STRING or ARRAY<STRING> comparison. Defaults to false; independent of text_comparison.
+
+            '
+        value:
+          oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: array
+            items:
+              oneOf:
+              - type: string
+              - type: number
+          description: 'The value to match against. For state, a published two-letter code or full State name is accepted and normalized to the code. Scalar types (`string`, `number`, `boolean`) are used for single-value operators (`=`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `ARRAY_CONTAINS`). Pass an **array** for `IN`, `NOT IN`, and `ARRAY_CONTAINS_ANY` — pass the array directly with no comma-encoding. `BETWEEN` takes a two-element array `[low, high]`. Omit entirely for `IS NULL` / `IS NOT NULL` checks.
+
+            '
+    BulkCreateSegmentsResult:
+      type: object
+      description: 'Result of POST /v1/segments/bulk-create. Returned with 201 when at least one segment was created, and with 400 (same shape) when every item failed.
+
+        '
+      required:
+      - created
+      - failed
+      - segments
+      - errors
+      properties:
+        created:
+          type: integer
+          description: Number of segments successfully created.
+        failed:
+          type: integer
+          description: Number of input items that could not be created.
+        segments:
+          type: array
+          description: Full segment documents for each successfully created segment.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/SegmentObject'
+            - type: object
+              properties:
+                audience_id:
+                  type: string
+                  description: 'Auto-created audience wrapper ID. Present only when the input item set create_audience: true.
+
+                    '
+        errors:
+          type: array
+          description: Per-item failures. Empty when all items succeeded.
+          items:
+            type: object
+            required:
+            - index
+            - name
+            - error
+            properties:
+              index:
+                type: integer
+                description: Zero-based position of the failed item in the input `segments` array.
+              name:
+                type: string
+                description: The `name` from the failed input item.
+              error:
+                type: string
+                description: Human-readable reason the segment could not be created.
+    FilterGroup:
+      type: object
+      description: "A group of Filter conditions. All `filters` within a single group are **always ANDed together** — there is no per-group intra-operator. The `combinator` attribute is an **inter-group** operator: it controls how this group is joined to the immediately preceding group in the array. The `combinator` on the first group (index 0) is always ignored.\n\nExample — `(city = \"NYC\" AND state = \"NY\") OR (state = \"CA\")`:\n```json [\n  { \"id\": \"g1\", \"filters\": [{\"field\":\"city\",\"op\":\"=\",\"value\":\"NYC\"},\n                            {\"field\":\"state\",\"op\":\"=\",\"value\":\"NY\"}],\n    \"combinator\": \"AND\" },\n  { \"id\": \"g2\", \"filters\": [{\"field\":\"state\",\"op\":\"=\",\"value\":\"CA\"}],\n    \"combinator\": \"OR\" }\n] ```\nGroup g1's `combinator` is irrelevant (it is the first group). Group g2's `combinator: \"OR\"` means the result is `(g1) OR (g2)`.\n"
+      required:
+      - id
+      - filters
+      - combinator
+      properties:
+        id:
+          type: string
+          description: 'Stable identifier (UUID or NanoID). Used to track groups across edits.
+
+            '
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Filter'
+          description: 'One or more filter conditions. All conditions in this array are combined with AND. Provide at least one filter per group.
+
+            '
+        combinator:
+          type: string
+          enum:
+          - AND
+          - OR
+          description: '**Inter-group operator.** Joins this group to the previous group in the array. `AND` narrows the result; `OR` broadens it. Ignored on the first group (index 0) — that group has no predecessor to join.
+
+            '
     IntegrationCollectionProvenance:
       type: object
       additionalProperties: false
@@ -2523,35 +2500,6 @@ components:
         materialized_at:
           type: string
           format: date-time
-    SegmentRefreshResult:
-      description: 'Response of `POST /v1/segments/{id}/refresh` — the full updated segment document plus refresh metadata. For the matched subtype the response additionally carries upload_url / upload_expires_at (24 h presign) — or upload_urls (an array, one per shard) when shard_count > 1 was requested, in which case upload_url is absent; for similarity/propensity the segment''s workflow_run_id points at the newly launched run.
-
-        '
-      allOf:
-      - $ref: '#/components/schemas/SegmentObject'
-      - type: object
-        required:
-        - refreshed
-        - affected_audiences
-        - next_step
-        properties:
-          refreshed:
-            type: boolean
-            description: 'true when the segment was re-derived; false when the filter no-op path returned the current object unchanged (already active, count already null, TTL already fresh — pass force: true to bump anyway).
-
-              '
-          affected_audiences:
-            type: array
-            items:
-              type: string
-            description: 'IDs of non-deleted audiences that reference this segment. They are NOT auto-refreshed — their status, record_count, and expiry may now be stale. Recount or refresh them as needed, or use POST /v1/audiences/{id}/refresh for a whole-composition refresh.
-
-              '
-          next_step:
-            type: string
-            description: 'Human-readable hint for the calling agent on how to proceed (recount, upload to upload_url, or wait for the workflow).
-
-              '
     FilterValidationIssue:
       type: object
       required:
@@ -2579,6 +2527,19 @@ components:
           type: array
           items:
             type: string
+    EnrichmentRelease:
+      type: object
+      required:
+      - major
+      - minor
+      description: Delivered IAG refresh version. Independent of license status. Null provenance means unknown; a newer refresh-major can prompt a refresh through existing workflows. Active licenses and existing identity IDs support free refresh; normal charges may apply otherwise.
+      properties:
+        major:
+          type: integer
+          minimum: 1
+        minor:
+          type: integer
+          minimum: 0
   securitySchemes:
     oidcBearer:
       type: http
@@ -2591,6 +2552,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml

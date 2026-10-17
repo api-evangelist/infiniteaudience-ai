@@ -1,8 +1,7 @@
 {
   "provider": "infiniteaudience-ai",
   "sources": [
-    "_original/infiniteaudience-ai-openapi.json",
-    "infiniteaudience-ai-openapi.yml"
+    "_original/infiniteaudience-ai-openapi.json"
   ],
   "outputs": [
     "infiniteaudience-ai-a2a-api-openapi.yml",
@@ -23,35 +22,34 @@
     "infiniteaudience-ai-webhooks-api-openapi.yml",
     "infiniteaudience-ai-workflows-api-openapi.yml"
   ],
-  "archived": [
-    "archived openapi/infiniteaudience-ai-openapi.yml"
-  ],
+  "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
+    "1 archived document(s) dropped as subsets of other archived documents",
     "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
     "infiniteaudience-ai-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
     "infiniteaudience-ai-openapi.json: declared missing tag: Integrations",
-    "infiniteaudience-ai-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "infiniteaudience-ai-openapi.yml: declared missing tag: Integrations",
-    "tag 'A2A' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Account' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Audiences' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Auth' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Campaigns' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Deliveries' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Discovery' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Enrichment' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Integrations' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'MCP' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'OAuth' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Partnerships' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Segments' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Settings' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Triggers' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Webhooks' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "tag 'Workflows' spans 2 source specs (infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml): per-path servers applied",
-    "apis.yml register: written (+17 apis, 18 total)"
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "_original/infiniteaudience-ai-openapi.yml: archived document superseded by a larger archived document",
+    "infiniteaudience-ai-a2a-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-account-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-audiences-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-auth-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-campaigns-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-deliveries-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-discovery-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-enrichment-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-integrations-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-mcp-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-oauth-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-partnerships-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-segments-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-settings-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-triggers-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-webhooks-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "infiniteaudience-ai-workflows-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }

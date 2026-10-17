@@ -1,12 +1,12 @@
 openapi: 3.2.0
 info:
-  title: Infiniteaudience Ai OAuth API
+  title: Infinite Audience OAuth API
   version: 1.0.0
+  termsOfService: https://nofait.ai/terms
   license:
     name: Proprietary — All Rights Reserved
     url: https://nofait.ai/terms
-  termsOfService: https://nofait.ai/terms
-  description: 'Operations tagged OAuth across 2 of this provider''s published API definitions: infiniteaudience-ai-openapi.json, infiniteaudience-ai-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: The primary REST API for Infinite Audience.
 servers:
 - url: https://api.infiniteaudience.ai
   description: Production API Server
@@ -90,9 +90,6 @@ paths:
             '
         '400':
           $ref: '#/components/responses/OAuthError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/oauth/token:
     post:
       summary: Exchange an authorization code, device code, or refresh token for an access…
@@ -127,9 +124,6 @@ paths:
           $ref: '#/components/responses/OAuthError'
         '401':
           $ref: '#/components/responses/OAuthError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/oauth/device_authorization:
     post:
       summary: Begin an OAuth device authorization for an A2A client
@@ -160,9 +154,6 @@ paths:
           $ref: '#/components/responses/OAuthError'
         '500':
           $ref: '#/components/responses/OAuthError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/oauth/revoke:
     post:
       summary: Revoke a token (RFC 7009)
@@ -189,9 +180,6 @@ paths:
                 type: object
         '401':
           $ref: '#/components/responses/OAuthError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/oauth/register:
     post:
       summary: Register a public OAuth client (RFC 7591 fallback)
@@ -217,9 +205,6 @@ paths:
           $ref: '#/components/responses/OAuthError'
         '401':
           $ref: '#/components/responses/OAuthError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /.well-known/oauth-authorization-server:
     get:
       summary: OAuth 2.0 authorization server metadata (RFC 8414)
@@ -235,9 +220,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OAuthServerMetadata'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /.well-known/openid-configuration:
     get:
       summary: OpenID Connect discovery metadata
@@ -253,9 +235,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OidcDiscoveryMetadata'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/oauth/jwks:
     get:
       summary: Public OIDC ID-token signing keys
@@ -273,9 +252,6 @@ paths:
                 $ref: '#/components/schemas/OidcJwks'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /v1/oauth/userinfo:
     get:
       summary: Get current person-bound OIDC identity
@@ -311,9 +287,6 @@ paths:
                 $ref: '#/components/schemas/OidcUserInfo'
         '401':
           $ref: '#/components/responses/OAuthError'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /.well-known/openai-apps-challenge:
     get:
       summary: OpenAI MCP host ownership challenge
@@ -329,9 +302,6 @@ paths:
             text/plain:
               schema:
                 type: string
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /.well-known/oauth-protected-resource:
     get:
       summary: REST protected-resource metadata (RFC 9728)
@@ -346,9 +316,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OAuthProtectedResourceMetadata'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /.well-known/oauth-protected-resource/mcp:
     get:
       summary: MCP protected-resource metadata (RFC 9728)
@@ -363,9 +330,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OAuthProtectedResourceMetadata'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
   /.well-known/oauth-protected-resource/a2a:
     get:
       summary: A2A protected-resource metadata (RFC 9728)
@@ -380,40 +344,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OAuthProtectedResourceMetadata'
-    servers:
-    - url: https://api.infiniteaudience.ai
-      description: Production API Server
 components:
   schemas:
-    ErrorResponse:
+    OAuthTokenResponse:
       type: object
       required:
-      - error
-      additionalProperties: true
+      - access_token
+      - token_type
+      - expires_in
+      - refresh_token
+      - scope
       properties:
-        error:
+        access_token:
           type: string
-          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
-
-            '
-        message:
+          description: 'Opaque bearer token. Use exactly like an API-key-derived one: `Authorization: Bearer <access_token>`.'
+        id_token:
           type: string
-          description: Human-readable explanation of the error.
-        code:
+          description: RS256 OIDC ID token, present only when the person-bound MCP grant includes openid.
+        token_type:
           type: string
-          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
-
-            '
-        request_id:
+          enum:
+          - Bearer
+        expires_in:
+          type: integer
+          description: Seconds until the access token expires (1800).
+        refresh_token:
           type: string
-          description: Opaque support/debug identifier when available.
-        next_step:
+          description: Supersedes any previously-issued refresh token for this connection — the old one is now rejected.
+        scope:
           type: string
-          description: Public action for correcting the request or retrying later.
-        issues:
-          type: array
-          items:
-            $ref: '#/components/schemas/FilterValidationIssue'
+          description: Space-delimited granted scopes.
     OidcDiscoveryMetadata:
       type: object
       required:
@@ -492,26 +452,60 @@ components:
         authorization_response_iss_parameter_supported:
           type: boolean
           const: true
-    OAuthClientRegistrationResponse:
+    OAuthDeviceAuthorizationRequest:
       type: object
       required:
       - client_id
-      - client_id_issued_at
-      - client_name
-      - redirect_uris
-      - scope
-      - token_endpoint_auth_method
-      - grant_types
-      - response_types
+      - resource
       properties:
         client_id:
           type: string
-        client_id_issued_at:
-          type: integer
+        client_secret:
+          type: string
+        resource:
+          type: string
+          format: uri
+        scope:
+          type: string
+          description: Space-delimited `discovery` and optional `creator`; defaults to `discovery`.
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+          description: 'Stable machine-readable error code (e.g. `INVALID_STATUS_TRANSITION`, `BILLING_INSUFFICIENT_BALANCE`). Always present.
+
+            '
+        message:
+          type: string
+          description: Human-readable explanation of the error.
+        code:
+          type: string
+          description: 'Alternate machine-readable code — present on some endpoints as an alias for `error` for backward compatibility.
+
+            '
+        request_id:
+          type: string
+          description: Opaque support/debug identifier when available.
+        next_step:
+          type: string
+          description: Public action for correcting the request or retrying later.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterValidationIssue'
+    OAuthClientRegistrationRequest:
+      type: object
+      properties:
         client_name:
           type: string
         redirect_uris:
           type: array
+          minItems: 0
+          maxItems: 20
           items:
             type: string
             format: uri
@@ -525,108 +519,16 @@ components:
           type: array
           items:
             type: string
+            enum:
+            - authorization_code
+            - urn:ietf:params:oauth:grant-type:device_code
+            - refresh_token
         response_types:
           type: array
           items:
             type: string
-    OAuthProtectedResourceMetadata:
-      type: object
-      required:
-      - resource
-      - authorization_servers
-      - bearer_methods_supported
-      - scopes_supported
-      - resource_documentation
-      - resource_policy_uri
-      - resource_tos_uri
-      properties:
-        resource:
-          type: string
-          format: uri
-        authorization_servers:
-          type: array
-          items:
-            type: string
-            format: uri
-        bearer_methods_supported:
-          type: array
-          items:
-            type: string
             enum:
-            - header
-        scopes_supported:
-          type: array
-          items:
-            type: string
-        resource_documentation:
-          type: string
-          format: uri
-        resource_policy_uri:
-          type: string
-          format: uri
-        resource_tos_uri:
-          type: string
-          format: uri
-    OAuthRevokeRequest:
-      type: object
-      required:
-      - token
-      properties:
-        token:
-          type: string
-        token_type_hint:
-          type: string
-          enum:
-          - access_token
-          - refresh_token
-        client_id:
-          type: string
-        client_secret:
-          type: string
-    OidcUserInfo:
-      type: object
-      required:
-      - sub
-      properties:
-        sub:
-          type: string
-          description: Stable opaque subject for this person in this organization.
-        email:
-          type: string
-          format: email
-          description: Current email when the email scope was granted.
-        email_verified:
-          type: boolean
-          const: true
-          description: Present only for a currently verified email.
-    OAuthTokenResponse:
-      type: object
-      required:
-      - access_token
-      - token_type
-      - expires_in
-      - refresh_token
-      - scope
-      properties:
-        access_token:
-          type: string
-          description: 'Opaque bearer token. Use exactly like an API-key-derived one: `Authorization: Bearer <access_token>`.'
-        id_token:
-          type: string
-          description: RS256 OIDC ID token, present only when the person-bound MCP grant includes openid.
-        token_type:
-          type: string
-          enum:
-          - Bearer
-        expires_in:
-          type: integer
-          description: Seconds until the access token expires (1800).
-        refresh_token:
-          type: string
-          description: Supersedes any previously-issued refresh token for this connection — the old one is now rejected.
-        scope:
-          type: string
-          description: Space-delimited granted scopes.
+            - code
     OAuthServerMetadata:
       type: object
       required:
@@ -690,54 +592,6 @@ components:
           type: array
           items:
             type: string
-    OAuthDeviceAuthorizationRequest:
-      type: object
-      required:
-      - client_id
-      - resource
-      properties:
-        client_id:
-          type: string
-        client_secret:
-          type: string
-        resource:
-          type: string
-          format: uri
-        scope:
-          type: string
-          description: Space-delimited `discovery` and optional `creator`; defaults to `discovery`.
-    OAuthClientRegistrationRequest:
-      type: object
-      properties:
-        client_name:
-          type: string
-        redirect_uris:
-          type: array
-          minItems: 0
-          maxItems: 20
-          items:
-            type: string
-            format: uri
-        scope:
-          type: string
-        token_endpoint_auth_method:
-          type: string
-          enum:
-          - none
-        grant_types:
-          type: array
-          items:
-            type: string
-            enum:
-            - authorization_code
-            - urn:ietf:params:oauth:grant-type:device_code
-            - refresh_token
-        response_types:
-          type: array
-          items:
-            type: string
-            enum:
-            - code
     OAuthErrorResponse:
       type: object
       description: RFC 6749 §5.2 / §4.1.2.1 error body — see the OAuthError response component.
@@ -764,38 +618,86 @@ components:
           - server_error
         error_description:
           type: string
-    OidcJwks:
+    OAuthClientRegistrationResponse:
       type: object
       required:
-      - keys
+      - client_id
+      - client_id_issued_at
+      - client_name
+      - redirect_uris
+      - scope
+      - token_endpoint_auth_method
+      - grant_types
+      - response_types
       properties:
-        keys:
+        client_id:
+          type: string
+        client_id_issued_at:
+          type: integer
+        client_name:
+          type: string
+        redirect_uris:
           type: array
           items:
-            type: object
-            required:
-            - kty
-            - use
-            - alg
-            - kid
-            - n
-            - e
-            properties:
-              kty:
-                type: string
-                const: RSA
-              use:
-                type: string
-                const: sig
-              alg:
-                type: string
-                const: RS256
-              kid:
-                type: string
-              n:
-                type: string
-              e:
-                type: string
+            type: string
+            format: uri
+        scope:
+          type: string
+        token_endpoint_auth_method:
+          type: string
+          enum:
+          - none
+        grant_types:
+          type: array
+          items:
+            type: string
+        response_types:
+          type: array
+          items:
+            type: string
+    FilterValidationIssue:
+      type: object
+      required:
+      - path
+      - code
+      - message
+      properties:
+        path:
+          type: string
+          description: JSON path to the invalid filter field or value.
+        code:
+          type: string
+          enum:
+          - INVALID_FILTER_SHAPE
+          - UNKNOWN_FILTER_FIELD
+          - FIELD_NOT_FILTERABLE
+          - UNSUPPORTED_FILTER_OPERATOR
+          - UNSUPPORTED_TEXT_COMPARISON
+          - INVALID_FILTER_VALUE
+          - INVALID_ENUM_VALUE
+          - AMBIGUOUS_ENUM_VALUE
+        message:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+    OidcUserInfo:
+      type: object
+      required:
+      - sub
+      properties:
+        sub:
+          type: string
+          description: Stable opaque subject for this person in this organization.
+        email:
+          type: string
+          format: email
+          description: Current email when the email scope was granted.
+        email_verified:
+          type: boolean
+          const: true
+          description: Present only for a currently verified email.
     OAuthTokenRequest:
       description: 'Encoded as `application/x-www-form-urlencoded` or `application/json`. `client_id`/`client_secret` may instead ride on HTTP Basic auth, in which case both fields are omitted from the body.
 
@@ -861,33 +763,6 @@ components:
           resource:
             type: string
             format: uri
-    FilterValidationIssue:
-      type: object
-      required:
-      - path
-      - code
-      - message
-      properties:
-        path:
-          type: string
-          description: JSON path to the invalid filter field or value.
-        code:
-          type: string
-          enum:
-          - INVALID_FILTER_SHAPE
-          - UNKNOWN_FILTER_FIELD
-          - FIELD_NOT_FILTERABLE
-          - UNSUPPORTED_FILTER_OPERATOR
-          - UNSUPPORTED_TEXT_COMPARISON
-          - INVALID_FILTER_VALUE
-          - INVALID_ENUM_VALUE
-          - AMBIGUOUS_ENUM_VALUE
-        message:
-          type: string
-        suggestions:
-          type: array
-          items:
-            type: string
     OAuthDeviceAuthorizationResponse:
       type: object
       required:
@@ -915,7 +790,99 @@ components:
         interval:
           type: integer
           example: 5
+    OAuthProtectedResourceMetadata:
+      type: object
+      required:
+      - resource
+      - authorization_servers
+      - bearer_methods_supported
+      - scopes_supported
+      - resource_documentation
+      - resource_policy_uri
+      - resource_tos_uri
+      properties:
+        resource:
+          type: string
+          format: uri
+        authorization_servers:
+          type: array
+          items:
+            type: string
+            format: uri
+        bearer_methods_supported:
+          type: array
+          items:
+            type: string
+            enum:
+            - header
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        resource_documentation:
+          type: string
+          format: uri
+        resource_policy_uri:
+          type: string
+          format: uri
+        resource_tos_uri:
+          type: string
+          format: uri
+    OidcJwks:
+      type: object
+      required:
+      - keys
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            required:
+            - kty
+            - use
+            - alg
+            - kid
+            - n
+            - e
+            properties:
+              kty:
+                type: string
+                const: RSA
+              use:
+                type: string
+                const: sig
+              alg:
+                type: string
+                const: RS256
+              kid:
+                type: string
+              n:
+                type: string
+              e:
+                type: string
+    OAuthRevokeRequest:
+      type: object
+      required:
+      - token
+      properties:
+        token:
+          type: string
+        token_type_hint:
+          type: string
+          enum:
+          - access_token
+          - refresh_token
+        client_id:
+          type: string
+        client_secret:
+          type: string
   responses:
+    ServiceUnavailable:
+      description: A required billing provider partnership is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     OAuthError:
       description: 'RFC 6749-shaped OAuth protocol error — `error` is a fixed machine-readable code and `error_description` is a human-readable detail. Deliberately NOT this API''s usual `{error, code, message}` shape — this is the RFC''s own error contract, used only by `/v1/oauth/authorize`, `/v1/oauth/device_authorization`, `/v1/oauth/token`, and `/v1/oauth/revoke`.
 
@@ -924,12 +891,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/OAuthErrorResponse'
-    ServiceUnavailable:
-      description: A required billing provider partnership is temporarily unavailable.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   securitySchemes:
     oidcBearer:
       type: http
@@ -942,6 +903,3 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
-x-refined-from:
-- infiniteaudience-ai-openapi.json
-- infiniteaudience-ai-openapi.yml
