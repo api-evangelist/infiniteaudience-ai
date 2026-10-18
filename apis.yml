@@ -183,6 +183,8 @@ apis:
   humanURL: https://docs.infiniteaudience.ai/api/
   baseURL: https://api.infiniteaudience.ai
   tags:
+  - Authentication
+  tags_raw:
   - Auth
   properties:
   - type: OpenAPI
@@ -281,6 +283,8 @@ apis:
   humanURL: https://docs.infiniteaudience.ai/api/
   baseURL: https://api.infiniteaudience.ai
   tags:
+  - Data Enrichment
+  tags_raw:
   - Enrichment
   properties:
   - type: OpenAPI
@@ -305,6 +309,8 @@ apis:
   humanURL: https://docs.infiniteaudience.ai/api/
   baseURL: https://api.infiniteaudience.ai
   tags:
+  - Integration
+  tags_raw:
   - Integrations
   properties:
   - type: OpenAPI
@@ -356,6 +362,8 @@ apis:
   humanURL: https://docs.infiniteaudience.ai/api/
   baseURL: https://api.infiniteaudience.ai
   tags:
+  - Authentication
+  tags_raw:
   - OAuth
   properties:
   - type: OpenAPI
@@ -519,6 +527,8 @@ apis:
   humanURL: https://docs.infiniteaudience.ai/api/
   baseURL: https://api.infiniteaudience.ai
   tags:
+  - Webhook
+  tags_raw:
   - Webhooks
   properties:
   - type: OpenAPI
