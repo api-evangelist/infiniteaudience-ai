@@ -1,0 +1,12 @@
+{
+ "url": "https://docs.infiniteaudience.ai/openapi.json",
+ "requested_url": "https://docs.infiniteaudience.ai/openapi.json",
+ "status": 200,
+ "content_type": "application/json",
+ "bytes": 695542,
+ "sha256": "ee2baff37e93de138852279b36070d0a36b2aecfa3a7efb6e56753df26059399",
+ "fetched_at": "2026-10-19",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "byte-identical",
+ "note": "Re-fetched from the provider by verify-openapi-sources.py; the archived file is byte-identical to what the provider serves."
+}
