@@ -817,3 +817,9 @@ components:
       description: 'Bearer access token obtained from POST /v1/auth/token. Include in all protected requests as: Authorization: Bearer <access_token>
 
         '
+x-provenance:
+  method: harvested
+  publisher: Infinite Audience
+  source: https://docs.infiniteaudience.ai/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
